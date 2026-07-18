@@ -26,8 +26,15 @@
       <div class="bottom-row">
         <button class="ghost-btn" onclick="toast('Party mode coming soon')"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i> Party code</button>
         <div class="sep"></div>
-        <button class="ghost-btn" onclick="toast('Leaderboards coming soon')">Leaderboard</button>
+        <button class="ghost-btn" onclick="go('leaderboard')">Leaderboard</button>
       </div>
+    </div>
+
+    <div class="screen" id="s-leaderboard">
+      <button class="back-btn" onclick="go('home')">← Back</button>
+      <div class="section-title">Leaderboard</div>
+      <div class="lb-tabs" id="lbTabs"></div>
+      <div class="lb-list" id="lbList"></div>
     </div>
 
     <div class="screen" id="s-regional">
@@ -69,6 +76,11 @@
         <div class="final-num" id="fScore">0</div>
         <div class="final-sub" id="fSub"></div>
         <div class="final-comment" id="fComment"></div>
+        <div class="score-submit" id="scoreSubmit">
+          <input id="iName" type="text" placeholder="Your name" maxlength="20" />
+          <button class="btn-gold" onclick="submitScore()">Save score</button>
+        </div>
+        <div class="score-saved" id="scoreSaved" style="display:none;"></div>
         <div class="final-btns">
           <button class="btn-ghost" onclick="restart()">Play again</button>
           <button class="btn-gold" onclick="go('home')">Home</button>

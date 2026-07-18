@@ -75,3 +75,21 @@ canvas.bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .ptotal { border-top: 0.5px solid rgba(255,255,255,0.07); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; color: #e0e0e0; }
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1c1c1c; border: 0.5px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 8px 18px; font-size: 12px; color: #888; opacity: 0; transition: opacity 0.25s; pointer-events: none; white-space: nowrap; z-index: 999; }
 .toast.show { opacity: 1; }
+
+.score-submit { display: flex; gap: 8px; justify-content: center; max-width: 360px; margin: 0 auto 1.25rem; }
+.score-submit input { flex: 1; padding: 0 10px; height: 36px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e0e0e0; font-size: 13px; }
+.score-submit input:focus { outline: none; border-color: rgba(200,169,110,0.5); }
+.score-submit button { padding: 0 16px; border-radius: var(--radius); font-size: 13px; cursor: pointer; white-space: nowrap; }
+.score-saved { font-size: 13px; color: #97c459; margin-bottom: 1.25rem; }
+
+.lb-tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: 560px; margin-bottom: 1.5rem; }
+.lb-tab { padding: 6px 12px; border-radius: 20px; border: 0.5px solid rgba(255,255,255,0.1); background: transparent; color: #555; font-size: 12px; cursor: pointer; }
+.lb-tab:hover { color: #aaa; }
+.lb-tab.active { border-color: rgba(200,169,110,0.4); background: rgba(200,169,110,0.08); color: #c8a96e; }
+.lb-list { width: 100%; max-width: 420px; }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.06); margin-bottom: 6px; }
+.lb-rank { font-size: 13px; color: #444; width: 22px; text-align: right; flex-shrink: 0; }
+.lb-row:nth-child(1) .lb-rank { color: #c8a96e; }
+.lb-name { flex: 1; font-size: 13px; color: #e0e0e0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-score { font-size: 13px; font-weight: 500; color: #c8a96e; }
+.lb-empty { font-size: 13px; color: #444; text-align: center; padding: 2rem 0; }
