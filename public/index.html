@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VicCall</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="vc" id="vc">
+    <canvas class="bg" id="bg"></canvas>
+    <div class="popup" id="popup"><div id="prows"></div><div class="ptotal"><span>This round</span><span id="ptotal"></span></div></div>
+    <div class="toast" id="toast"></div>
+
+    <div class="screen active" id="s-home">
+      <div class="logo">Vehicle Identification Call &nbsp;·&nbsp; <span>VicCall</span></div>
+      <div class="title">Can you <em>call</em> it?</div>
+      <p class="tagline">Identify cars from around the world. Make. Model. Year.</p>
+      <div class="modes-grid">
+        <div class="mcard gold" onclick="go('worldwide')"><div class="mcard-badge">Popular</div><i class="ti ti-world" aria-hidden="true"></i><div class="mcard-name">Worldwide</div><div class="mcard-desc">Random cars from every region.</div></div>
+        <div class="mcard" onclick="go('regional')"><i class="ti ti-map-pin" aria-hidden="true"></i><div class="mcard-name">Regional</div><div class="mcard-desc">Pick a region. Master its cars.</div></div>
+        <div class="mcard" onclick="go('niche')"><i class="ti ti-eye-off" aria-hidden="true"></i><div class="mcard-name">Niche</div><div class="mcard-desc">Obscure builds. Only real ones know.</div></div>
+        <div class="mcard" onclick="go('timeattack')"><i class="ti ti-clock" aria-hidden="true"></i><div class="mcard-name">Time Attack</div><div class="mcard-desc">30 seconds per car. No hesitation.</div></div>
+      </div>
+      <div class="bottom-row">
+        <button class="ghost-btn" onclick="toast('Party mode coming soon')"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i> Party code</button>
+        <div class="sep"></div>
+        <button class="ghost-btn" onclick="toast('Leaderboards coming soon')">Leaderboard</button>
+      </div>
+    </div>
+
+    <div class="screen" id="s-regional">
+      <button class="back-btn" onclick="go('home')">← Back</button>
+      <div class="section-title">Where are we driving?</div>
+      <div class="modes-grid">
+        <div class="mcard" onclick="go('japan')"><i class="ti ti-sun" aria-hidden="true"></i><div class="mcard-name">Japan</div><div class="mcard-desc">JDM legends and Kei cars.</div></div>
+        <div class="mcard" onclick="go('germany')"><i class="ti ti-bolt" aria-hidden="true"></i><div class="mcard-name">Germany</div><div class="mcard-desc">BMW, Porsche, VW, Mercedes.</div></div>
+        <div class="mcard" onclick="go('usa')"><i class="ti ti-flame" aria-hidden="true"></i><div class="mcard-name">USA</div><div class="mcard-desc">Muscle cars. Detroit steel.</div></div>
+        <div class="mcard" onclick="go('france')"><i class="ti ti-feather" aria-hidden="true"></i><div class="mcard-name">France</div><div class="mcard-desc">Peugeot, Renault, Citroën.</div></div>
+        <div class="mcard" onclick="go('italy')"><i class="ti ti-heart" aria-hidden="true"></i><div class="mcard-name">Italy</div><div class="mcard-desc">Ferrari, Lamborghini, Alfa.</div></div>
+        <div class="mcard" onclick="go('uk')"><i class="ti ti-crown" aria-hidden="true"></i><div class="mcard-name">UK</div><div class="mcard-desc">Aston, Jaguar, Land Rover.</div></div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-game">
+      <div class="g-header">
+        <div>
+          <div class="g-mode-tag" id="modeTag">Worldwide</div>
+          <div class="g-score">Score: <span id="scoreDisplay">0</span></div>
+          <div class="g-progress" id="progress">Car 1 of 10</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="g-timer" id="timer" style="display:none;">0:30</div>
+          <button class="back-btn" style="margin:0;" onclick="go('home')">← Home</button>
+        </div>
+      </div>
+      <div class="car-img" id="carImg"><i class="ti ti-car" style="font-size:40px;color:#222;" aria-hidden="true"></i></div>
+      <div class="fields-row">
+        <div><div class="flabel">Make</div><input id="iMake" type="text" placeholder="Toyota" /></div>
+        <div><div class="flabel">Model</div><input id="iModel" type="text" placeholder="Supra" /></div>
+        <div><div class="flabel">Year</div><input id="iYear" type="text" placeholder="1994" maxlength="4" /></div>
+      </div>
+      <button class="sub-btn" id="subBtn" onclick="submit()">Submit guess</button>
+      <div class="fb" id="fb"></div>
+      <div class="hint-txt" id="hintTxt"></div>
+      <button class="next-btn" id="nextBtn" onclick="next()">Next car →</button>
+      <div id="finalWrap" style="display:none;" class="final-wrap">
+        <div class="final-num" id="fScore">0</div>
+        <div class="final-sub" id="fSub"></div>
+        <div class="final-comment" id="fComment"></div>
+        <div class="final-btns">
+          <button class="btn-ghost" onclick="restart()">Play again</button>
+          <button class="btn-gold" onclick="go('home')">Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
