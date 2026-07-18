@@ -93,3 +93,15 @@ canvas.bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .lb-name { flex: 1; font-size: 13px; color: #e0e0e0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-score { font-size: 13px; font-weight: 500; color: #c8a96e; }
 .lb-empty { font-size: 13px; color: #444; text-align: center; padding: 2rem 0; }
+.lb-row.answered { border-color: rgba(99,153,34,0.3); }
+.lb-row .lb-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.12); flex-shrink: 0; }
+.lb-row.answered .lb-dot { background: #97c459; }
+.lb-row .lb-host-badge { font-size: 10px; color: #c8a96e; border: 0.5px solid rgba(200,169,110,0.3); border-radius: 10px; padding: 1px 6px; }
+
+.party-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 560px; }
+.party-card { background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; text-align: left; }
+.party-card-title { font-size: 14px; font-weight: 500; color: #e0e0e0; margin-bottom: 0.75rem; }
+.party-card input, .party-card select { width: 100%; padding: 0 10px; height: 36px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e0e0e0; font-size: 13px; margin-bottom: 10px; }
+.party-card input:focus, .party-card select:focus { outline: none; border-color: rgba(200,169,110,0.5); }
+.party-card button { width: 100%; padding: 9px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.party-code-display { font-size: 40px; font-weight: 500; letter-spacing: 0.12em; color: #c8a96e; margin-bottom: 0.5rem; }

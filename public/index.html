@@ -24,7 +24,7 @@
         <div class="mcard" onclick="go('timeattack')"><i class="ti ti-clock" aria-hidden="true"></i><div class="mcard-name">Time Attack</div><div class="mcard-desc">30 seconds per car. No hesitation.</div></div>
       </div>
       <div class="bottom-row">
-        <button class="ghost-btn" onclick="toast('Party mode coming soon')"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i> Party code</button>
+        <button class="ghost-btn" onclick="go('party')"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i> Party code</button>
         <div class="sep"></div>
         <button class="ghost-btn" onclick="go('leaderboard')">Leaderboard</button>
       </div>
@@ -35,6 +35,82 @@
       <div class="section-title">Leaderboard</div>
       <div class="lb-tabs" id="lbTabs"></div>
       <div class="lb-list" id="lbList"></div>
+    </div>
+
+    <div class="screen" id="s-party">
+      <button class="back-btn" onclick="go('home')">← Back</button>
+      <div class="section-title">Party code</div>
+      <div class="party-cards">
+        <div class="party-card">
+          <div class="party-card-title">Create a party</div>
+          <div class="flabel">Your name</div>
+          <input id="pcName" type="text" placeholder="Name" maxlength="20" />
+          <div class="flabel">Mode</div>
+          <select id="pcMode">
+            <option value="worldwide">Worldwide</option>
+            <option value="japan">Japan</option>
+            <option value="germany">Germany</option>
+            <option value="usa">USA</option>
+            <option value="france">France</option>
+            <option value="italy">Italy</option>
+            <option value="uk">UK</option>
+            <option value="niche">Niche</option>
+          </select>
+          <button class="btn-gold" onclick="partyCreate()">Create Party</button>
+        </div>
+        <div class="party-card">
+          <div class="party-card-title">Join a party</div>
+          <div class="flabel">Your name</div>
+          <input id="pjName" type="text" placeholder="Name" maxlength="20" />
+          <div class="flabel">Party code</div>
+          <input id="pjCode" type="text" placeholder="ABCDE" maxlength="5" style="text-transform:uppercase;" />
+          <button class="btn-gold" onclick="partyJoin()">Join Party</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-party-lobby">
+      <button class="back-btn" onclick="partyLeave()">← Leave</button>
+      <div class="section-title">Party lobby</div>
+      <div class="party-code-display" id="lobbyCode"></div>
+      <div class="g-mode-tag" id="lobbyModeTag" style="margin-bottom:1rem;"></div>
+      <div class="lb-list" id="lobbyPlayers"></div>
+      <button class="btn-gold" id="lobbyStartBtn" style="margin-top:1rem;display:none;" onclick="partyStart()">Start Game</button>
+      <div class="hint-txt" id="lobbyWaitTxt" style="display:block;margin-top:1rem;">Waiting for host to start…</div>
+    </div>
+
+    <div class="screen" id="s-party-game">
+      <div class="g-header">
+        <div>
+          <div class="g-mode-tag" id="pModeTag">Party</div>
+          <div class="g-progress" id="pProgress">Car 1 of 10</div>
+          <div class="g-progress" id="pAnsweredTxt"></div>
+        </div>
+        <div style="text-align:right;">
+          <button class="back-btn" style="margin:0;" onclick="partyLeave()">← Leave</button>
+        </div>
+      </div>
+      <div class="car-img" id="pCarImg"><i class="ti ti-car" style="font-size:40px;color:#222;" aria-hidden="true"></i></div>
+      <div class="fields-row" id="pFieldsRow">
+        <div><div class="flabel">Make</div><input id="pMake" type="text" placeholder="Toyota" /></div>
+        <div><div class="flabel">Model</div><input id="pModel" type="text" placeholder="Supra" /></div>
+        <div><div class="flabel">Year</div><input id="pYear" type="text" placeholder="1994" maxlength="4" /></div>
+      </div>
+      <button class="sub-btn" id="pSubBtn" onclick="partySubmit()">Submit guess</button>
+      <div class="fb" id="pFb"></div>
+      <div class="hint-txt" id="pHintTxt"></div>
+      <button class="next-btn" id="pNextBtn" style="display:none;" onclick="partyNext()">Next car →</button>
+      <div class="hint-txt" id="pWaitHostTxt" style="display:none;margin-top:0.5rem;">Waiting for host to continue…</div>
+      <div class="lb-list" id="pStandings" style="margin-top:1.25rem;"></div>
+    </div>
+
+    <div class="screen" id="s-party-final">
+      <div class="section-title">Final standings</div>
+      <div class="lb-list" id="pFinalStandings"></div>
+      <div class="final-btns" style="margin-top:1.5rem;">
+        <button class="btn-gold" id="pPlayAgainBtn" style="display:none;" onclick="partyStart()">Play again</button>
+        <button class="btn-ghost" onclick="partyLeave()">Leave party</button>
+      </div>
     </div>
 
     <div class="screen" id="s-regional">
@@ -89,6 +165,7 @@
     </div>
   </div>
 
+  <script src="/socket.io/socket.io.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -2,14 +2,20 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const http = require('http');
+const { Server } = require('socket.io');
+const { attachParty } = require('./party');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const SCORES_FILE = path.join(DATA_DIR, 'scores.json');
 const MODES = ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'timeattack'];
 const MAX_PER_MODE = 100;
+const CARS = JSON.parse(fs.readFileSync(path.join(__dirname, 'cars.json'), 'utf8'));
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(SCORES_FILE)) fs.writeFileSync(SCORES_FILE, '[]');
@@ -36,6 +42,10 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.get('/api/cars', (req, res) => {
+  res.json(CARS);
 });
 
 app.post('/api/scores', (req, res) => {
@@ -81,6 +91,8 @@ app.get('/api/leaderboard', (req, res) => {
   res.json(scores);
 });
 
-app.listen(PORT, () => {
+attachParty(io, CARS, MODES);
+
+server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
