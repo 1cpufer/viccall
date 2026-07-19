@@ -30,6 +30,24 @@ canvas.bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .mcard.gold i { color: #c8a96e; }
 .mcard-name { font-size: 14px; font-weight: 500; color: #e0e0e0; margin-bottom: 3px; }
 .mcard-desc { font-size: 12px; color: #444; line-height: 1.4; }
+
+.carousel { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 640px; margin-bottom: 0.85rem; perspective: 1000px; }
+.car-viewport { flex: 1; overflow: hidden; padding: 8px 0; }
+.car-track { display: flex; align-items: center; gap: 18px; cursor: grab; touch-action: pan-y; will-change: transform; transition: transform 0.42s cubic-bezier(.22,.61,.36,1); }
+.car-track.dragging { transition: none; cursor: grabbing; }
+.car-track .mcard { flex: 0 0 300px; width: 300px; padding: 1.6rem; overflow: hidden; transform: scale(0.86); transition: transform 0.42s cubic-bezier(.22,.61,.36,1); user-select: none; }
+.car-track .mcard.active { transform: scale(1); }
+.car-track .mcard::after { content: ''; position: absolute; inset: 0; border-radius: 12px; background: radial-gradient(ellipse at center, rgba(6,6,8,0.35) 0%, rgba(6,6,8,0.92) 100%); opacity: 1; transition: opacity 0.42s ease; pointer-events: none; }
+.car-track .mcard.active::after { opacity: 0; }
+.car-track .mcard i { font-size: 28px; margin-bottom: 0.85rem; }
+.car-track .mcard-name { font-size: 19px; margin-bottom: 6px; }
+.car-track .mcard-desc { font-size: 13.5px; }
+.car-arrow { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: 0.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: #666; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.15s; }
+.car-arrow:hover { color: #ccc; border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); }
+.car-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 1.25rem; }
+.car-dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.15); cursor: pointer; transition: all 0.2s; }
+.car-dot.active { background: #c8a96e; width: 16px; }
+
 .bottom-row { display: flex; gap: 12px; align-items: center; }
 .ghost-btn { padding: 8px 16px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.12); background: transparent; color: #555; font-size: 12px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
 .ghost-btn:hover { color: #aaa; border-color: rgba(255,255,255,0.25); }
@@ -45,9 +63,16 @@ canvas.bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .g-progress { font-size: 12px; color: #444; }
 .car-img { width: 100%; max-width: 600px; aspect-ratio: 16/9; background: #111; border-radius: 12px; border: 0.5px solid rgba(255,255,255,0.07); overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; }
 .car-img img { width: 100%; height: 100%; object-fit: cover; }
+.report-panel { width: 100%; max-width: 600px; margin-bottom: 0.75rem; padding: 12px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); }
+.report-panel textarea { width: 100%; min-height: 56px; resize: vertical; padding: 8px 10px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e0e0e0; font-size: 13px; font-family: var(--font-sans); margin-bottom: 8px; }
+.report-panel textarea::placeholder { color: #3a3a3a; }
+.report-panel textarea:focus { outline: none; border-color: rgba(200,169,110,0.5); }
+.report-panel-actions { display: flex; gap: 8px; }
+.report-panel-actions button { flex: 1; padding: 7px; border-radius: var(--radius); font-size: 12px; cursor: pointer; }
 .fields-row { display: grid; grid-template-columns: 1fr 1fr 90px; gap: 8px; width: 100%; max-width: 600px; margin-bottom: 8px; }
 .flabel { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
 .fields-row input { width: 100%; padding: 0 10px; height: 38px; border-radius: var(--radius); border: 0.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e0e0e0; font-size: 14px; }
+.fields-row input::placeholder { color: #3a3a3a; }
 .fields-row input:focus { outline: none; border-color: rgba(200,169,110,0.5); }
 .fields-row input:disabled { opacity: 0.35; }
 .sub-btn { width: 100%; max-width: 600px; padding: 9px; border-radius: var(--radius); border: 0.5px solid rgba(200,169,110,0.4); background: rgba(200,169,110,0.08); color: #c8a96e; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 0.6rem; }

@@ -35,6 +35,22 @@ function writeScores(scores) {
   fs.writeFileSync(SCORES_FILE, JSON.stringify(scores));
 }
 
+function readReports() {
+  try {
+    return JSON.parse(fs.readFileSync(REPORTS_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function writeReports(reports) {
+  fs.writeFileSync(REPORTS_FILE, JSON.stringify(reports));
+}
+
+function clip(v, max) {
+  return String(v == null ? '' : v).slice(0, max);
+}
+
 function sanitizeName(raw) {
   const cleaned = String(raw || '').replace(/[^\w \-'.]/g, '').trim().slice(0, 20);
   return cleaned || 'Anonymous';
@@ -92,6 +108,37 @@ app.get('/api/leaderboard', (req, res) => {
     .slice(0, limit)
     .map(({ name, score, maxScore, ts }) => ({ name, score, maxScore, ts }));
   res.json(scores);
+});
+
+app.post('/api/report', (req, res) => {
+  const body = req.body || {};
+  const type = body.type === 'crash' ? 'crash' : body.type === 'bug' ? 'bug' : null;
+  if (!type) return res.status(400).json({ error: 'invalid type' });
+
+  const entry = {
+    id: crypto.randomUUID(),
+    type,
+    mode: MODES.includes(body.mode) ? body.mode : 'unknown',
+    car: body.car && typeof body.car === 'object'
+      ? { make: clip(body.car.make, 60), model: clip(body.car.model, 60), year: clip(body.car.year, 8), kit: clip(body.car.kit, 60) }
+      : null,
+    message: clip(body.message, 500),
+    stack: clip(body.stack, 2000),
+    note: clip(body.note, 500),
+    userAgent: clip(body.userAgent, 300),
+    ts: Date.now(),
+  };
+
+  const reports = readReports();
+  reports.push(entry);
+  if (reports.length > MAX_REPORTS) reports.splice(0, reports.length - MAX_REPORTS);
+  writeReports(reports);
+
+  res.json({ ok: true });
+});
+
+app.get('/api/reports', (req, res) => {
+  res.json(readReports().slice().reverse());
 });
 
 attachParty(io, CARS, MODES);

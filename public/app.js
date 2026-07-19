@@ -12,11 +12,145 @@ initBg();drawBg();
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 
-const MODE_TAG={worldwide:'Worldwide',japan:'Japan',germany:'Germany',usa:'USA',france:'France',italy:'Italy',uk:'UK',niche:'Niche',supercar:'Supercars',timeattack:'Time Attack'};
+function reportIssue(payload){
+  fetch('/api/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(()=>{});
+}
+
+const MAX_CRASH_REPORTS=10;
+let crashReportCount=0;
+const seenCrashes=new Set();
+function captureCrash(message,stack){
+  if(crashReportCount>=MAX_CRASH_REPORTS)return;
+  const key=String(message||'')+'|'+String(stack||'').slice(0,200);
+  if(seenCrashes.has(key))return;
+  seenCrashes.add(key);crashReportCount++;
+  reportIssue({
+    type:'crash',
+    message:String(message||''),
+    stack:String(stack||''),
+    mode,
+    car:cur?{make:cur.make,model:cur.model,year:cur.year,kit:cur.kit}:null,
+    userAgent:navigator.userAgent,
+  });
+}
+window.addEventListener('error',e=>captureCrash(e.message,e.error&&e.error.stack));
+window.addEventListener('unhandledrejection',e=>captureCrash('Unhandled rejection: '+(e.reason&&e.reason.message||e.reason),e.reason&&e.reason.stack));
+
+function toggleReport(){
+  const panel=document.getElementById('reportPanel');
+  panel.style.display=panel.style.display==='none'?'block':'none';
+  if(panel.style.display==='block')document.getElementById('reportNote').focus();
+}
+
+function submitReport(){
+  const note=document.getElementById('reportNote').value.trim();
+  reportIssue({
+    type:'bug',
+    note,
+    mode,
+    car:cur?{make:cur.make,model:cur.model,year:cur.year,kit:cur.kit}:null,
+    userAgent:navigator.userAgent,
+  });
+  document.getElementById('reportNote').value='';
+  document.getElementById('reportPanel').style.display='none';
+  toast('Thanks — reported.');
+}
+
+const MODE_TAG={worldwide:'Worldwide',japan:'Japan',germany:'Germany',usa:'USA',france:'France',italy:'Italy',uk:'UK',niche:'Niche',supercar:'Supercars',timeattack:'Time Attack',kit:'Kit Check'};
+
+const CAROUSEL_MODES=[
+  {mode:'worldwide',icon:'ti-world',name:'Worldwide',desc:'Random cars from every region.',badge:'Popular',gold:true},
+  {mode:'regional',icon:'ti-map-pin',name:'Regional',desc:'Pick a region. Master its cars.'},
+  {mode:'niche',icon:'ti-eye-off',name:'Niche',desc:'Obscure builds. Only real ones know.'},
+  {mode:'supercar',icon:'ti-diamond',name:'Supercars',desc:'Exotic icons only. Top-tier metal.'},
+  {mode:'timeattack',icon:'ti-clock',name:'Time Attack',desc:'30 seconds per car. No hesitation.'},
+  {mode:'kit',icon:'ti-adjustments',name:'Kit Check',desc:'Name the tuner. Widebody, aero, the works.'},
+];
+let carIdx=0,carDragging=false,carDragStartX=0,carDragCurX=0,carDragBase=0,carWasDragged=false;
+
+function buildCarousel(){
+  const track=document.getElementById('carTrack');
+  track.innerHTML=CAROUSEL_MODES.map((m,i)=>
+    `<div class="mcard${m.gold?' gold':''}" data-i="${i}" onclick="carouselCardClick(${i})">${m.badge?`<div class="mcard-badge">${m.badge}</div>`:''}<i class="ti ${m.icon}" aria-hidden="true"></i><div class="mcard-name">${m.name}</div><div class="mcard-desc">${m.desc}</div></div>`
+  ).join('');
+  document.getElementById('carDots').innerHTML=CAROUSEL_MODES.map((_,i)=>`<div class="car-dot" data-i="${i}" onclick="carouselGoto(${i})"></div>`).join('');
+  const viewport=document.getElementById('carViewport');
+  viewport.addEventListener('mousedown',carDragStart);
+  viewport.addEventListener('touchstart',carDragStart,{passive:true});
+  window.addEventListener('mousemove',carDragMove);
+  window.addEventListener('touchmove',carDragMove,{passive:true});
+  window.addEventListener('mouseup',carDragEnd);
+  window.addEventListener('touchend',carDragEnd);
+  updateCarousel();
+}
+buildCarousel();
+
+function carouselCardClick(i){
+  if(carWasDragged){carWasDragged=false;return;}
+  if(i===carIdx){go(CAROUSEL_MODES[i].mode);}
+  else carouselGoto(i);
+}
+
+function carouselGoto(i){
+  carIdx=(i+CAROUSEL_MODES.length)%CAROUSEL_MODES.length;
+  updateCarousel();
+}
+
+function carouselNav(d){carouselGoto(carIdx+d);}
+
+function updateCarousel(){
+  const track=document.getElementById('carTrack');
+  const viewport=document.getElementById('carViewport');
+  if(!track||!viewport)return;
+  [...track.children].forEach((c,i)=>c.classList.toggle('active',i===carIdx));
+  [...document.getElementById('carDots').children].forEach((d,i)=>d.classList.toggle('active',i===carIdx));
+  const card=track.children[carIdx];
+  if(!card)return;
+  const cardCenter=card.offsetLeft+card.offsetWidth/2;
+  const viewportCenter=viewport.offsetWidth/2;
+  track.style.transform=`translateX(${viewportCenter-cardCenter}px)`;
+}
+
+function getTrackTranslateX(el){
+  const st=getComputedStyle(el).transform;
+  if(st==='none')return 0;
+  const m=st.match(/matrix\(([^)]+)\)/);
+  return m?parseFloat(m[1].split(',')[4]):0;
+}
+
+function carDragStart(e){
+  carDragging=true;carWasDragged=false;
+  carDragStartX=carDragCurX=(e.touches?e.touches[0].clientX:e.clientX);
+  const track=document.getElementById('carTrack');
+  track.classList.add('dragging');
+  carDragBase=getTrackTranslateX(track);
+}
+
+function carDragMove(e){
+  if(!carDragging)return;
+  carDragCurX=(e.touches?e.touches[0].clientX:e.clientX);
+  const dx=carDragCurX-carDragStartX;
+  if(Math.abs(dx)>5)carWasDragged=true;
+  document.getElementById('carTrack').style.transform=`translateX(${carDragBase+dx}px)`;
+}
+
+function carDragEnd(){
+  if(!carDragging)return;
+  carDragging=false;
+  const track=document.getElementById('carTrack');
+  track.classList.remove('dragging');
+  const dx=carDragCurX-carDragStartX;
+  if(Math.abs(dx)>40){carouselNav(dx<0?1:-1);}
+  else{updateCarousel();}
+}
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('s-home').classList.contains('active'))updateCarousel();
+});
 
 async function go(dest){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  if(dest==='home'){document.getElementById('s-home').classList.add('active');return;}
+  if(dest==='home'){document.getElementById('s-home').classList.add('active');updateCarousel();return;}
   if(dest==='regional'){document.getElementById('s-regional').classList.add('active');return;}
   if(dest==='leaderboard'){document.getElementById('s-leaderboard').classList.add('active');initLeaderboard();return;}
   if(dest==='party'){document.getElementById('s-party').classList.add('active');return;}
@@ -27,9 +161,10 @@ async function go(dest){
   restart();
 }
 
-function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
 function getQueue(){
-  let p=mode==='niche'?CARS.filter(c=>c.niche):mode==='supercar'?CARS.filter(c=>c.supercar):mode==='worldwide'||mode==='timeattack'?[...CARS]:CARS.filter(c=>c.region===mode);
+  let p=mode==='niche'?CARS.filter(c=>c.niche):mode==='supercar'?CARS.filter(c=>c.supercar):mode==='kit'?CARS.filter(c=>c.kit):mode==='worldwide'||mode==='timeattack'?[...CARS]:CARS.filter(c=>c.region===mode);
+  if(!p.length)p=[...CARS];
   while(p.length<TOTAL)p=[...p,...p];
   return shuffle(p).slice(0,TOTAL);
 }
@@ -42,12 +177,15 @@ function restart(){
   document.getElementById('nextBtn').style.display='none';
   document.getElementById('finalWrap').style.display='none';
   document.getElementById('subBtn').style.display='';
-  document.querySelector('.fields-row').style.display='';
+  document.getElementById('fieldsRow').style.display=mode==='kit'?'none':'';
+  document.getElementById('kitFieldsRow').style.display=mode==='kit'?'':'none';
   document.getElementById('carImg').style.display='';
+  document.getElementById('reportPanel').style.display='none';
+  document.getElementById('reportNote').value='';
   clearTimer();resetInputs();loadCar();
 }
 
-function resetInputs(){['iMake','iModel','iYear'].forEach(id=>{const e=document.getElementById(id);e.value='';e.disabled=false;});}
+function resetInputs(){['iMake','iModel','iYear','iKit'].forEach(id=>{const e=document.getElementById(id);e.value='';e.disabled=false;});}
 function clearTimer(){if(timerInt){clearInterval(timerInt);timerInt=null;}document.getElementById('timer').style.display='none';}
 
 function startTimer(){
@@ -66,11 +204,11 @@ function loadCar(){
   img.onerror=()=>{wrap.innerHTML=`<div style="color:#333;font-size:13px;text-align:center;">${cur.make} ${cur.model}<br><span style="font-size:11px;color:#2a2a2a;">image unavailable in sandbox</span></div>`;};
   img.src=cur.img;
   if(mode==='timeattack')startTimer();
-  document.getElementById('iMake').focus();
+  document.getElementById(mode==='kit'?'iKit':'iMake').focus();
 }
 
 // STRICT matching — strip special chars, require exact match
-function clean(s){return s.toLowerCase().replace(/[^a-z0-9]/g,'').trim();}
+function clean(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim();}
 
 function scoreGuess(mg,mol,yr){
   const res=[];let pts=0;
@@ -98,6 +236,17 @@ function scoreGuess(mg,mol,yr){
   return{pts,res};
 }
 
+function scoreKitGuess(kg){
+  const accepted=[cur.kit,...(cur.kitAliases||[])].map(clean);
+  const hit=accepted.includes(clean(kg));
+  const p=hit?5:0;
+  return{pts:p,res:[{label:'Kit',detail:hit?cur.kit:`Not ${cur.kit}`,pts:p}]};
+}
+
+function answerLabel(){
+  return mode==='kit'?`${cur.kit} — ${cur.make} ${cur.model}`:`${cur.make} ${cur.model} (${cur.year})`;
+}
+
 function showPopup(res,total){
   const pop=document.getElementById('popup');
   document.getElementById('prows').innerHTML=res.map(r=>`<div class="prow ${r.pts>0?'hit':''}"><span>${r.label}: ${r.detail}</span><span>${r.pts>0?'+'+r.pts:'0'}</span></div>`).join('');
@@ -109,26 +258,33 @@ function showPopup(res,total){
 
 function autoSubmit(){
   answered=true;
-  ['iMake','iModel','iYear'].forEach(id=>document.getElementById(id).disabled=true);
+  ['iMake','iModel','iYear','iKit'].forEach(id=>document.getElementById(id).disabled=true);
   const fb=document.getElementById('fb');fb.style.display='block';fb.className='fb wrong';
-  fb.textContent=`Time's up — ${cur.make} ${cur.model} (${cur.year})`;
+  fb.textContent=`Time's up — ${answerLabel()}`;
   document.getElementById('hintTxt').textContent=cur.hint;document.getElementById('hintTxt').style.display='block';
   document.getElementById('nextBtn').style.display='block';idx++;
 }
 
 function submit(){
   if(answered)return;
-  const mg=document.getElementById('iMake').value.trim();
-  const mol=document.getElementById('iModel').value.trim();
-  const yr=document.getElementById('iYear').value.trim();
-  if(!mg&&!mol&&!yr)return;
+  let pts,res;
+  if(mode==='kit'){
+    const kg=document.getElementById('iKit').value.trim();
+    if(!kg)return;
+    ({pts,res}=scoreKitGuess(kg));
+  }else{
+    const mg=document.getElementById('iMake').value.trim();
+    const mol=document.getElementById('iModel').value.trim();
+    const yr=document.getElementById('iYear').value.trim();
+    if(!mg&&!mol&&!yr)return;
+    ({pts,res}=scoreGuess(mg,mol,yr));
+  }
   clearTimer();answered=true;
-  ['iMake','iModel','iYear'].forEach(id=>document.getElementById(id).disabled=true);
-  const{pts,res}=scoreGuess(mg,mol,yr);
+  ['iMake','iModel','iYear','iKit'].forEach(id=>document.getElementById(id).disabled=true);
   score+=pts;document.getElementById('scoreDisplay').textContent=score;
   showPopup(res,pts);
   const fb=document.getElementById('fb');fb.style.display='block';
-  const ans=`${cur.make} ${cur.model} (${cur.year})`;
+  const ans=answerLabel();
   if(pts>=4){fb.className='fb correct';fb.textContent=`Nailed it — ${ans}`;}
   else if(pts>0){fb.className='fb partial';fb.textContent=`Partial — ${ans}`;}
   else{fb.className='fb wrong';fb.textContent=`Nope — ${ans}`;}
@@ -142,17 +298,21 @@ function next(){
   document.getElementById('fb').style.display='none';
   document.getElementById('hintTxt').style.display='none';
   document.getElementById('nextBtn').style.display='none';
+  document.getElementById('reportPanel').style.display='none';
+  document.getElementById('reportNote').value='';
   resetInputs();loadCar();
 }
 
 function showFinal(){
   clearTimer();
   document.getElementById('carImg').style.display='none';
-  document.querySelector('.fields-row').style.display='none';
+  document.getElementById('fieldsRow').style.display='none';
+  document.getElementById('kitFieldsRow').style.display='none';
   document.getElementById('subBtn').style.display='none';
   document.getElementById('fb').style.display='none';
   document.getElementById('hintTxt').style.display='none';
   document.getElementById('nextBtn').style.display='none';
+  document.getElementById('reportPanel').style.display='none';
   document.getElementById('finalWrap').style.display='block';
   const max=TOTAL*5;
   document.getElementById('fScore').textContent=score;
@@ -218,6 +378,9 @@ async function loadLeaderboard(){
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
 document.addEventListener('keydown',e=>{
+  if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&document.getElementById('s-home').classList.contains('active')&&!['INPUT','SELECT'].includes(e.target.tagName)){
+    carouselNav(e.key==='ArrowRight'?1:-1);return;
+  }
   if(e.key!=='Enter')return;
   if(e.target.id==='iName'){submitScore();return;}
   if(['pcName','pcMode'].includes(e.target.id)){partyCreate();return;}
