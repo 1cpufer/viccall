@@ -38,7 +38,12 @@ function scoreGuess(car, mg, mol, yr) {
 }
 
 function shuffle(a) {
-  return [...a].sort(() => Math.random() - 0.5);
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
 }
 
 function sanitizeName(raw) {
@@ -52,8 +57,10 @@ function attachParty(io, CARS, MODES) {
   function getQueue(mode) {
     let pool = mode === 'niche' ? CARS.filter(c => c.niche)
       : mode === 'supercar' ? CARS.filter(c => c.supercar)
+      : mode === 'kit' ? CARS.filter(c => c.kit)
       : mode === 'worldwide' || mode === 'timeattack' ? [...CARS]
       : CARS.filter(c => c.region === mode);
+    if (!pool.length) pool = [...CARS];
     while (pool.length < TOTAL) pool = [...pool, ...pool];
     return shuffle(pool).slice(0, TOTAL);
   }
