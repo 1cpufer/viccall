@@ -12,7 +12,7 @@ initBg();drawBg();
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
 
-const MODE_TAG={worldwide:'Worldwide',japan:'Japan',germany:'Germany',usa:'USA',france:'France',italy:'Italy',uk:'UK',niche:'Niche',timeattack:'Time Attack'};
+const MODE_TAG={worldwide:'Worldwide',japan:'Japan',germany:'Germany',usa:'USA',france:'France',italy:'Italy',uk:'UK',niche:'Niche',supercar:'Supercars',timeattack:'Time Attack'};
 
 async function go(dest){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -29,7 +29,7 @@ async function go(dest){
 
 function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
 function getQueue(){
-  let p=mode==='niche'?CARS.filter(c=>c.niche):mode==='worldwide'||mode==='timeattack'?[...CARS]:CARS.filter(c=>c.region===mode);
+  let p=mode==='niche'?CARS.filter(c=>c.niche):mode==='supercar'?CARS.filter(c=>c.supercar):mode==='worldwide'||mode==='timeattack'?[...CARS]:CARS.filter(c=>c.region===mode);
   while(p.length<TOTAL)p=[...p,...p];
   return shuffle(p).slice(0,TOTAL);
 }

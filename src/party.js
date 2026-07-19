@@ -51,6 +51,7 @@ function attachParty(io, CARS, MODES) {
 
   function getQueue(mode) {
     let pool = mode === 'niche' ? CARS.filter(c => c.niche)
+      : mode === 'supercar' ? CARS.filter(c => c.supercar)
       : mode === 'worldwide' || mode === 'timeattack' ? [...CARS]
       : CARS.filter(c => c.region === mode);
     while (pool.length < TOTAL) pool = [...pool, ...pool];

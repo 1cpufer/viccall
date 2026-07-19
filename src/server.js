@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const SCORES_FILE = path.join(DATA_DIR, 'scores.json');
-const MODES = ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'timeattack'];
+const MODES = ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'supercar', 'timeattack'];
 const MAX_PER_MODE = 100;
 const CARS = JSON.parse(fs.readFileSync(path.join(__dirname, 'cars.json'), 'utf8'));
 
