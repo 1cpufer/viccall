@@ -13,12 +13,15 @@ const PORT = process.env.PORT || 3000;
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const SCORES_FILE = path.join(DATA_DIR, 'scores.json');
-const MODES = ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'supercar', 'timeattack'];
+const REPORTS_FILE = path.join(DATA_DIR, 'reports.json');
+const MODES = ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'supercar', 'timeattack', 'kit'];
 const MAX_PER_MODE = 100;
+const MAX_REPORTS = 500;
 const CARS = JSON.parse(fs.readFileSync(path.join(__dirname, 'cars.json'), 'utf8'));
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(SCORES_FILE)) fs.writeFileSync(SCORES_FILE, '[]');
+if (!fs.existsSync(REPORTS_FILE)) fs.writeFileSync(REPORTS_FILE, '[]');
 
 function readScores() {
   try {

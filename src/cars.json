@@ -530,7 +530,7 @@
     "supercar": false
   },
   {
-    "make": "Citroën",
+    "make": "Citro\u00ebn",
     "model": "DS",
     "year": 1955,
     "region": "france",
@@ -540,7 +540,7 @@
     "supercar": false
   },
   {
-    "make": "Citroën",
+    "make": "Citro\u00ebn",
     "model": "2CV",
     "year": 1948,
     "region": "france",
@@ -730,7 +730,7 @@
     "supercar": false
   },
   {
-    "make": "Citroën",
+    "make": "Citro\u00ebn",
     "model": "SM",
     "year": 1970,
     "region": "france",
@@ -1420,7 +1420,7 @@
     "supercar": false
   },
   {
-    "make": "Citroën",
+    "make": "Citro\u00ebn",
     "model": "Traction Avant",
     "year": 1934,
     "region": "france",
@@ -1430,7 +1430,7 @@
     "supercar": false
   },
   {
-    "make": "Citroën",
+    "make": "Citro\u00ebn",
     "model": "CX",
     "year": 1985,
     "region": "france",
@@ -1440,7 +1440,7 @@
     "supercar": false
   },
   {
-    "make": "Citroën",
+    "make": "Citro\u00ebn",
     "model": "AX",
     "year": 1986,
     "region": "france",
@@ -1868,5 +1868,383 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/2002_Noble_M12_GTO_HCC23.jpg/960px-2002_Noble_M12_GTO_HCC23.jpg",
     "hint": "Obscure British supercar rival",
     "supercar": true
+  },
+  {
+    "make": "Dodge",
+    "model": "Challenger SRT Hellcat",
+    "year": 2015,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Dodge_Challenger_SRT_Hellcat_2015-20180909-RM-171853.jpg/1280px-Dodge_Challenger_SRT_Hellcat_2015-20180909-RM-171853.jpg",
+    "hint": "707 hp supercharged Hemi V8 muscle car"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Corvette Stingray (C8)",
+    "year": 2020,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2020_Chevrolet_Corvette_C8_%28white%29.jpg/1280px-2020_Chevrolet_Corvette_C8_%28white%29.jpg",
+    "hint": "First mid-engine production Corvette"
+  },
+  {
+    "make": "Ford",
+    "model": "F-150 Raptor",
+    "year": 2021,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/2021_Ford_F-150_Raptor%2C_front.jpg/1280px-2021_Ford_F-150_Raptor%2C_front.jpg",
+    "hint": "Factory desert-racing pickup truck"
+  },
+  {
+    "make": "Tesla",
+    "model": "Cybertruck",
+    "year": 2024,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/2024_Tesla_Cybertruck_Foundation_Series_IMG_0634_%28cropped%29.jpg/1280px-2024_Tesla_Cybertruck_Foundation_Series_IMG_0634_%28cropped%29.jpg",
+    "hint": "Stainless-steel exoskeleton EV pickup"
+  },
+  {
+    "make": "Cadillac",
+    "model": "CT5-V Blackwing",
+    "year": 2022,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Cadillac_CT5-V_Blackwing_6DC79_Black_Raven_%2813%29.jpg/1280px-Cadillac_CT5-V_Blackwing_6DC79_Black_Raven_%2813%29.jpg",
+    "hint": "Cadillac's last manual-transmission V8 sedan"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Camaro ZL1",
+    "year": 2018,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/2018_Chevrolet_Camaro_ZL1_1LE_SCD_24.jpg/1280px-2018_Chevrolet_Camaro_ZL1_1LE_SCD_24.jpg",
+    "hint": "Supercharged Camaro track weapon"
+  },
+  {
+    "make": "GMC",
+    "model": "Hummer EV",
+    "year": 2022,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/GMC_Hummer_EV.jpg/1280px-GMC_Hummer_EV.jpg",
+    "hint": "Electric revival of the military-derived Hummer"
+  },
+  {
+    "make": "SSC",
+    "model": "Tuatara",
+    "year": 2019,
+    "region": "usa",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/2019_SSC_Tuatara_at_Pebble_Beach_Press_Conference.jpg/1280px-2019_SSC_Tuatara_at_Pebble_Beach_Press_Conference.jpg",
+    "hint": "American hypercar that chased the top-speed record"
+  },
+  {
+    "make": "Saleen",
+    "model": "S7",
+    "year": 2005,
+    "region": "usa",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Saleen_S7_-_July_2019.jpg/1280px-Saleen_S7_-_July_2019.jpg",
+    "hint": "First American supercar of the modern era"
+  },
+  {
+    "make": "Hennessey",
+    "model": "Venom GT",
+    "year": 2013,
+    "region": "usa",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Hennessey_Venom_GT_%2816040233465%29.jpg/1280px-Hennessey_Venom_GT_%2816040233465%29.jpg",
+    "hint": "Lotus-based hypercar with over 1200 hp"
+  },
+  {
+    "make": "AMC",
+    "model": "Javelin AMX",
+    "year": 1971,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/1971_AMC_Javelin_AMX_in_Matador_Red_with_red_interior_at_AMO_2024_show_1of2.jpg/1280px-1971_AMC_Javelin_AMX_in_Matador_Red_with_red_interior_at_AMO_2024_show_1of2.jpg",
+    "hint": "AMC's pony car answer to the Mustang and Camaro"
+  },
+  {
+    "make": "Mercury",
+    "model": "Cougar",
+    "year": 1967,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/1967_Mercury_Cougar_-_27200350917.jpg/1280px-1967_Mercury_Cougar_-_27200350917.jpg",
+    "hint": "Upscale Mustang sibling with hidden headlights"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Impala",
+    "year": 1964,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/1964_Chevrolet_Impala_Sport_Coupe%2C_front_right%2C_09-30-2023.jpg/1280px-1964_Chevrolet_Impala_Sport_Coupe%2C_front_right%2C_09-30-2023.jpg",
+    "hint": "Best-selling full-size car of the 1960s"
+  },
+  {
+    "make": "Dodge",
+    "model": "Dart GT",
+    "year": 1968,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/1968_Dodge_Dart_GT_%2834872873763%29.jpg/1280px-1968_Dodge_Dart_GT_%2834872873763%29.jpg",
+    "hint": "Compact Mopar with big-block potential"
+  },
+  {
+    "make": "Buick",
+    "model": "Riviera",
+    "year": 1963,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Buick_Riviera_1963_%289056639705%29.jpg/1280px-Buick_Riviera_1963_%289056639705%29.jpg",
+    "hint": "GM's answer to the personal luxury coupe"
+  },
+  {
+    "make": "Chrysler",
+    "model": "300C SRT8",
+    "year": 2006,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/2006_Chrysler_300C_%28MY06%29_SRT-8_sedan_%2825646557983%29.jpg/1280px-2006_Chrysler_300C_%28MY06%29_SRT-8_sedan_%2825646557983%29.jpg",
+    "hint": "Hemi V8 gangster-luxury sedan"
+  },
+  {
+    "make": "Ford",
+    "model": "Torino GT",
+    "year": 1968,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/1968_Ford_Torino_GT_Fastback.jpg/1280px-1968_Ford_Torino_GT_Fastback.jpg",
+    "hint": "NASCAR-bred fastback muscle car"
+  },
+  {
+    "make": "Chevrolet",
+    "model": "Corvette Stingray",
+    "year": 1968,
+    "region": "usa",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/1968_Chevrolet_Corvette_Stingray_%2814176876910%29.jpg/1280px-1968_Chevrolet_Corvette_Stingray_%2814176876910%29.jpg",
+    "hint": "C3 generation with the Mako Shark-inspired body"
+  },
+  {
+    "make": "Pontiac",
+    "model": "Firebird Trans Am GTA",
+    "year": 1987,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/1987_Pontiac_Firebird_Trans_Am_GTA_JM_19.05.19.jpg/1280px-1987_Pontiac_Firebird_Trans_Am_GTA_JM_19.05.19.jpg",
+    "hint": "3rd-gen Firebird flagship trim"
+  },
+  {
+    "make": "Jeep",
+    "model": "Grand Wagoneer",
+    "year": 1989,
+    "region": "usa",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Jeep_Grand_Wagoneer_%28SJ%29_white_in_North_Carolina_1of5.jpg/1280px-Jeep_Grand_Wagoneer_%28SJ%29_white_in_North_Carolina_1of5.jpg",
+    "hint": "Woodgrain-sided SUV that defined a genre"
+  },
+  {
+    "make": "Porsche",
+    "model": "911",
+    "year": 2010,
+    "region": "germany",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Rauh-Welt_Begriff_%28RWB%29_modified_Porsche_911_%28997-series%29.jpg/1280px-Rauh-Welt_Begriff_%28RWB%29_modified_Porsche_911_%28997-series%29.jpg",
+    "hint": "Every RWB build is hand-fitted one at a time by founder Akira Nakai",
+    "kit": "RWB",
+    "kitAliases": [
+      "Rauh-Welt Begriff",
+      "RWB Porsche"
+    ]
+  },
+  {
+    "make": "Lamborghini",
+    "model": "Hurac\u00e1n",
+    "year": 2016,
+    "region": "italy",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/LIBERTY_WALK_HURACAN.jpg/1280px-LIBERTY_WALK_HURACAN.jpg",
+    "hint": "Japanese widebody house founded by Wataru Kato",
+    "kit": "Liberty Walk",
+    "kitAliases": [
+      "LB Performance",
+      "LB Works",
+      "LB\u2605WORKS"
+    ]
+  },
+  {
+    "make": "Nissan",
+    "model": "GT-R",
+    "year": 2016,
+    "region": "japan",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Nissan_GT-R_%28R35%29_LB-Silhouette_Works_GT_Liberty_Walk%2C_Coffee_%26_Cars_%E2%80%93_Littleton_2016-07-04.jpg/1280px-Nissan_GT-R_%28R35%29_LB-Silhouette_Works_GT_Liberty_Walk%2C_Coffee_%26_Cars_%E2%80%93_Littleton_2016-07-04.jpg",
+    "hint": "LB-Silhouette Works GT widebody program on Godzilla",
+    "kit": "Liberty Walk",
+    "kitAliases": [
+      "LB Performance",
+      "LB Works",
+      "LB\u2605WORKS"
+    ]
+  },
+  {
+    "make": "Ferrari",
+    "model": "458 Spider",
+    "year": 2013,
+    "region": "italy",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Ferrari_458_Spider_Liberty_Walk.jpg/1280px-Ferrari_458_Spider_Liberty_Walk.jpg",
+    "hint": "One of Liberty Walk's most-replicated Ferrari builds",
+    "kit": "Liberty Walk",
+    "kitAliases": [
+      "LB Performance",
+      "LB Works",
+      "LB\u2605WORKS"
+    ]
+  },
+  {
+    "make": "Toyota",
+    "model": "GT86",
+    "year": 2015,
+    "region": "japan",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/8/80/Rocket_Bunny_Toyota_GT86%2C_Bangladesh._%2823776538809%29.jpg",
+    "hint": "The kit that put TRA Kyoto on the map worldwide",
+    "kit": "Rocket Bunny",
+    "kitAliases": [
+      "Pandem",
+      "TRA Kyoto"
+    ]
+  },
+  {
+    "make": "Lamborghini",
+    "model": "Aventador S",
+    "year": 2018,
+    "region": "italy",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Lamborghini_Aventador_S_Mansory_%2850583937952%29.jpg/1280px-Lamborghini_Aventador_S_Mansory_%2850583937952%29.jpg",
+    "hint": "German tuner known for aggressive carbon-fiber aero",
+    "kit": "Mansory",
+    "kitAliases": []
+  },
+  {
+    "make": "Ferrari",
+    "model": "488 GTB",
+    "year": 2018,
+    "region": "italy",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Ferrari_488_GTB_Novitec_Rosso_N-Largo_%2851965069155%29.jpg/1280px-Ferrari_488_GTB_Novitec_Rosso_N-Largo_%2851965069155%29.jpg",
+    "hint": "N-Largo program widens the 488's hips over forged wheels",
+    "kit": "Novitec",
+    "kitAliases": [
+      "Novitec Rosso"
+    ]
+  },
+  {
+    "make": "Lamborghini",
+    "model": "Aventador",
+    "year": 2013,
+    "region": "italy",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lamborghini_Aventador_LP700-4_Vorsteiner_V.jpg/1280px-Lamborghini_Aventador_LP700-4_Vorsteiner_V.jpg",
+    "hint": "US-based house known for forged carbon aero parts",
+    "kit": "Vorsteiner",
+    "kitAliases": []
+  },
+  {
+    "make": "Lamborghini",
+    "model": "Aventador",
+    "year": 2014,
+    "region": "italy",
+    "niche": true,
+    "supercar": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Hamann_Kitted_Lamborghini_Aventador_at_2014_Geneva_International_Motor_Show_%28Ank_Kumar%29_01.jpg/1280px-Hamann_Kitted_Lamborghini_Aventador_at_2014_Geneva_International_Motor_Show_%28Ank_Kumar%29_01.jpg",
+    "hint": "Long-running German tuner also known for BMW and Range Rover kits",
+    "kit": "Hamann",
+    "kitAliases": []
+  },
+  {
+    "make": "Mercedes-Benz",
+    "model": "G-Class",
+    "year": 2022,
+    "region": "germany",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Brabus_800_Biturbo_Widestar_%282022%29_%2852858662717%29.jpg/1280px-Brabus_800_Biturbo_Widestar_%282022%29_%2852858662717%29.jpg",
+    "hint": "Brabus's Widestar kit box-flares the G-Wagen's fenders",
+    "kit": "Brabus",
+    "kitAliases": []
+  },
+  {
+    "make": "Infiniti",
+    "model": "QX60",
+    "year": 2025,
+    "region": "japan",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Moscow%2C_Infiniti_QX60_%28L50%29%2C_Larte_Design_aftermarket_front%2C_Sept_2025_02.jpg/1280px-Moscow%2C_Infiniti_QX60_%28L50%29%2C_Larte_Design_aftermarket_front%2C_Sept_2025_02.jpg",
+    "hint": "Russian-founded studio specializing in luxury SUV aero kits",
+    "kit": "Larte Design",
+    "kitAliases": []
+  },
+  {
+    "make": "Audi",
+    "model": "RS6",
+    "year": 2014,
+    "region": "germany",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Salon_de_l%27auto_de_Gen%C3%A8ve_2014_-_20140305_-_ABT_Audi_RS6-R.jpg/1280px-Salon_de_l%27auto_de_Gen%C3%A8ve_2014_-_20140305_-_ABT_Audi_RS6-R.jpg",
+    "hint": "Audi's own in-house-adjacent tuning partner since 1896",
+    "kit": "ABT Sportsline",
+    "kitAliases": [
+      "ABT"
+    ]
+  },
+  {
+    "make": "BMW",
+    "model": "3-Series",
+    "year": 2013,
+    "region": "germany",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/c/c7/BMW_3-Series_F30_PD-M1_Prior-Design_Aerodynamic-Kit_%288551783566%29.jpg",
+    "hint": "PD-M1 aero kit widened the F30's stock bodywork",
+    "kit": "Prior Design",
+    "kitAliases": []
   }
 ]
