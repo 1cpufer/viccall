@@ -83,8 +83,14 @@
     requestAnimationFrame(step);
   }
 
+  // Wikimedia thumbnails: 960px is plenty for a 640px column at 1.5x and roughly
+  // halves the download. If that size isn't available, fall back to the original URL.
+  const smallImg = src => String(src || '').replace(/\/1280px-/, '/960px-');
+
   // Load a car photo into an <img> with loading / error states.
-  function loadPhoto(img, stateEl, src, { onShown, onFail } = {}) {
+  function loadPhoto(img, stateEl, original, { onShown, onFail } = {}) {
+    const small = smallImg(original);
+    let src = small;
     img.classList.remove('is-loaded');
     img.removeAttribute('src');
     stateEl.className = 'photo-state is-loading';
@@ -98,13 +104,14 @@
     };
     img.onerror = () => {
       if (img._token !== token) return;
+      if (src !== original) { src = original; img.src = original; return; }
       stateEl.className = 'photo-state';
       stateEl.innerHTML = '<div><p>This photo didn’t load.</p></div>';
       onFail && onFail(stateEl);
     };
     img.src = src;
   }
-  const preload = src => { if (src) { const i = new Image(); i.decoding = 'async'; i.src = src; } };
+  const preload = src => { if (src) { const i = new Image(); i.decoding = 'async'; i.src = smallImg(src); } };
 
   // ---------------------------------------------------------------- crash + bug reports
   const crashSeen = new Set();

@@ -188,6 +188,7 @@ img { display: block; max-width: 100%; }
 .field input:hover, .field select:hover { border-color: var(--line-2); }
 .field input:focus, .field select:focus, .report textarea:focus { outline: none; border-color: var(--plate); background: var(--bg-2); }
 .field input:disabled { opacity: 0.55; }
+.field input::-webkit-calendar-picker-indicator { display: none !important; }
 .code-input { text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700 !important; font-stretch: 80%; }
 
 .form-msg { min-height: 0; color: var(--miss); font-size: 15px; }
