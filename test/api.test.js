@@ -100,3 +100,13 @@ test('meta exposes pool sizes, not answers; unknown api 404s', async () => {
     assert.equal((await srv.api('GET', '/api/cars')).status, 404);
   } finally { await srv.stop(); }
 });
+
+test('index has an absolute og:image for link previews', async () => {
+  const srv = await startServer();
+  try {
+    const res = await fetch(srv.base + '/');
+    const html = await res.text();
+    assert.match(html, new RegExp(`content="${srv.base}/og-card.png"`));
+    assert.equal((await fetch(srv.base + '/manifest.webmanifest')).status, 200);
+  } finally { await srv.stop(); }
+});

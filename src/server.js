@@ -45,9 +45,16 @@ function createApp(opts = {}) {
   });
   app.use(compression());
   app.use(express.json({ limit: '16kb' }));
+  // Link previews need an absolute og:image URL, so fill in this server's origin.
+  const INDEX = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  app.get(['/', '/index.html'], (req, res) => {
+    const origin = `${req.protocol}://${req.get('host')}`.replace(/[^\w:/.\-\[\]]/g, '');
+    res.set('Cache-Control', 'no-cache');
+    res.type('html').send(INDEX.replace('content="/og-card.png"', `content="${origin}/og-card.png"`));
+  });
   app.use(express.static(path.join(__dirname, '..', 'public'), {
     setHeaders(res, file) {
-      if (/\.(woff2|svg)$/.test(file)) res.set('Cache-Control', 'public, max-age=604800');
+      if (/\.(woff2|svg|png)$/.test(file)) res.set('Cache-Control', 'public, max-age=604800');
       else res.set('Cache-Control', 'no-cache');
     },
   }));
