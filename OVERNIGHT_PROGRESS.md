@@ -70,3 +70,10 @@ Session start: 2026-10-17, ~00:30 CT. Branch: `overnight-polish` (cut from `main
 ## Cycle log
 
 *(appended per cycle below)*
+
+### Cycle 1: shared scoring (commit f67b505)
+- **Changed:** new `public/scoring.js` shared by client and server; `cars.json` gained `id`, `modelAliases`, `makeAliases`; `party.js` and `app.js` now call it; `npm test` added.
+- **Why:** exact-only matching punished correct answers ("VW", "R34", "Supra MK4", "94"), and the two copies had drifted (party had no kit scoring).
+- **Tests:** 18 `node:test` tests pass, including every car matching its own answer and aliases, plus a cross-car false-positive sweep (only Golf GTI→Golf and Corvette Stingray→1963 Corvette remain, and both are legitimately correct).
+- **Remaining:** model "close" credit (1 pt) is a new rule. The README needs to explain it.
+- **Next:** multiplayer hardening.
