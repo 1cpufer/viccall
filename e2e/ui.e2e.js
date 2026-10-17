@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const [, , base = 'http://localhost:3100', outDir = './shots', tag = 'run', repo = path.join(__dirname, '..')] = process.argv;
 // Car photos come from Wikimedia; tests swap in a local image so they run offline.
-const PH = fs.readFileSync(path.join(__dirname, '..', 'public', 'og-card.png'));
+const PH = fs.readFileSync(path.join(__dirname, 'fixtures', 'stand-in-car.jpg'));
 const CARS = JSON.parse(fs.readFileSync(path.join(repo, 'src/cars.json'), 'utf8'));
 const carFor = (raw, kit) => {
   for (const img of [String(raw), String(raw).replace('/960px-', '/1280px-')]) {
@@ -29,7 +29,7 @@ async function newPage(browser, vp) {
     const u = r.request().url();
     imgReqs.push(u);
     if (HAS_1280.has(u)) return r.fulfill({ status: 404, body: 'nope' });
-    r.fulfill({ status: 200, contentType: 'image/png', body: PH });
+    r.fulfill({ status: 200, contentType: 'image/jpeg', body: PH });
   });
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push(`[${vp}] pageerror: ${e.message}`));

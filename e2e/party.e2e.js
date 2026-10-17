@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { createApp } = require('../src/server.js');
 // Car photos come from Wikimedia; tests swap in a local image so they run offline.
-const PH = fs.readFileSync(path.join(__dirname, '..', 'public', 'og-card.png'));
+const PH = fs.readFileSync(path.join(__dirname, 'fixtures', 'stand-in-car.jpg'));
 const out = [];
 const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
 
@@ -16,7 +16,7 @@ const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
   const browser = await chromium.launch();
   const mk = async () => {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await ctx.route(/upload\.wikimedia\.org/, r => r.fulfill({ status: 200, contentType: 'image/png', body: PH }));
+    await ctx.route(/upload\.wikimedia\.org/, r => r.fulfill({ status: 200, contentType: 'image/jpeg', body: PH }));
     const page = await ctx.newPage();
     page.on('pageerror', e => out.push('pageerror ' + e.message));
     await page.goto(base, { waitUntil: 'networkidle' });
