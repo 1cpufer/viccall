@@ -108,3 +108,60 @@ Session start: 2026-10-17, ~00:30 CT. Branch: `overnight-polish` (cut from `main
 - [x] P3 visual identity · [x] P4 reveal/score/carousel motion · [x] P6 accessibility pass · [x] P5 image size + preload
 - [ ] Reduced-motion run-through in a browser
 - [ ] Final full verification + delivery bundle
+
+### Cycles 7–9: performance, data audit, installability, e2e
+- gzip and the minified socket.io client: HTML/JS/CSS go out at about 37 KB compressed. The WebSocket only opens for party play. `npm audit fix` brought vulnerabilities from 5 (baseline) to 0.
+- Data audit of all 220 image filenames against their answers (see "Data issues" below).
+- Web app manifest, icons and an Open Graph link-preview card.
+- Browser e2e scripts committed under `e2e/`.
+
+---
+
+# End-of-session report
+
+## Final verification (all on the last commit)
+| Check | Result |
+|---|---|
+| `npm test` (scoring, REST API, Socket.IO flows) | **42 / 42 pass** |
+| `e2e/ui.e2e.js` desktop 1280 + mobile 390 + 2-player party | **27 / 27 pass**, zero console errors |
+| `e2e/party.e2e.js` 3-player edge cases | **12 / 12 pass** |
+| axe-core on 7 screens | **0 violations** |
+| `npm audit` | **0 vulnerabilities** |
+| Viewports 320 px and 1920 px | no horizontal overflow |
+
+Visual checks used real Chromium screenshots, but **every car photo was a stand-in image** because this sandbox can't reach Wikimedia. Real photo URLs were not loaded.
+
+## Modified systems
+- `public/scoring.js` (new): shared answer matching.
+- `src/server.js`: app factory, solo sessions, leaderboard validation, report lockdown, compression, headers, rate limits, OG tags.
+- `src/party.js`: rewritten multiplayer.
+- `src/cars.json`: ids, aliases, year ranges, generation fixes, exclusions.
+- `public/index.html`, `public/style.css`, `public/app.js`: full redesign and rewrite.
+- `public/fonts/`, icons, manifest, OG card (new).
+- `test/` (new) and `e2e/` (new).
+
+## Known remaining issues
+- **Photos are unverified from here.** Run a game locally and skim the photos. The in-game "Wrong answer or photo?" link and the automatic image-failure reports (`/api/reports`) will catch broken ones.
+- `citroen-ds-1955`'s photo is a car-event shot from Bornholm. It might not show a DS clearly. Please check it.
+- The 5 `excluded` cars need correct photos before they can come back (search `"excluded"` in `src/cars.json`).
+- Scores and reports are still JSON files on disk. That's fine for one server, but they reset on hosts with ephemeral disks (Render free tier, Railway without a volume).
+- Party rooms live in memory, so a server restart ends any parties in progress.
+
+## Recommended next steps
+1. Look at the game with real photos and replace the 5 excluded images.
+2. Choose hosting. If it's ephemeral, move scores to SQLite on a volume, or a hosted DB.
+3. Set `ADMIN_TOKEN` (and `TRUST_PROXY=1` behind a proxy) when deploying.
+4. Feature ideas: a daily challenge (same 10 cars for everyone, one attempt, which shares well with the result grid), more Kit Check builds (only 13 now), per-car difficulty.
+
+## Decisions needing human review
+Listed above under "Decisions needing review" (close-model credit, party timer, reports token, `/api/cars` removal, kit cars excluded from other modes). Also:
+6. **Year ranges:** 29 cars now accept any year in their production run as exact (e.g. the 911 entry accepts 1974–1989), because the photos often show a later model year.
+7. **4 cars changed year** to match their photo's generation (Pajero, Cayenne, fortwo, CTS-V).
+
+## How to get this branch
+Pushing from the session was refused because the Claude GitHub App isn't linked to `1cpufer/viccall`. The branch is delivered as `viccall-overnight.bundle`:
+```
+cd viccall
+git fetch /path/to/viccall-overnight.bundle overnight-polish:overnight-polish
+git checkout overnight-polish && npm install && npm test && npm start
+```
