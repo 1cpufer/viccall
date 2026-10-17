@@ -642,7 +642,9 @@
   }
 
   // ---------------------------------------------------------------- party
-  const socket = typeof io === 'function' ? io({ transports: ['websocket', 'polling'] }) : null;
+  // Only open a socket when someone actually plays with friends.
+  const socket = typeof io === 'function' ? io({ transports: ['websocket', 'polling'], autoConnect: false }) : null;
+  const ensureSocket = () => { if (socket && !socket.connected && !socket.active) socket.connect(); };
   const party = { code: null, youId: null, mode: null, state: null, players: [], round: null, answered: false, myResult: null, offset: 0, total: TOTAL, sending: false };
   const partyClock = makeClock('pg');
   const tabKey = (() => {
@@ -662,6 +664,7 @@
   function emit(event, payload) {
     return new Promise(resolve => {
       if (!socket) return resolve({ ok: false, error: 'Multiplayer is unavailable.' });
+      ensureSocket();
       socket.timeout(8000).emit(event, payload, (err, res) => {
         if (err) resolve({ ok: false, error: 'Couldn’t reach the server. Check your connection.' });
         else resolve(res || { ok: false });
@@ -934,6 +937,7 @@
     socket.on('party:final', d => renderFinal(d.standings));
   }
 
+  if (tabStore.get('vc_party')) ensureSocket(); // came back to a party after a refresh
   $('pCreate').addEventListener('submit', partyCreate);
   $('pJoin').addEventListener('submit', partyJoin);
   $('pgForm').addEventListener('submit', partySubmit);
@@ -946,6 +950,7 @@
     if (!code) return;
     history.replaceState({ screen: 'home', depth: 0 }, '', location.pathname);
     show('party');
+    ensureSocket();
     $('pjCode').value = code;
     ($('pjName').value ? $('pJoin').querySelector('button') : $('pjName')).focus();
   })();
@@ -955,7 +960,7 @@
     const el = e.target.closest('[data-action]');
     if (!el) return;
     switch (el.dataset.action) {
-      case 'nav': show(el.dataset.to); if (el.dataset.to === 'leaderboard') loadBoard(); break;
+      case 'nav': show(el.dataset.to); if (el.dataset.to === 'leaderboard') loadBoard(); if (el.dataset.to === 'party') ensureSocket(); break;
       case 'back': back(); break;
       case 'home': show('home'); break;
       case 'deck-prev': deckGo(deckIdx - 1, { wrap: true }); break;
