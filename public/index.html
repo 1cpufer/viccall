@@ -2,182 +2,248 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f2019">
+  <meta name="description" content="Name the car from a photo. Make, model and year, solo or with friends.">
   <title>VicCall</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/saira-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="vc" id="vc">
-    <canvas class="bg" id="bg"></canvas>
-    <div class="popup" id="popup"><div id="prows"></div><div class="ptotal"><span>This round</span><span id="ptotal"></span></div></div>
-    <div class="toast" id="toast"></div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6" /></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6" /></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M5 12l14 0" /> <path d="M5 12l6 6" /> <path d="M5 12l6 -6" /></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /> <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /> <path d="M16 3.13a4 4 0 0 1 0 7.75" /> <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></symbol>
+      <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21l8 0" /> <path d="M12 17l0 4" /> <path d="M7 4l10 0" /> <path d="M17 4v8a5 5 0 0 1 -10 0v-8" /> <path d="M5 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M19 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /></symbol>
+      <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 5a5 5 0 0 1 7 0a5 5 0 0 0 7 0v9a5 5 0 0 1 -7 0a5 5 0 0 0 -7 0v-9z" /> <path d="M5 21v-7" /></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z" /> <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" /></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10" /></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6l-12 12" /> <path d="M6 6l12 12" /></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /> <path d="M12 7v5l3 3" /></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /> <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 15l6 -6" /> <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" /> <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" /></symbol>
+      <symbol id="i-crown" viewBox="0 0 24 24"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" /></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24"><path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M8.7 10.7l6.6 -3.4" /> <path d="M8.7 13.3l6.6 3.4" /></symbol>
+      <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 18l.01 0" /> <path d="M9.172 15.172a4 4 0 0 1 5.656 0" /> <path d="M6.343 12.343a7.963 7.963 0 0 1 3.864 -2.14m4.163 .155a7.965 7.965 0 0 1 3.287 2" /> <path d="M3.515 9.515a12 12 0 0 1 3.544 -2.455m3.101 -.92a12 12 0 0 1 10.325 3.374" /> <path d="M3 3l18 18" /></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0" /> <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" /> <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" /></symbol>
+      <symbol id="i-arrow-back-up" viewBox="0 0 24 24"><path d="M9 14l-4 -4l4 -4" /> <path d="M5 10h11a4 4 0 1 1 0 8h-1" /></symbol>
+      <symbol id="i-cards" viewBox="0 0 24 24"><path d="M3.604 7.197l7.138 -3.109a.96 .96 0 0 1 1.27 .527l4.924 11.902a1 1 0 0 1 -.514 1.304l-7.137 3.109a.96 .96 0 0 1 -1.271 -.527l-4.924 -11.903a1 1 0 0 1 .514 -1.304z" /> <path d="M15 4h1a1 1 0 0 1 1 1v3.5" /> <path d="M20 6c.264 .112 .52 .217 .768 .315a1 1 0 0 1 .53 1.311l-2.298 5.374" /></symbol>
+      <symbol id="i-steering-wheel" viewBox="0 0 24 24"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /> <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M12 14l0 7" /> <path d="M10 12l-6.75 -2" /> <path d="M14 12l6.75 -2" /></symbol>
+    </defs>
+  </svg>
 
-    <div class="screen active" id="s-home">
-      <div class="logo">Vehicle Identification Call &nbsp;·&nbsp; <span>VicCall</span></div>
-      <div class="title">Can you <em>call</em> it?</div>
-      <p class="tagline">Identify cars from around the world. Make. Model. Year.</p>
-      <div class="carousel" id="modeCarousel">
-        <button class="car-arrow" onclick="carouselNav(-1)" aria-label="Previous mode"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
-        <div class="car-viewport" id="carViewport">
-          <div class="car-track" id="carTrack"></div>
-        </div>
-        <button class="car-arrow" onclick="carouselNav(1)" aria-label="Next mode"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
-      </div>
-      <div class="car-dots" id="carDots"></div>
-      <div class="bottom-row">
-        <button class="ghost-btn" onclick="go('party')"><i class="ti ti-users" style="font-size:14px;" aria-hidden="true"></i> Party code</button>
-        <div class="sep"></div>
-        <button class="ghost-btn" onclick="go('leaderboard')">Leaderboard</button>
-      </div>
-    </div>
+  <div class="conn" id="conn" role="status" hidden>Connection lost. Reconnecting…</div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <div class="screen" id="s-leaderboard">
-      <button class="back-btn" onclick="go('home')">← Back</button>
-      <div class="section-title">Leaderboard</div>
-      <div class="lb-tabs" id="lbTabs"></div>
-      <div class="lb-list" id="lbList"></div>
-    </div>
+  <main class="app" id="app">
 
-    <div class="screen" id="s-party">
-      <button class="back-btn" onclick="go('home')">← Back</button>
-      <div class="section-title">Party code</div>
-      <div class="party-cards">
-        <div class="party-card">
-          <div class="party-card-title">Create a party</div>
-          <div class="flabel">Your name</div>
-          <input id="pcName" type="text" placeholder="Name" maxlength="20" />
-          <div class="flabel">Mode</div>
-          <select id="pcMode">
-            <option value="worldwide">Worldwide</option>
-            <option value="japan">Japan</option>
-            <option value="germany">Germany</option>
-            <option value="usa">USA</option>
-            <option value="france">France</option>
-            <option value="italy">Italy</option>
-            <option value="uk">UK</option>
-            <option value="niche">Niche</option>
-            <option value="supercar">Supercars</option>
-          </select>
-          <button class="btn-gold" onclick="partyCreate()">Create Party</button>
-        </div>
-        <div class="party-card">
-          <div class="party-card-title">Join a party</div>
-          <div class="flabel">Your name</div>
-          <input id="pjName" type="text" placeholder="Name" maxlength="20" />
-          <div class="flabel">Party code</div>
-          <input id="pjCode" type="text" placeholder="ABCDE" maxlength="5" style="text-transform:uppercase;" />
-          <button class="btn-gold" onclick="partyJoin()">Join Party</button>
-        </div>
-      </div>
-    </div>
+    <!-- HOME -->
+    <section class="screen" id="s-home" data-screen="home" aria-labelledby="home-title">
+      <header class="home-top">
+        <h1 class="plate plate--brand" id="home-title"><span>VIC</span><span>CALL</span></h1>
+        <button class="link-btn" data-action="nav" data-to="leaderboard"><svg class="ic"><use href="#i-trophy"/></svg>Leaderboard</button>
+      </header>
+      <p class="lede">Name the car from one photo. Make, model and year, or the tuner behind the body kit.</p>
 
-    <div class="screen" id="s-party-lobby">
-      <button class="back-btn" onclick="partyLeave()">← Leave</button>
-      <div class="section-title">Party lobby</div>
-      <div class="party-code-display" id="lobbyCode"></div>
-      <div class="g-mode-tag" id="lobbyModeTag" style="margin-bottom:1rem;"></div>
-      <div class="lb-list" id="lobbyPlayers"></div>
-      <button class="btn-gold" id="lobbyStartBtn" style="margin-top:1rem;display:none;" onclick="partyStart()">Start Game</button>
-      <div class="hint-txt" id="lobbyWaitTxt" style="display:block;margin-top:1rem;">Waiting for host to start…</div>
-    </div>
+      <div class="deck" id="deck">
+        <div class="deck-viewport" id="deckViewport">
+          <div class="deck-track" id="deckTrack" role="listbox" aria-label="Game modes" aria-orientation="horizontal"></div>
+        </div>
+        <div class="deck-nav">
+          <button class="icon-btn" data-action="deck-prev" aria-label="Previous mode"><svg class="ic"><use href="#i-chevron-left"/></svg></button>
+          <div class="deck-dots" id="deckDots"></div>
+          <button class="icon-btn" data-action="deck-next" aria-label="Next mode"><svg class="ic"><use href="#i-chevron-right"/></svg></button>
+        </div>
+      </div>
 
-    <div class="screen" id="s-party-game">
-      <div class="g-header">
-        <div>
-          <div class="g-mode-tag" id="pModeTag">Party</div>
-          <div class="g-progress" id="pProgress">Car 1 of 10</div>
-          <div class="g-progress" id="pAnsweredTxt"></div>
-        </div>
-        <div style="text-align:right;">
-          <button class="back-btn" style="margin:0;" onclick="partyLeave()">← Leave</button>
-        </div>
-      </div>
-      <div class="car-img" id="pCarImg"><i class="ti ti-car" style="font-size:40px;color:#222;" aria-hidden="true"></i></div>
-      <div class="fields-row" id="pFieldsRow">
-        <div><div class="flabel">Make</div><input id="pMake" type="text" placeholder="Toyota" /></div>
-        <div><div class="flabel">Model</div><input id="pModel" type="text" placeholder="Supra" /></div>
-        <div><div class="flabel">Year</div><input id="pYear" type="text" placeholder="1994" maxlength="4" /></div>
-      </div>
-      <button class="sub-btn" id="pSubBtn" onclick="partySubmit()">Submit guess</button>
-      <div class="fb" id="pFb"></div>
-      <div class="hint-txt" id="pHintTxt"></div>
-      <button class="next-btn" id="pNextBtn" style="display:none;" onclick="partyNext()">Next car →</button>
-      <div class="hint-txt" id="pWaitHostTxt" style="display:none;margin-top:0.5rem;">Waiting for host to continue…</div>
-      <div class="lb-list" id="pStandings" style="margin-top:1.25rem;"></div>
-    </div>
+      <dl class="rules" aria-label="Scoring">
+        <div><dt>Make</dt><dd><b>+1</b></dd></div>
+        <div><dt>Model</dt><dd><b>+2</b> or +1 if close</dd></div>
+        <div><dt>Year</dt><dd><b>+2</b> or +1 within 5</dd></div>
+      </dl>
 
-    <div class="screen" id="s-party-final">
-      <div class="section-title">Final standings</div>
-      <div class="lb-list" id="pFinalStandings"></div>
-      <div class="final-btns" style="margin-top:1.5rem;">
-        <button class="btn-gold" id="pPlayAgainBtn" style="display:none;" onclick="partyStart()">Play again</button>
-        <button class="btn-ghost" onclick="partyLeave()">Leave party</button>
+      <div class="home-actions">
+        <button class="btn btn--primary btn--lg" id="playBtn" data-action="deck-play">Play Worldwide</button>
+        <button class="btn btn--ghost btn--lg" data-action="nav" data-to="party"><svg class="ic"><use href="#i-users"/></svg>Play with friends</button>
       </div>
-    </div>
+    </section>
 
-    <div class="screen" id="s-regional">
-      <button class="back-btn" onclick="go('home')">← Back</button>
-      <div class="section-title">Where are we driving?</div>
-      <div class="modes-grid">
-        <div class="mcard" onclick="go('japan')"><i class="ti ti-sun" aria-hidden="true"></i><div class="mcard-name">Japan</div><div class="mcard-desc">JDM legends and Kei cars.</div></div>
-        <div class="mcard" onclick="go('germany')"><i class="ti ti-bolt" aria-hidden="true"></i><div class="mcard-name">Germany</div><div class="mcard-desc">BMW, Porsche, VW, Mercedes.</div></div>
-        <div class="mcard" onclick="go('usa')"><i class="ti ti-flame" aria-hidden="true"></i><div class="mcard-name">USA</div><div class="mcard-desc">Muscle cars. Detroit steel.</div></div>
-        <div class="mcard" onclick="go('france')"><i class="ti ti-feather" aria-hidden="true"></i><div class="mcard-name">France</div><div class="mcard-desc">Peugeot, Renault, Citroën.</div></div>
-        <div class="mcard" onclick="go('italy')"><i class="ti ti-heart" aria-hidden="true"></i><div class="mcard-name">Italy</div><div class="mcard-desc">Ferrari, Lamborghini, Alfa.</div></div>
-        <div class="mcard" onclick="go('uk')"><i class="ti ti-crown" aria-hidden="true"></i><div class="mcard-name">UK</div><div class="mcard-desc">Aston, Jaguar, Land Rover.</div></div>
-      </div>
-    </div>
+    <!-- REGIONAL -->
+    <section class="screen" id="s-regional" data-screen="regional" aria-labelledby="regional-title" hidden>
+      <button class="back" data-action="back"><svg class="ic"><use href="#i-arrow-left"/></svg>Modes</button>
+      <h2 class="h2" id="regional-title">Pick a region</h2>
+      <div class="regions" id="regionList"></div>
+    </section>
 
-    <div class="screen" id="s-game">
-      <div class="g-header">
-        <div>
-          <div class="g-mode-tag" id="modeTag">Worldwide</div>
-          <div class="g-score">Score: <span id="scoreDisplay">0</span></div>
-          <div class="g-progress" id="progress">Car 1 of 10</div>
+    <!-- SOLO GAME -->
+    <section class="screen screen--game" id="s-game" data-screen="game" aria-label="Game" hidden>
+      <header class="g-head">
+        <button class="back back--inline" data-action="quit-solo"><svg class="ic"><use href="#i-arrow-left"/></svg><span id="gMode">Worldwide</span></button>
+        <div class="g-meta">
+          <span class="g-count" id="gCount">Car 1 of 10</span>
+          <span class="g-score"><span class="g-score-num" id="gScore">0</span> pts</span>
         </div>
-        <div style="text-align:right;">
-          <div class="g-timer" id="timer" style="display:none;">0:30</div>
-          <button class="back-btn" style="margin:0 0 6px 0;" onclick="toggleReport()"><i class="ti ti-flag-3" style="font-size:12px;" aria-hidden="true"></i> Report</button>
-          <button class="back-btn" style="margin:0;" onclick="go('home')">← Home</button>
+      </header>
+      <ol class="pips" id="gPips" aria-label="Round results"></ol>
+
+      <figure class="photo" id="gPhoto">
+        <div class="photo-frame"><img id="gImg" alt="" decoding="async"></div>
+        <div class="photo-state" id="gPhotoState"></div>
+        <div class="clock" id="gClock" hidden><div class="clock-bar" id="gClockBar"></div><span class="clock-num" id="gClockNum">30</span></div>
+      </figure>
+
+      <form class="guess" id="gForm" autocomplete="off" novalidate>
+        <div class="fields" id="gFields">
+          <label class="field"><span>Make</span><input id="gMake" name="make" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+          <label class="field"><span>Model</span><input id="gModel" name="model" type="text" placeholder="Supra" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+          <label class="field field--year"><span>Year</span><input id="gYear" name="year" type="text" inputmode="numeric" placeholder="1994" maxlength="4" enterkeyhint="go"></label>
+        </div>
+        <div class="fields fields--kit" id="gKitFields" hidden>
+          <label class="field"><span>Tuner or body kit</span><input id="gKit" name="kit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
+        </div>
+        <p class="form-msg" id="gMsg" role="alert"></p>
+        <button class="btn btn--primary btn--lg btn--block" id="gSubmit" type="submit">Lock it in</button>
+      </form>
+
+      <div class="reveal" id="gReveal" hidden aria-live="polite">
+        <p class="reveal-verdict" id="gVerdict"></p>
+        <h3 class="reveal-car" id="gAnswer"></h3>
+        <p class="reveal-hint" id="gHint"></p>
+        <ul class="chips" id="gChips"></ul>
+        <div class="reveal-actions">
+          <button class="btn btn--primary btn--lg btn--block" id="gNext" data-action="next">Next car</button>
+        </div>
+        <details class="report" id="gReport">
+          <summary>Wrong answer or photo?</summary>
+          <div class="report-body">
+            <textarea id="gReportNote" maxlength="300" placeholder="What's wrong with this one? (optional)"></textarea>
+            <button class="btn btn--ghost" data-action="report">Send report</button>
+          </div>
+        </details>
+      </div>
+
+      <div class="results" id="gResults" hidden>
+        <p class="results-label">Final score</p>
+        <p class="results-score"><span id="rScore">0</span><span class="results-max">/ <span id="rMax">50</span></span></p>
+        <p class="results-line" id="rLine"></p>
+        <form class="save" id="rSave" autocomplete="off">
+          <label class="field"><span>Name for the leaderboard</span><input id="rName" type="text" maxlength="20" placeholder="Your name" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="done"></label>
+          <button class="btn btn--primary" type="submit" id="rSaveBtn">Save score</button>
+        </form>
+        <p class="saved" id="rSaved" hidden></p>
+        <ol class="logbook" id="rLog"></ol>
+        <div class="results-actions">
+          <button class="btn btn--primary btn--lg" data-action="replay">Play again</button>
+          <button class="btn btn--ghost btn--lg" data-action="home">Change mode</button>
         </div>
       </div>
-      <div class="report-panel" id="reportPanel" style="display:none;">
-        <textarea id="reportNote" placeholder="What's wrong with this car? (optional)" maxlength="300"></textarea>
-        <div class="report-panel-actions">
-          <button class="btn-ghost" onclick="toggleReport()">Cancel</button>
-          <button class="btn-gold" onclick="submitReport()">Send report</button>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section class="screen" id="s-leaderboard" data-screen="leaderboard" aria-labelledby="lb-title" hidden>
+      <button class="back" data-action="back"><svg class="ic"><use href="#i-arrow-left"/></svg>Back</button>
+      <h2 class="h2" id="lb-title">Leaderboard</h2>
+      <div class="tabs" id="lbTabs" role="tablist" aria-label="Mode"></div>
+      <ol class="board" id="lbList" aria-live="polite"></ol>
+    </section>
+
+    <!-- PARTY: CREATE / JOIN -->
+    <section class="screen" id="s-party" data-screen="party" aria-labelledby="party-title" hidden>
+      <button class="back" data-action="back"><svg class="ic"><use href="#i-arrow-left"/></svg>Back</button>
+      <h2 class="h2" id="party-title">Play with friends</h2>
+      <p class="sub">Everyone sees the same ten cars at the same time. Share the code and race to call them.</p>
+      <div class="party-forms">
+        <form class="panel" id="pCreate" autocomplete="off">
+          <h3 class="h3">Start a party</h3>
+          <label class="field"><span>Your name</span><input id="pcName" type="text" maxlength="20" placeholder="Name" autocapitalize="words" autocorrect="off" spellcheck="false"></label>
+          <label class="field"><span>Mode</span><select id="pcMode"></select></label>
+          <button class="btn btn--primary btn--block" type="submit">Create party</button>
+        </form>
+        <form class="panel" id="pJoin" autocomplete="off">
+          <h3 class="h3">Join a party</h3>
+          <label class="field"><span>Your name</span><input id="pjName" type="text" maxlength="20" placeholder="Name" autocapitalize="words" autocorrect="off" spellcheck="false"></label>
+          <label class="field"><span>Party code</span><input id="pjCode" class="code-input" type="text" maxlength="5" placeholder="ABCDE" autocapitalize="characters" autocorrect="off" spellcheck="false"></label>
+          <button class="btn btn--ghost btn--block" type="submit">Join party</button>
+        </form>
+      </div>
+      <p class="form-msg" id="pMsg" role="alert"></p>
+    </section>
+
+    <!-- PARTY: LOBBY -->
+    <section class="screen" id="s-lobby" data-screen="lobby" aria-labelledby="lobby-title" hidden>
+      <button class="back" data-action="party-leave"><svg class="ic"><use href="#i-arrow-left"/></svg>Leave</button>
+      <p class="sub" id="lobby-title">Party code</p>
+      <div class="plate plate--code" id="lobbyCode" aria-live="polite"></div>
+      <div class="lobby-share">
+        <button class="btn btn--ghost" data-action="copy-invite"><svg class="ic"><use href="#i-link"/></svg>Copy invite link</button>
+        <span class="lobby-mode" id="lobbyMode"></span>
+      </div>
+      <h3 class="h3 lobby-h">Drivers <span class="count" id="lobbyCount"></span></h3>
+      <ul class="roster" id="lobbyPlayers"></ul>
+      <button class="btn btn--primary btn--lg btn--block" id="lobbyStart" data-action="party-start" hidden>Start game</button>
+      <p class="wait" id="lobbyWait">Waiting for the host to start.</p>
+    </section>
+
+    <!-- PARTY: GAME -->
+    <section class="screen screen--game" id="s-pgame" data-screen="pgame" aria-label="Party game" hidden>
+      <header class="g-head">
+        <button class="back back--inline" data-action="party-leave"><svg class="ic"><use href="#i-arrow-left"/></svg><span id="pgMode">Party</span></button>
+        <div class="g-meta">
+          <span class="g-count" id="pgCount">Car 1 of 10</span>
+          <span class="g-score"><span class="g-score-num" id="pgScore">0</span> pts</span>
         </div>
-      </div>
-      <div class="car-img" id="carImg"><i class="ti ti-car" style="font-size:40px;color:#222;" aria-hidden="true"></i></div>
-      <div class="fields-row" id="fieldsRow">
-        <div><div class="flabel">Make</div><input id="iMake" type="text" placeholder="Toyota" /></div>
-        <div><div class="flabel">Model</div><input id="iModel" type="text" placeholder="Supra" /></div>
-        <div><div class="flabel">Year</div><input id="iYear" type="text" placeholder="1994" maxlength="4" /></div>
-      </div>
-      <div class="fields-row" id="kitFieldsRow" style="display:none;">
-        <div style="flex:1;"><div class="flabel">Kit / Tuner</div><input id="iKit" type="text" placeholder="Liberty Walk" /></div>
-      </div>
-      <button class="sub-btn" id="subBtn" onclick="submit()">Submit guess</button>
-      <div class="fb" id="fb"></div>
-      <div class="hint-txt" id="hintTxt"></div>
-      <button class="next-btn" id="nextBtn" onclick="next()">Next car →</button>
-      <div id="finalWrap" style="display:none;" class="final-wrap">
-        <div class="final-num" id="fScore">0</div>
-        <div class="final-sub" id="fSub"></div>
-        <div class="final-comment" id="fComment"></div>
-        <div class="score-submit" id="scoreSubmit">
-          <input id="iName" type="text" placeholder="Your name" maxlength="20" />
-          <button class="btn-gold" onclick="submitScore()">Save score</button>
+      </header>
+
+      <figure class="photo" id="pgPhoto">
+        <div class="photo-frame"><img id="pgImg" alt="" decoding="async"></div>
+        <div class="photo-state" id="pgPhotoState"></div>
+        <div class="clock" id="pgClock"><div class="clock-bar" id="pgClockBar"></div><span class="clock-num" id="pgClockNum">60</span></div>
+      </figure>
+
+      <form class="guess" id="pgForm" autocomplete="off" novalidate>
+        <div class="fields" id="pgFields">
+          <label class="field"><span>Make</span><input id="pgMake" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+          <label class="field"><span>Model</span><input id="pgModel" type="text" placeholder="Supra" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+          <label class="field field--year"><span>Year</span><input id="pgYear" type="text" inputmode="numeric" placeholder="1994" maxlength="4" enterkeyhint="go"></label>
         </div>
-        <div class="score-saved" id="scoreSaved" style="display:none;"></div>
-        <div class="final-btns">
-          <button class="btn-ghost" onclick="restart()">Play again</button>
-          <button class="btn-gold" onclick="go('home')">Home</button>
+        <div class="fields fields--kit" id="pgKitFields" hidden>
+          <label class="field"><span>Tuner or body kit</span><input id="pgKit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
         </div>
+        <p class="form-msg" id="pgMsg" role="alert"></p>
+        <button class="btn btn--primary btn--lg btn--block" id="pgSubmit" type="submit">Lock it in</button>
+      </form>
+      <p class="locked" id="pgLocked" hidden><svg class="ic"><use href="#i-check"/></svg>Locked in. <span id="pgWaiting"></span></p>
+
+      <div class="reveal" id="pgReveal" hidden aria-live="polite">
+        <p class="reveal-verdict" id="pgVerdict"></p>
+        <h3 class="reveal-car" id="pgAnswer"></h3>
+        <p class="reveal-hint" id="pgHint"></p>
+        <ul class="chips" id="pgChips"></ul>
+        <button class="btn btn--primary btn--lg btn--block" id="pgNext" data-action="party-next" hidden>Next car</button>
+        <p class="wait" id="pgWaitHost" hidden></p>
       </div>
-    </div>
-  </div>
+
+      <h3 class="h3 standings-h">Standings</h3>
+      <ol class="board board--live" id="pgStandings"></ol>
+    </section>
+
+    <!-- PARTY: FINAL -->
+    <section class="screen" id="s-pfinal" data-screen="pfinal" aria-labelledby="pfinal-title" hidden>
+      <h2 class="h2" id="pfinal-title">Final standings</h2>
+      <p class="sub" id="pfWinner"></p>
+      <ol class="board board--final" id="pfStandings"></ol>
+      <div class="results-actions">
+        <button class="btn btn--primary btn--lg" id="pfAgain" data-action="party-start" hidden>Play again</button>
+        <button class="btn btn--ghost btn--lg" data-action="party-leave">Leave party</button>
+      </div>
+      <p class="wait" id="pfWait" hidden>The host can start another game.</p>
+    </section>
+  </main>
+
+  <datalist id="makeList"></datalist>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="scoring.js"></script>
