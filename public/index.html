@@ -41,9 +41,10 @@
   <main class="app" id="app">
 
     <!-- HOME -->
-    <section class="screen" id="s-home" data-screen="home" aria-labelledby="home-title">
+    <h1 class="sr-only">VicCall</h1>
+    <section class="screen" id="s-home" data-screen="home" aria-label="Choose a mode">
       <header class="home-top">
-        <h1 class="plate plate--brand" id="home-title"><span>VIC</span><span>CALL</span></h1>
+        <div class="plate plate--brand" role="img" aria-label="VicCall"><span aria-hidden="true">VIC</span><span aria-hidden="true">CALL</span></div>
         <button class="link-btn" data-action="nav" data-to="leaderboard"><svg class="ic"><use href="#i-trophy"/></svg>Leaderboard</button>
       </header>
       <p class="lede">Name the car from one photo. Make, model and year, or the tuner behind the body kit.</p>
@@ -110,7 +111,7 @@
 
       <div class="reveal" id="gReveal" hidden aria-live="polite">
         <p class="reveal-verdict" id="gVerdict"></p>
-        <h3 class="reveal-car" id="gAnswer"></h3>
+        <h2 class="reveal-car" id="gAnswer"></h2>
         <p class="reveal-hint" id="gHint"></p>
         <ul class="chips" id="gChips"></ul>
         <div class="reveal-actions">
@@ -181,7 +182,7 @@
         <button class="btn btn--ghost" data-action="copy-invite"><svg class="ic"><use href="#i-link"/></svg>Copy invite link</button>
         <span class="lobby-mode" id="lobbyMode"></span>
       </div>
-      <h3 class="h3 lobby-h">Drivers <span class="count" id="lobbyCount"></span></h3>
+      <h2 class="h3 lobby-h">Drivers <span class="count" id="lobbyCount"></span></h2>
       <ul class="roster" id="lobbyPlayers"></ul>
       <button class="btn btn--primary btn--lg btn--block" id="lobbyStart" data-action="party-start" hidden>Start game</button>
       <p class="wait" id="lobbyWait">Waiting for the host to start.</p>
@@ -219,14 +220,14 @@
 
       <div class="reveal" id="pgReveal" hidden aria-live="polite">
         <p class="reveal-verdict" id="pgVerdict"></p>
-        <h3 class="reveal-car" id="pgAnswer"></h3>
+        <h2 class="reveal-car" id="pgAnswer"></h2>
         <p class="reveal-hint" id="pgHint"></p>
         <ul class="chips" id="pgChips"></ul>
         <button class="btn btn--primary btn--lg btn--block" id="pgNext" data-action="party-next" hidden>Next car</button>
         <p class="wait" id="pgWaitHost" hidden></p>
       </div>
 
-      <h3 class="h3 standings-h">Standings</h3>
+      <h2 class="h3 standings-h">Standings</h2>
       <ol class="board board--live" id="pgStandings"></ol>
     </section>
 

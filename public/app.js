@@ -144,6 +144,9 @@
       void el.offsetWidth;
       el.classList.add('is-entering');
       window.scrollTo(0, 0);
+      // Move focus to the new screen so keyboard and screen-reader users land in the right place.
+      el.tabIndex = -1;
+      el.focus({ preventScroll: true });
       if (current === 'game' && name !== 'game') stopSoloClock();
       current = name;
     }
