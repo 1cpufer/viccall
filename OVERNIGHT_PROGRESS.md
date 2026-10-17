@@ -77,3 +77,21 @@ Session start: 2026-10-17, ~00:30 CT. Branch: `overnight-polish` (cut from `main
 - **Tests:** 18 `node:test` tests pass, including every car matching its own answer and aliases, plus a cross-car false-positive sweep (only Golf GTI→Golf and Corvette Stingray→1963 Corvette remain, and both are legitimately correct).
 - **Remaining:** model "close" credit (1 pt) is a new rule. The README needs to explain it.
 - **Next:** multiplayer hardening.
+
+### Cycle 2: multiplayer + solo server sessions (commit b0ac853)
+- **Changed:** `src/party.js` rewritten; `src/server.js` now exports `createApp()` and adds `/api/solo/*` and `/api/meta`, gates `/api/reports` and requires a session for `/api/scores`. Tests in `test/party.test.js` and `test/api.test.js`; `socket.io-client` is a devDependency.
+- **Why:** audit items 2–10 (forgeable leaderboard, public reports, ghost players, no reconnection, AFK stalls, missing party modes).
+- **Tests:** 39/39 passing, run 3× for flakiness.
+- **Decisions for human review:** see "Decisions needing review" below.
+
+### Cycle 3: client redesign (commit 10eaa5f)
+- **Design plan:** racing green `#0f2019` base, ivory `#f0ebdc` text, plate yellow `#f5c324` as the single accent (= primary action / correct answer), coral `#f2826f` for misses. Type is Saira variable (self-hosted): expanded italic for display, regular for body. The brand device is a UK rear number plate, reused for the party code. Boldness is spent on the plate and the reveal moment; everything else stays quiet.
+- **Files:** `public/index.html`, `public/style.css`, `public/app.js` (full rewrite), `public/fonts/*`, `public/favicon.svg`.
+- **Verified in a browser (Playwright, Chromium, desktop 1280 + mobile 390):** scratchpad e2e script covering carousel drag, regional, a full 10-car solo game with hit/partial/miss, results + save, leaderboard, back button, Time Attack clock, Kit Check scoring, empty-guess message, and a 2-player party (invite link, lobby, guess, guest refresh + resume mid-round, reveal, host-only Next, 10 rounds, final, host leave → handoff). All checks pass with no console errors. **Car photos were replaced by a stand-in image** because Wikimedia is blocked here.
+
+## Decisions needing review
+1. **Model "close" credit:** the right model family with the wrong trim/generation now scores 1 of 2 model points.
+2. **Party round timer:** 60 s per car (30 s in Time Attack), so the round ends even if someone never answers. Previously there was no timer.
+3. **`/api/reports`** now returns 404 unless `ADMIN_TOKEN` is set and passed as `?token=` / the `x-admin-token` header, or the request comes from the same machine. **If you read reports on the deployed site, set `ADMIN_TOKEN`.**
+4. **`/api/cars` removed** (it exposed every answer). Nothing else in the repo used it.
+5. **Kit cars are excluded from non-kit pools** (Worldwide etc.), so a widebody Huracán won't show up where you'd guess make/model/year.
