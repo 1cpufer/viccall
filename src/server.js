@@ -84,7 +84,7 @@ function createApp(opts = {}) {
     while (sessions.size > MAX_SESSIONS) sessions.delete(sessions.keys().next().value);
   }
 
-  app.post('/api/solo/start', limit(60, 60_000), (req, res) => {
+  app.post('/api/solo/start', limit(150, 60_000), (req, res) => {
     const mode = MODES.includes(req.body && req.body.mode) ? req.body.mode : null;
     if (!mode) return res.status(400).json({ error: 'invalid mode' });
     pruneSessions();
@@ -103,7 +103,7 @@ function createApp(opts = {}) {
     res.json({ ok: true });
   });
 
-  app.post('/api/solo/guess', limit(120, 60_000), (req, res) => {
+  app.post('/api/solo/guess', limit(600, 60_000), (req, res) => {
     const b = req.body || {};
     const s = sessions.get(clip(b.sessionId, 64));
     if (!s) return res.status(404).json({ error: 'session expired' });
@@ -124,7 +124,7 @@ function createApp(opts = {}) {
   });
 
   // ---- Leaderboard ----
-  app.post('/api/scores', limit(20, 60_000), (req, res) => {
+  app.post('/api/scores', limit(40, 60_000), (req, res) => {
     const b = req.body || {};
     const s = sessions.get(clip(b.sessionId, 64));
     if (!s) return res.status(400).json({ error: 'Play a full game to post a score' });

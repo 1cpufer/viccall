@@ -570,9 +570,24 @@
         ? `Saved. You’re #${r.data.rank} of ${r.data.total} in ${MODE_NAME[solo.mode]}.`
         : 'This score is already on the board.';
       lbMode = solo.mode;
+      if (r.ok) lastSaved = { mode: solo.mode, rank: r.data.rank, score: solo.score };
     } else {
       btn.disabled = false;
       toast(r.status === 0 ? 'Couldn’t reach the server. Try again.' : (r.data.error || 'Couldn’t save the score.'));
+    }
+  }
+
+  // A spoiler-free result line people can paste into a group chat.
+  async function shareResult() {
+    const max = TOTAL * solo.maxPerCar;
+    const squares = solo.results.map(r => (r.pts >= solo.maxPerCar ? '🟨' : r.pts > 0 ? '⬜' : '🟥')).join('');
+    const text = `VicCall ${MODE_NAME[solo.mode]}: ${solo.score}/${max}\n${squares}\n${location.origin}`;
+    try {
+      if (navigator.share && coarse.matches) { await navigator.share({ text }); return; }
+      await navigator.clipboard.writeText(text);
+      toast('Result copied');
+    } catch (err) {
+      if (!err || err.name !== 'AbortError') toast('Couldn’t copy. Long-press to share instead.');
     }
   }
 
@@ -592,6 +607,7 @@
 
   // ---------------------------------------------------------------- leaderboard
   let lbMode = 'worldwide';
+  let lastSaved = null;
   $('lbTabs').innerHTML = Object.keys(MODE_NAME).map(m => `<button class="tab" role="tab" data-mode="${m}" aria-selected="false">${esc(MODE_NAME[m])}</button>`).join('');
   $('lbTabs').addEventListener('click', e => {
     const t = e.target.closest('.tab');
@@ -617,7 +633,12 @@
       list.innerHTML = `<li class="board-empty">No scores in ${esc(MODE_NAME[lbMode])} yet. Play a round and take the top spot.</li>`;
       return;
     }
-    list.innerHTML = rows.map((row, i) => `<li><span class="rank">${i + 1}</span><span class="who">${esc(row.name)}</span><span class="score">${row.score}<small> / ${row.maxScore}</small></span></li>`).join('');
+    const mine = lastSaved && lastSaved.mode === lbMode ? lastSaved : null;
+    let marked = false;
+    list.innerHTML = rows.map((row, i) => {
+      const you = mine && !marked && i + 1 === mine.rank && row.score === mine.score && (marked = true);
+      return `<li class="${you ? 'is-you' : ''}"><span class="rank">${i + 1}</span><span class="who">${esc(row.name)}</span><span class="score">${row.score}<small> / ${row.maxScore}</small></span></li>`;
+    }).join('');
   }
 
   // ---------------------------------------------------------------- party
@@ -946,6 +967,7 @@
       case 'skip': submitSolo({ skip: true }); break;
       case 'replay': startSolo(solo.mode); break;
       case 'report': sendReport(); break;
+      case 'share': shareResult(); break;
       case 'party-start': partyStart(); break;
       case 'party-next': partyNext(); break;
       case 'party-leave': partyLeave(); break;
