@@ -1,3 +1,4 @@
 node_modules/
 .env
 /data/
+e2e/shots/
