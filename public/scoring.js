@@ -225,12 +225,15 @@
     if (yr) {
       const yg = parseYear(yr);
       let p = 0, verdict = 'miss', detail = String(car.year);
+      // Long production runs carry a yearRange: any year inside it is exact.
+      const [lo, hi] = Array.isArray(car.yearRange) ? car.yearRange : [car.year, car.year];
+      if (lo !== hi) detail = `${lo}–${hi}`;
       if (!isNaN(yg)) {
-        const df = Math.abs(yg - car.year);
+        const df = yg < lo ? lo - yg : yg > hi ? yg - hi : 0;
         if (df === 0) { p = POINTS.yearExact; verdict = 'hit'; }
-        else if (df <= YEAR_NEAR) { p = POINTS.yearNear; verdict = 'close'; detail = `${car.year} (off by ${df})`; }
-        else detail = `${car.year} (off by ${df})`;
-      } else detail = `${car.year} (not a year)`;
+        else if (df <= YEAR_NEAR) { p = POINTS.yearNear; verdict = 'close'; detail = `${detail} (off by ${df})`; }
+        else detail = `${detail} (off by ${df})`;
+      } else detail = `${detail} (not a year)`;
       pts += p;
       res.push({ label: 'Year', detail, verdict, pts: p });
     }

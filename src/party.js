@@ -33,7 +33,9 @@ const str = (v, max) => (typeof v === 'string' || typeof v === 'number' ? String
 const obj = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 const validKey = k => typeof k === 'string' && /^[A-Za-z0-9_-]{16,64}$/.test(k);
 
-function poolFor(CARS, mode) {
+function poolFor(ALL, mode) {
+  // Entries flagged `excluded` (wrong photo etc.) stay in the data but never get served.
+  const CARS = ALL.filter(c => !c.excluded);
   const pool = mode === 'niche' ? CARS.filter(c => c.niche && !c.kit)
     : mode === 'supercar' ? CARS.filter(c => c.supercar && !c.kit)
     : mode === 'kit' ? CARS.filter(c => c.kit)
@@ -93,7 +95,7 @@ function attachParty(io, CARS, MODES, opts = {}) {
   function revealPayload(room) {
     const car = room.queue[room.curIdx];
     return {
-      idx: room.curIdx, make: car.make, model: car.model, year: car.year, kit: car.kit || null,
+      idx: room.curIdx, make: car.make, model: car.model, year: car.year, yearRange: car.yearRange || null, kit: car.kit || null,
       hint: car.hint, carId: car.id, standings: standings(room),
     };
   }

@@ -343,9 +343,10 @@
       return `<li class="chip is-${r.verdict}" style="--i:${i}">${esc(label)} <b>${r.pts > 0 ? '+' + r.pts : '0'}</b></li>`;
     }).join('');
   }
+  const yearText = a => (Array.isArray(a.yearRange) && a.yearRange[0] !== a.yearRange[1] ? `${a.yearRange[0]}–${String(a.yearRange[1]).slice(-2)}` : String(a.year));
   function answerHtml(a, mode) {
     if (mode === 'kit') return `${esc(a.kit)}`;
-    return `${esc(a.make)} ${esc(a.model)} <span class="yr">${esc(a.year)}</span>`;
+    return `${esc(a.make)} ${esc(a.model)} <span class="yr">${esc(yearText(a))}</span>`;
   }
   function hintText(a, mode) {
     return mode === 'kit' ? `${a.make} ${a.model}, ${a.year}. ${a.hint || ''}` : a.hint || '';
@@ -544,7 +545,7 @@
     $('rName').value = store.get('vc_name');
     $('rLog').innerHTML = solo.results.map((r, i) => {
       const a = r.answer;
-      const name = solo.mode === 'kit' ? `${esc(a.kit)}<small>${esc(a.make)} ${esc(a.model)}</small>` : `${esc(a.make)} ${esc(a.model)}<small>${esc(a.year)}</small>`;
+      const name = solo.mode === 'kit' ? `${esc(a.kit)}<small>${esc(a.make)} ${esc(a.model)}</small>` : `${esc(a.make)} ${esc(a.model)}<small>${esc(yearText(a))}</small>`;
       const cls = r.pts >= solo.maxPerCar ? 'is-hit' : r.pts === 0 ? 'is-miss' : '';
       return `<li><span class="n">${i + 1}</span><span class="car">${name}</span><span class="pts ${cls}">${r.pts}</span></li>`;
     }).join('');

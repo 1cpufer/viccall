@@ -135,6 +135,16 @@ test('every car in the dataset scores max on its own answer', () => {
   }
 });
 
+test('excluded cars carry a reason and are never served', () => {
+  const { poolFor } = require('../src/party');
+  const excluded = CARS.filter(c => c.excluded);
+  assert.ok(excluded.length > 0);
+  for (const c of excluded) assert.ok(typeof c.excluded === 'string' && c.excluded.length > 10);
+  for (const m of ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'supercar', 'timeattack', 'kit']) {
+    assert.ok(poolFor(CARS, m).every(c => !c.excluded), m);
+  }
+});
+
 test('dataset integrity', () => {
   const ids = new Set();
   for (const c of CARS) {
@@ -143,5 +153,19 @@ test('dataset integrity', () => {
     for (const k of ['make', 'model', 'region', 'img', 'hint']) assert.ok(typeof c[k] === 'string' && c[k], `${c.id}.${k}`);
     assert.ok(Number.isInteger(c.year) && c.year > 1880 && c.year <= new Date().getFullYear() + 1, `${c.id}.year`);
     assert.match(c.img, /^https:\/\//);
+    if (c.yearRange) {
+      assert.ok(Array.isArray(c.yearRange) && c.yearRange.length === 2 && c.yearRange[0] <= c.year && c.year <= c.yearRange[1], `${c.id}.yearRange`);
+    }
   }
+});
+
+test('yearRange: any year in a long production run is exact', () => {
+  const p911 = car('Porsche', '911', 1974);
+  assert.deepEqual(p911.yearRange, [1974, 1989]);
+  assert.equal(S.scoreGuess(p911, '', '', '1988').pts, 2);
+  assert.equal(S.scoreGuess(p911, '', '', '1974').pts, 2);
+  assert.equal(S.scoreGuess(p911, '', '', '1992').pts, 1);
+  const r = S.scoreGuess(p911, '', '', '1960');
+  assert.equal(r.pts, 0);
+  assert.match(r.res[0].detail, /1974–1989 \(off by 14\)/);
 });

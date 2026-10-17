@@ -106,7 +106,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/1988_Porsche_911_Carrera_coupe_%2821477045232%29.jpg/1280px-1988_Porsche_911_Carrera_coupe_%2821477045232%29.jpg",
     "hint": "Air-cooled classic",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1974,
+      1989
+    ],
+    "modelAliases": [
+      "911 Carrera",
+      "Carrera",
+      "G-body"
+    ]
   },
   {
     "id": "volkswagen-golf-gti-1983",
@@ -189,6 +198,10 @@
     "modelAliases": [
       "LP400",
       "LP400S"
+    ],
+    "yearRange": [
+      1974,
+      1990
     ]
   },
   {
@@ -476,6 +489,10 @@
       "W201",
       "190E Cosworth",
       "190 E"
+    ],
+    "yearRange": [
+      1982,
+      1993
     ]
   },
   {
@@ -636,6 +653,10 @@
     "supercar": false,
     "modelAliases": [
       "Trans Am"
+    ],
+    "yearRange": [
+      1970,
+      1981
     ]
   },
   {
@@ -661,7 +682,11 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/1970_Plymouth_%27Cuda_%2828085938680%29.jpg/960px-1970_Plymouth_%27Cuda_%2828085938680%29.jpg",
     "hint": "70s muscle car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Cuda",
+      "Hemi Cuda"
+    ]
   },
   {
     "id": "cadillac-eldorado-1959",
@@ -694,7 +719,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/1992_Jeep_YJ.JPG/960px-1992_Jeep_YJ.JPG",
     "hint": "Off-road icon",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1987,
+      1995
+    ],
+    "modelAliases": [
+      "YJ",
+      "Wrangler YJ"
+    ]
   },
   {
     "id": "tesla-model-s-2012",
@@ -812,7 +845,11 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Peugeot_405_SRI_1992_%28cropped%29.jpg/960px-Peugeot_405_SRI_1992_%28cropped%29.jpg",
     "hint": "French family sedan",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1987,
+      1997
+    ]
   },
   {
     "id": "alfa-romeo-giulia-1962",
@@ -843,6 +880,10 @@
     "modelAliases": [
       "Cinquecento",
       "Nuova 500"
+    ],
+    "yearRange": [
+      1957,
+      1975
     ]
   },
   {
@@ -881,7 +922,11 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/1995_Lamborghini_Diablo_SE_30.jpg/960px-1995_Lamborghini_Diablo_SE_30.jpg",
     "hint": "90s wedge supercar",
-    "supercar": true
+    "supercar": true,
+    "yearRange": [
+      1990,
+      2001
+    ]
   },
   {
     "id": "maserati-ghibli-1967",
@@ -919,7 +964,8 @@
       "Mini",
       "Mini Cooper",
       "Mini Cooper S"
-    ]
+    ],
+    "excluded": "photo is a 2001+ BMW MINI One (R50), not the 1959 Mini"
   },
   {
     "id": "land-rover-defender-1983",
@@ -936,6 +982,10 @@
       "Defender 110",
       "90",
       "110"
+    ],
+    "yearRange": [
+      1983,
+      2016
     ]
   },
   {
@@ -947,7 +997,11 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/1999_Lotus_Esprit_V8_type_918.jpg/960px-1999_Lotus_Esprit_V8_type_918.jpg",
     "hint": "Bond submarine car",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1976,
+      2004
+    ]
   },
   {
     "id": "mclaren-f1-1992",
@@ -980,7 +1034,11 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Rolls_Royce_Silver_Shadow_%281971%29.jpg/960px-Rolls_Royce_Silver_Shadow_%281971%29.jpg",
     "hint": "Ultimate British luxury",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1965,
+      1980
+    ]
   },
   {
     "id": "jaguar-xj220-1992",
@@ -1006,6 +1064,10 @@
     "modelAliases": [
       "Trabi",
       "Trabant"
+    ],
+    "yearRange": [
+      1963,
+      1990
     ]
   },
   {
@@ -1144,6 +1206,10 @@
       "300ZX",
       "Z32",
       "300ZX Twin Turbo"
+    ],
+    "yearRange": [
+      1989,
+      2000
     ]
   },
   {
@@ -1180,7 +1246,8 @@
     "supercar": false,
     "modelAliases": [
       "Eunos Cosmo"
-    ]
+    ],
+    "excluded": "photo is a page from an EU legal PDF, not a car"
   },
   {
     "id": "mazda-rx-8-2003",
@@ -1269,7 +1336,7 @@
     "id": "mitsubishi-pajero-1991",
     "make": "Mitsubishi",
     "model": "Pajero",
-    "year": 1991,
+    "year": 2007,
     "region": "japan",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/2007_Mitsubishi_Pajero_3.8_SWB_silver_rear.jpg/960px-2007_Mitsubishi_Pajero_3.8_SWB_silver_rear.jpg",
@@ -1278,6 +1345,10 @@
     "modelAliases": [
       "Montero",
       "Shogun"
+    ],
+    "yearRange": [
+      2006,
+      2021
     ]
   },
   {
@@ -1340,6 +1411,10 @@
     "supercar": false,
     "modelAliases": [
       "117"
+    ],
+    "yearRange": [
+      1968,
+      1981
     ]
   },
   {
@@ -1414,18 +1489,26 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Porsche_944_Cabrio_%282016-07-02_Sp%29.jpg/960px-Porsche_944_Cabrio_%282016-07-02_Sp%29.jpg",
     "hint": "Transaxle sports coupe",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1982,
+      1991
+    ]
   },
   {
     "id": "porsche-cayenne-2002",
     "make": "Porsche",
     "model": "Cayenne",
-    "year": 2002,
+    "year": 2017,
     "region": "germany",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Porsche_Cayenne%2C_IAA_2017_%281Y7A2256%29.jpg/960px-Porsche_Cayenne%2C_IAA_2017_%281Y7A2256%29.jpg",
-    "hint": "Porsche's first SUV",
-    "supercar": false
+    "hint": "Third-generation take on Porsche’s first SUV",
+    "supercar": false,
+    "yearRange": [
+      2017,
+      2023
+    ]
   },
   {
     "id": "bmw-2002-1968",
@@ -1442,6 +1525,10 @@
       "2002 tii",
       "2002tii",
       "2002 Turbo"
+    ],
+    "yearRange": [
+      1968,
+      1976
     ]
   },
   {
@@ -1474,6 +1561,10 @@
       "850i",
       "850CSi",
       "850"
+    ],
+    "yearRange": [
+      1989,
+      1999
     ]
   },
   {
@@ -1559,7 +1650,11 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Audi_100_C1_Coup%C3%A9%2C_Bj._1976_%282017-06-11_Sp%29.JPG/960px-Audi_100_C1_Coup%C3%A9%2C_Bj._1976_%282017-06-11_Sp%29.JPG",
     "hint": "Sleek fastback coupe",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1970,
+      1976
+    ]
   },
   {
     "id": "volkswagen-golf-1983",
@@ -1607,7 +1702,8 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Opel_GT_Roadster_rear_-_PSM_2009.jpg/960px-Opel_GT_Roadster_rear_-_PSM_2009.jpg",
     "hint": "German Corvette-lookalike",
-    "supercar": false
+    "supercar": false,
+    "excluded": "photo is the 2007 Opel GT roadster, not the 1968 GT"
   },
   {
     "id": "opel-kadett-gsi-1984",
@@ -1645,21 +1741,29 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Wartburg_353_1972.jpg/960px-Wartburg_353_1972.jpg",
     "hint": "East German family car",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1966,
+      1988
+    ]
   },
   {
     "id": "smart-fortwo-1998",
     "make": "Smart",
     "model": "Fortwo",
-    "year": 1998,
+    "year": 2017,
     "region": "germany",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Smart_fortwo_Cabrio_electric%2C_IAA_2017%2C_Frankfurt_%281Y7A1891%29.jpg/960px-Smart_fortwo_Cabrio_electric%2C_IAA_2017%2C_Frankfurt_%281Y7A1891%29.jpg",
-    "hint": "Tiny two-seat city car",
+    "hint": "Tiny two-seat city car, here as an electric cabrio",
     "supercar": false,
     "modelAliases": [
       "City Coupe",
       "For Two"
+    ],
+    "yearRange": [
+      2014,
+      2024
     ]
   },
   {
@@ -1840,12 +1944,16 @@
     "id": "cadillac-cts-v-2004",
     "make": "Cadillac",
     "model": "CTS-V",
-    "year": 2004,
+    "year": 2009,
     "region": "usa",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/2009_Cadillac_CTS-V_in_Black%2C_front_left_%2808-25-2009%29.jpg/960px-2009_Cadillac_CTS-V_in_Black%2C_front_left_%2808-25-2009%29.jpg",
     "hint": "American super-sedan",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      2009,
+      2014
+    ]
   },
   {
     "id": "hummer-h1-1992",
@@ -1856,7 +1964,11 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Hummer_H1_6.5L_Diesel_Detroit_1997_%28cropped%29.jpg/960px-Hummer_H1_6.5L_Diesel_Detroit_1997_%28cropped%29.jpg",
     "hint": "Military Humvee for the road",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1992,
+      2006
+    ]
   },
   {
     "id": "chevrolet-bel-air-1957",
@@ -1980,7 +2092,8 @@
       "R4",
       "Quatrelle",
       "Renault 4"
-    ]
+    ],
+    "excluded": "photo is a Renault 4CV, a different car"
   },
   {
     "id": "renault-clio-williams-1993",
@@ -2005,7 +2118,11 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/1997_Renault_Twingo_1.15.jpg/960px-1997_Renault_Twingo_1.15.jpg",
     "hint": "Bug-eyed city car",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1992,
+      2007
+    ]
   },
   {
     "id": "renault-espace-1984",
@@ -2042,7 +2159,8 @@
     "modelAliases": [
       "205 T16",
       "T16"
-    ]
+    ],
+    "excluded": "photo is a regular Peugeot 205, not the Turbo 16"
   },
   {
     "id": "peugeot-306-1993",
@@ -2090,7 +2208,11 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/1979_Alpine_A310_V6_Groupe_4%2C_Tour_Auto_2015%2C_Toulouse.jpg/960px-1979_Alpine_A310_V6_Groupe_4%2C_Tour_Auto_2015%2C_Toulouse.jpg",
     "hint": "Wedge-shaped successor to A110",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1971,
+      1984
+    ]
   },
   {
     "id": "simca-1000-1961",
@@ -2138,7 +2260,11 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/1976_Alfa_Romeo_Montreal_Classic-Gala_2025_DSC_1037.jpg/960px-1976_Alfa_Romeo_Montreal_Classic-Gala_2025_DSC_1037.jpg",
     "hint": "V8 grand tourer",
-    "supercar": false
+    "supercar": false,
+    "yearRange": [
+      1970,
+      1977
+    ]
   },
   {
     "id": "alfa-romeo-156-1997",
@@ -2330,6 +2456,10 @@
     "supercar": false,
     "modelAliases": [
       "XJ-S"
+    ],
+    "yearRange": [
+      1975,
+      1996
     ]
   },
   {
@@ -2357,6 +2487,10 @@
       "7",
       "Super Seven",
       "Lotus 7"
+    ],
+    "yearRange": [
+      1957,
+      1972
     ]
   },
   {

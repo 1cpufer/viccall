@@ -74,7 +74,7 @@ function createApp(opts = {}) {
     res.json({
       total: TOTAL,
       modes: Object.fromEntries(MODES.map(m => [m, poolFor(CARS, m).length])),
-      makes: [...new Set(CARS.map(c => c.make))].sort((a, b) => a.localeCompare(b)),
+      makes: [...new Set(CARS.filter(c => !c.excluded).map(c => c.make))].sort((a, b) => a.localeCompare(b)),
     });
   });
 
@@ -121,7 +121,7 @@ function createApp(opts = {}) {
     s.roundStart = Date.now();
     res.json({
       pts: result.pts, res: result.res, late: !!result.late, score: s.score, idx: s.idx, done: s.idx >= TOTAL,
-      answer: { id: car.id, make: car.make, model: car.model, year: car.year, kit: car.kit || null, hint: car.hint },
+      answer: { id: car.id, make: car.make, model: car.model, year: car.year, yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint },
     });
   });
 
