@@ -95,3 +95,16 @@ Session start: 2026-10-17, ~00:30 CT. Branch: `overnight-polish` (cut from `main
 3. **`/api/reports`** now returns 404 unless `ADMIN_TOKEN` is set and passed as `?token=` / the `x-admin-token` header, or the request comes from the same machine. **If you read reports on the deployed site, set `ADMIN_TOKEN`.**
 4. **`/api/cars` removed** (it exposed every answer). Nothing else in the repo used it.
 5. **Kit cars are excluded from non-kit pools** (Worldwide etc.), so a widebody Huracán won't show up where you'd guess make/model/year.
+
+### Cycles 4–6: polish, accessibility, sharing (commits after 10eaa5f)
+- Photos request 960px Wikimedia thumbnails (47 cars were 1280px) and fall back to the original URL if a size is missing. The e2e run forces every downsized thumbnail to 404 to prove the fallback works.
+- axe-core audit on 7 screens: **0 violations** (fixed missing h1, heading order, inactive card contrast). Focus moves to each new screen.
+- Results "Share result" (spoiler-free 10-square grid); the leaderboard highlights your just-saved row.
+- README documents scoring, configuration (`ADMIN_TOKEN`, `TRUST_PROXY`) and tests.
+- **Verification:** `npm test` 39/39. The e2e script (26 checks, desktop + mobile + 2-player party) passes on repeated runs with zero console errors.
+
+## Current backlog
+- [x] P1 shared scoring · [x] P1 party hardening · [x] P1 solo sessions/leaderboard · [x] P1 reports lockdown
+- [x] P3 visual identity · [x] P4 reveal/score/carousel motion · [x] P6 accessibility pass · [x] P5 image size + preload
+- [ ] Reduced-motion run-through in a browser
+- [ ] Final full verification + delivery bundle
