@@ -207,41 +207,9 @@ function loadCar(){
   document.getElementById(mode==='kit'?'iKit':'iMake').focus();
 }
 
-// STRICT matching — strip special chars, require exact match
-function clean(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'').trim();}
-
-function scoreGuess(mg,mol,yr){
-  const res=[];let pts=0;
-
-  if(mg){
-    const hit = clean(mg) === clean(cur.make);
-    const p=hit?1:0;pts+=p;
-    res.push({label:'Make',detail:hit?cur.make:`Not ${cur.make}`,pts:p});
-  }
-  if(mol){
-    const hit = clean(mol) === clean(cur.model);
-    const p=hit?2:0;pts+=p;
-    res.push({label:'Model',detail:hit?cur.model:`Not ${cur.model}`,pts:p});
-  }
-  if(yr){
-    const yg=parseInt(yr),ya=cur.year;let p=0,d='';
-    if(!isNaN(yg)){
-      const df=Math.abs(yg-ya);
-      if(df===0){p=2;d=`Exact — ${ya}`;}
-      else if(df<=5){p=1;d=`Within 5 yrs — ${ya}`;}
-      else{p=0;d=`Off by ${df} — ${ya}`;}
-    }
-    pts+=p;res.push({label:'Year',detail:d,pts:p});
-  }
-  return{pts,res};
-}
-
-function scoreKitGuess(kg){
-  const accepted=[cur.kit,...(cur.kitAliases||[])].map(clean);
-  const hit=accepted.includes(clean(kg));
-  const p=hit?5:0;
-  return{pts:p,res:[{label:'Kit',detail:hit?cur.kit:`Not ${cur.kit}`,pts:p}]};
-}
+// Scoring lives in scoring.js (shared with the server).
+function scoreGuess(mg,mol,yr){return VCScore.scoreGuess(cur,mg,mol,yr);}
+function scoreKitGuess(kg){return VCScore.scoreKit(cur,kg);}
 
 function answerLabel(){
   return mode==='kit'?`${cur.kit} — ${cur.make} ${cur.model}`:`${cur.make} ${cur.model} (${cur.year})`;
@@ -249,7 +217,7 @@ function answerLabel(){
 
 function showPopup(res,total){
   const pop=document.getElementById('popup');
-  document.getElementById('prows').innerHTML=res.map(r=>`<div class="prow ${r.pts>0?'hit':''}"><span>${r.label}: ${r.detail}</span><span>${r.pts>0?'+'+r.pts:'0'}</span></div>`).join('');
+  document.getElementById('prows').innerHTML=res.map(r=>`<div class="prow ${r.pts>0?'hit':''}"><span>${r.label}: ${r.verdict==='hit'?'':r.verdict==='close'?'Close, ':'Not '}${escapeHtml(r.detail)}</span><span>${r.pts>0?'+'+r.pts:'0'}</span></div>`).join('');
   document.getElementById('ptotal').textContent=`+${total} pts`;
   pop.className='popup show';
   setTimeout(()=>{pop.className='popup fade';},2500);

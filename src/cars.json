@@ -1,5 +1,6 @@
 [
   {
+    "id": "toyota-supra-1994",
     "make": "Toyota",
     "model": "Supra",
     "year": 1994,
@@ -7,9 +8,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Toyota_Supra_mk4.jpg/1280px-Toyota_Supra_mk4.jpg",
     "hint": "Iconic JDM sports car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "A80",
+      "MKIV Supra",
+      "Supra MK4"
+    ]
   },
   {
+    "id": "mazda-rx-7-1993",
     "make": "Mazda",
     "model": "RX-7",
     "year": 1993,
@@ -17,9 +24,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Mazda_RX-7_FD3S%2C_front_right%2C_05-05-2024.jpg/1280px-Mazda_RX-7_FD3S%2C_front_right%2C_05-05-2024.jpg",
     "hint": "Rotary engine legend",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "FD",
+      "FD3S",
+      "RX-7 FD"
+    ]
   },
   {
+    "id": "nissan-gt-r-2009",
     "make": "Nissan",
     "model": "GT-R",
     "year": 2009,
@@ -27,9 +40,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/2009_Nissan_GT-R_%28CBA-R35%29_rear.JPG/1280px-2009_Nissan_GT-R_%28CBA-R35%29_rear.JPG",
     "hint": "Godzilla",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "R35",
+      "GT-R R35"
+    ]
   },
   {
+    "id": "honda-nsx-1991",
     "make": "Honda",
     "model": "NSX",
     "year": 1991,
@@ -37,9 +55,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Honda_E-NA1_NSX_%2822022010324%29.jpg/1280px-Honda_E-NA1_NSX_%2822022010324%29.jpg",
     "hint": "Honda's supercar",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "NA1",
+      "Acura NSX"
+    ],
+    "makeAliases": [
+      "Acura"
+    ]
   },
   {
+    "id": "mitsubishi-lancer-evolution-2003",
     "make": "Mitsubishi",
     "model": "Lancer Evolution",
     "year": 2003,
@@ -47,9 +73,17 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/2005_Mitsubishi_Lancer_Evolution_IX_BS_O24.jpg/1280px-2005_Mitsubishi_Lancer_Evolution_IX_BS_O24.jpg",
     "hint": "Rally homologation special",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Evo",
+      "Lancer Evo",
+      "Evolution",
+      "Evo VIII",
+      "Evo 8"
+    ]
   },
   {
+    "id": "bmw-m3-2000",
     "make": "BMW",
     "model": "M3",
     "year": 2000,
@@ -57,9 +91,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/BMW_M3_coupe_E46.jpg/1280px-BMW_M3_coupe_E46.jpg",
     "hint": "E46 era German icon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "E46 M3",
+      "E46"
+    ]
   },
   {
+    "id": "porsche-911-1974",
     "make": "Porsche",
     "model": "911",
     "year": 1974,
@@ -70,6 +109,7 @@
     "supercar": false
   },
   {
+    "id": "volkswagen-golf-gti-1983",
     "make": "Volkswagen",
     "model": "Golf GTI",
     "year": 1983,
@@ -77,9 +117,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Volkswagen_Golf_Mk1_GTI_MY_1983.jpg",
     "hint": "Hot hatch pioneer",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GTI",
+      "Rabbit GTI"
+    ]
   },
   {
+    "id": "ford-mustang-1969",
     "make": "Ford",
     "model": "Mustang",
     "year": 1969,
@@ -90,6 +135,7 @@
     "supercar": false
   },
   {
+    "id": "chevrolet-corvette-1963",
     "make": "Chevrolet",
     "model": "Corvette",
     "year": 1963,
@@ -97,9 +143,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/1963_Chevrolet_Corvette_Sting_Ray_Sport_Coupe%2C_rear_left%2C_06-24-2024.jpg/1280px-1963_Chevrolet_Corvette_Sting_Ray_Sport_Coupe%2C_rear_left%2C_06-24-2024.jpg",
     "hint": "Split window Sting Ray",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "C2",
+      "Sting Ray",
+      "Corvette Sting Ray"
+    ]
   },
   {
+    "id": "dodge-charger-1970",
     "make": "Dodge",
     "model": "Charger",
     "year": 1970,
@@ -110,6 +162,7 @@
     "supercar": false
   },
   {
+    "id": "ferrari-testarossa-1986",
     "make": "Ferrari",
     "model": "Testarossa",
     "year": 1986,
@@ -117,9 +170,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Ferrari_Testarossa_01.jpg/1280px-Ferrari_Testarossa_01.jpg",
     "hint": "80s Italian exotic",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "TR",
+      "Testa Rossa"
+    ]
   },
   {
+    "id": "lamborghini-countach-1978",
     "make": "Lamborghini",
     "model": "Countach",
     "year": 1978,
@@ -127,9 +185,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Lamborghini_Countach_LP_5000S_1983.jpg/1280px-Lamborghini_Countach_LP_5000S_1983.jpg",
     "hint": "Poster car of a generation",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "LP400",
+      "LP400S"
+    ]
   },
   {
+    "id": "peugeot-205-gti-1986",
     "make": "Peugeot",
     "model": "205 GTI",
     "year": 1986,
@@ -140,6 +203,7 @@
     "supercar": false
   },
   {
+    "id": "renault-alpine-a110-1973",
     "make": "Renault",
     "model": "Alpine A110",
     "year": 1973,
@@ -147,9 +211,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Renault_Alpine_A_110_%28Sp%29.JPG/1280px-Renault_Alpine_A_110_%28Sp%29.JPG",
     "hint": "Rally legend from France",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "A110",
+      "Alpine"
+    ],
+    "makeAliases": [
+      "Alpine"
+    ]
   },
   {
+    "id": "aston-martin-db5-1964",
     "make": "Aston Martin",
     "model": "DB5",
     "year": 1964,
@@ -160,6 +232,7 @@
     "supercar": false
   },
   {
+    "id": "jaguar-e-type-1961",
     "make": "Jaguar",
     "model": "E-Type",
     "year": 1961,
@@ -167,9 +240,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Jaguar_E-Type_Series_1_3.8_Litre_1961.jpg/1280px-Jaguar_E-Type_Series_1_3.8_Litre_1961.jpg",
     "hint": "Enzo called it the most beautiful car ever made",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "XKE",
+      "E Type"
+    ]
   },
   {
+    "id": "toyota-ae86-corolla-1985",
     "make": "Toyota",
     "model": "AE86 Corolla",
     "year": 1985,
@@ -177,9 +255,18 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/1983_Toyota_Corolla_Levin.jpg/960px-1983_Toyota_Corolla_Levin.jpg",
     "hint": "Drift culture icon from Initial D",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Corolla Levin",
+      "Sprinter Trueno",
+      "Trueno",
+      "Levin",
+      "Hachiroku",
+      "Corolla AE86"
+    ]
   },
   {
+    "id": "nissan-skyline-gt-r-r34-1999",
     "make": "Nissan",
     "model": "Skyline GT-R R34",
     "year": 1999,
@@ -187,9 +274,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Nissan_Skyline_GT-R_R34_V_Spec_II.jpg/960px-Nissan_Skyline_GT-R_R34_V_Spec_II.jpg",
     "hint": "Fast and Furious favorite",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GT-R R34",
+      "R34 GT-R",
+      "Skyline R34"
+    ]
   },
   {
+    "id": "nissan-350z-2003",
     "make": "Nissan",
     "model": "350Z",
     "year": 2003,
@@ -197,9 +290,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/2004_Nissan_350Z_3.5_Front.jpg/960px-2004_Nissan_350Z_3.5_Front.jpg",
     "hint": "Z-car revival",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Fairlady Z",
+      "Z33"
+    ]
   },
   {
+    "id": "honda-s2000-1999",
     "make": "Honda",
     "model": "S2000",
     "year": 1999,
@@ -210,6 +308,7 @@
     "supercar": false
   },
   {
+    "id": "honda-civic-type-r-1997",
     "make": "Honda",
     "model": "Civic Type R",
     "year": 1997,
@@ -217,9 +316,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/1997_Honda_Civic_Type_R_EK9.jpg/960px-1997_Honda_Civic_Type_R_EK9.jpg",
     "hint": "EK9 hot hatch",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "EK9",
+      "Type R"
+    ]
   },
   {
+    "id": "subaru-impreza-wrx-sti-1999",
     "make": "Subaru",
     "model": "Impreza WRX STI",
     "year": 1999,
@@ -227,9 +331,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Subaru_Impreza_%28GU%29_Automesse_Ludwigsburg_2024_IMG_1593.jpg/960px-Subaru_Impreza_%28GU%29_Automesse_Ludwigsburg_2024_IMG_1593.jpg",
     "hint": "Rally-bred AWD sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "WRX STI",
+      "STI",
+      "WRX",
+      "Impreza WRX",
+      "Impreza STI"
+    ]
   },
   {
+    "id": "toyota-mr2-1989",
     "make": "Toyota",
     "model": "MR2",
     "year": 1989,
@@ -240,6 +352,7 @@
     "supercar": false
   },
   {
+    "id": "mazda-miata-mx-5-1990",
     "make": "Mazda",
     "model": "Miata MX-5",
     "year": 1990,
@@ -247,9 +360,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Mazda_Roadster_%28MX-5%29_by_Negawa_Bridge_%28cropped%29.jpg/960px-Mazda_Roadster_%28MX-5%29_by_Negawa_Bridge_%28cropped%29.jpg",
     "hint": "Best-selling roadster",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "MX-5",
+      "Miata",
+      "Eunos Roadster",
+      "NA Miata"
+    ]
   },
   {
+    "id": "nissan-silvia-s15-1999",
     "make": "Nissan",
     "model": "Silvia S15",
     "year": 1999,
@@ -257,9 +377,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Nissan_Silvia_S15_001.JPG/960px-Nissan_Silvia_S15_001.JPG",
     "hint": "Drift favorite coupe",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "S15",
+      "200SX",
+      "Silvia"
+    ]
   },
   {
+    "id": "datsun-240z-1970",
     "make": "Datsun",
     "model": "240Z",
     "year": 1970,
@@ -267,9 +393,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/1970-1973_Nissan_Fairlady_Z.jpg/960px-1970-1973_Nissan_Fairlady_Z.jpg",
     "hint": "Affordable sports car icon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Fairlady Z",
+      "S30"
+    ],
+    "makeAliases": [
+      "Nissan"
+    ]
   },
   {
+    "id": "lexus-lfa-2010",
     "make": "Lexus",
     "model": "LFA",
     "year": 2010,
@@ -280,6 +414,7 @@
     "supercar": true
   },
   {
+    "id": "toyota-land-cruiser-1980",
     "make": "Toyota",
     "model": "Land Cruiser",
     "year": 1980,
@@ -287,9 +422,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/1980_Toyota_Land_Cruiser_%28FJ40%29.jpg/960px-1980_Toyota_Land_Cruiser_%28FJ40%29.jpg",
     "hint": "Legendary off-roader",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "FJ40",
+      "Land Cruiser 40"
+    ]
   },
   {
+    "id": "suzuki-cappuccino-1991",
     "make": "Suzuki",
     "model": "Cappuccino",
     "year": 1991,
@@ -300,6 +440,7 @@
     "supercar": false
   },
   {
+    "id": "honda-beat-1991",
     "make": "Honda",
     "model": "Beat",
     "year": 1991,
@@ -310,6 +451,7 @@
     "supercar": false
   },
   {
+    "id": "autozam-az-1-1992",
     "make": "Autozam",
     "model": "AZ-1",
     "year": 1992,
@@ -320,6 +462,7 @@
     "supercar": false
   },
   {
+    "id": "mercedes-benz-190e-1984",
     "make": "Mercedes-Benz",
     "model": "190E",
     "year": 1984,
@@ -327,9 +470,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/1993_190E_2.3.jpg/960px-1993_190E_2.3.jpg",
     "hint": "Baby Benz sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "190",
+      "W201",
+      "190E Cosworth",
+      "190 E"
+    ]
   },
   {
+    "id": "audi-quattro-1980",
     "make": "Audi",
     "model": "Quattro",
     "year": 1980,
@@ -337,9 +487,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Audi_Quattro_green.jpg/960px-Audi_Quattro_green.jpg",
     "hint": "Rally homologation AWD",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Ur-Quattro",
+      "Ur Quattro"
+    ]
   },
   {
+    "id": "bmw-3-series-e30-1982",
     "make": "BMW",
     "model": "3 Series E30",
     "year": 1982,
@@ -347,9 +502,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/BMW_E30_in_silver_%28facelift%29%2C_front_left_2024-08-18.jpg/960px-BMW_E30_in_silver_%28facelift%29%2C_front_left_2024-08-18.jpg",
     "hint": "Compact 80s BMW",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "E30",
+      "3er",
+      "325i",
+      "318i",
+      "3 Series"
+    ]
   },
   {
+    "id": "porsche-918-spyder-2013",
     "make": "Porsche",
     "model": "918 Spyder",
     "year": 2013,
@@ -357,9 +520,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Porsche_918_Spyder_IAA_2013.jpg/960px-Porsche_918_Spyder_IAA_2013.jpg",
     "hint": "Hybrid hypercar",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "918"
+    ]
   },
   {
+    "id": "mercedes-benz-sl-1989",
     "make": "Mercedes-Benz",
     "model": "SL",
     "year": 1989,
@@ -367,9 +534,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Mercedes-Benz_R107_SL_IMG_3189.jpg/960px-Mercedes-Benz_R107_SL_IMG_3189.jpg",
     "hint": "Grand touring roadster",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "R129",
+      "SL500",
+      "500SL",
+      "SL-Class",
+      "SL Class"
+    ]
   },
   {
+    "id": "audi-r8-2006",
     "make": "Audi",
     "model": "R8",
     "year": 2006,
@@ -380,6 +555,7 @@
     "supercar": false
   },
   {
+    "id": "volkswagen-beetle-1968",
     "make": "Volkswagen",
     "model": "Beetle",
     "year": 1968,
@@ -387,9 +563,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/VW_K%C3%A4fer_Baujahr_1966.jpg/960px-VW_K%C3%A4fer_Baujahr_1966.jpg",
     "hint": "People's car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Bug",
+      "Kafer",
+      "Type 1"
+    ]
   },
   {
+    "id": "opel-manta-1975",
     "make": "Opel",
     "model": "Manta",
     "year": 1975,
@@ -400,6 +582,7 @@
     "supercar": false
   },
   {
+    "id": "bmw-z3-1996",
     "make": "BMW",
     "model": "Z3",
     "year": 1996,
@@ -410,6 +593,7 @@
     "supercar": false
   },
   {
+    "id": "porsche-cayman-2005",
     "make": "Porsche",
     "model": "Cayman",
     "year": 2005,
@@ -417,9 +601,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/2006_Porsche_Cayman_%28987%29_S_coupe_%282015-06-03%29_01.jpg/960px-2006_Porsche_Cayman_%28987%29_S_coupe_%282015-06-03%29_01.jpg",
     "hint": "Mid-engine Porsche",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "987",
+      "Cayman S"
+    ]
   },
   {
+    "id": "chevrolet-camaro-1969",
     "make": "Chevrolet",
     "model": "Camaro",
     "year": 1969,
@@ -427,9 +616,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/1969_Chevrolet_Camaro.jpg/960px-1969_Chevrolet_Camaro.jpg",
     "hint": "Mustang's rival",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Camaro SS",
+      "Z28",
+      "Camaro Z28",
+      "First-gen Camaro"
+    ]
   },
   {
+    "id": "pontiac-firebird-trans-am-1977",
     "make": "Pontiac",
     "model": "Firebird Trans Am",
     "year": 1977,
@@ -437,9 +633,13 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/d/d3/TransAm1970.jpg",
     "hint": "Smokey and the Bandit car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Trans Am"
+    ]
   },
   {
+    "id": "ford-gt40-1966",
     "make": "Ford",
     "model": "GT40",
     "year": 1966,
@@ -447,9 +647,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/GT40_at_Goodwood.jpg/960px-GT40_at_Goodwood.jpg",
     "hint": "Le Mans winner",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GT 40"
+    ]
   },
   {
+    "id": "plymouth-barracuda-1970",
     "make": "Plymouth",
     "model": "Barracuda",
     "year": 1970,
@@ -460,6 +664,7 @@
     "supercar": false
   },
   {
+    "id": "cadillac-eldorado-1959",
     "make": "Cadillac",
     "model": "Eldorado",
     "year": 1959,
@@ -470,6 +675,7 @@
     "supercar": false
   },
   {
+    "id": "dodge-viper-1992",
     "make": "Dodge",
     "model": "Viper",
     "year": 1992,
@@ -480,6 +686,7 @@
     "supercar": false
   },
   {
+    "id": "jeep-wrangler-1987",
     "make": "Jeep",
     "model": "Wrangler",
     "year": 1987,
@@ -490,6 +697,7 @@
     "supercar": false
   },
   {
+    "id": "tesla-model-s-2012",
     "make": "Tesla",
     "model": "Model S",
     "year": 2012,
@@ -500,6 +708,7 @@
     "supercar": false
   },
   {
+    "id": "buick-grand-national-1987",
     "make": "Buick",
     "model": "Grand National",
     "year": 1987,
@@ -510,6 +719,7 @@
     "supercar": false
   },
   {
+    "id": "amc-gremlin-1970",
     "make": "AMC",
     "model": "Gremlin",
     "year": 1970,
@@ -520,6 +730,7 @@
     "supercar": false
   },
   {
+    "id": "delorean-dmc-12-1981",
     "make": "DeLorean",
     "model": "DMC-12",
     "year": 1981,
@@ -527,29 +738,46 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Delorean_DMC-12_side.jpg",
     "hint": "Back to the Future car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "DeLorean",
+      "DMC"
+    ]
   },
   {
-    "make": "Citro\u00ebn",
+    "id": "citroen-ds-1955",
+    "make": "Citroën",
     "model": "DS",
     "year": 1955,
     "region": "france",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Bornholm_Rundt_2012_%282012-07-08%29%2C_by_Klugschnacker_modified.jpg/960px-Bornholm_Rundt_2012_%282012-07-08%29%2C_by_Klugschnacker_modified.jpg",
     "hint": "Futuristic French sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "DS19",
+      "DS21",
+      "DS 19",
+      "Goddess"
+    ]
   },
   {
-    "make": "Citro\u00ebn",
+    "id": "citroen-2cv-1948",
+    "make": "Citroën",
     "model": "2CV",
     "year": 1948,
     "region": "france",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Citroen_2CV_1X7A7979.jpg/960px-Citroen_2CV_1X7A7979.jpg",
     "hint": "Minimalist French classic",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Deux Chevaux",
+      "2 CV"
+    ]
   },
   {
+    "id": "renault-5-turbo-1980",
     "make": "Renault",
     "model": "5 Turbo",
     "year": 1980,
@@ -557,9 +785,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/1981_Renault_5_Turbo_LC23.jpg/960px-1981_Renault_5_Turbo_LC23.jpg",
     "hint": "Mid-engine rally hatch",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "R5 Turbo",
+      "Renault 5 Turbo",
+      "R5"
+    ]
   },
   {
+    "id": "bugatti-veyron-2005",
     "make": "Bugatti",
     "model": "Veyron",
     "year": 2005,
@@ -570,6 +804,7 @@
     "supercar": true
   },
   {
+    "id": "peugeot-405-1987",
     "make": "Peugeot",
     "model": "405",
     "year": 1987,
@@ -580,6 +815,7 @@
     "supercar": false
   },
   {
+    "id": "alfa-romeo-giulia-1962",
     "make": "Alfa Romeo",
     "model": "Giulia",
     "year": 1962,
@@ -587,9 +823,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Alfa_Romeo_Giulia_Super_%28cropped%29.jpg/960px-Alfa_Romeo_Giulia_Super_%28cropped%29.jpg",
     "hint": "Classic Italian sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Giulia Sprint",
+      "Giulia GT",
+      "Giulia Super"
+    ]
   },
   {
+    "id": "fiat-500-1957",
     "make": "Fiat",
     "model": "500",
     "year": 1957,
@@ -597,9 +839,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/1970_Fiat_500_L_--_2011_DC_1.jpg/960px-1970_Fiat_500_L_--_2011_DC_1.jpg",
     "hint": "Iconic Italian city car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Cinquecento",
+      "Nuova 500"
+    ]
   },
   {
+    "id": "lancia-delta-integrale-1987",
     "make": "Lancia",
     "model": "Delta Integrale",
     "year": 1987,
@@ -607,9 +854,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Lancia_Delta_HF_Integrale_Evoluzione_%28Group_A%29_1X7A7246.jpg/960px-Lancia_Delta_HF_Integrale_Evoluzione_%28Group_A%29_1X7A7246.jpg",
     "hint": "Rally champion hatchback",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Integrale",
+      "Delta HF Integrale",
+      "Delta HF"
+    ]
   },
   {
+    "id": "ferrari-f40-1987",
     "make": "Ferrari",
     "model": "F40",
     "year": 1987,
@@ -620,6 +873,7 @@
     "supercar": true
   },
   {
+    "id": "lamborghini-diablo-1990",
     "make": "Lamborghini",
     "model": "Diablo",
     "year": 1990,
@@ -630,6 +884,7 @@
     "supercar": true
   },
   {
+    "id": "maserati-ghibli-1967",
     "make": "Maserati",
     "model": "Ghibli",
     "year": 1967,
@@ -640,6 +895,7 @@
     "supercar": true
   },
   {
+    "id": "alfa-romeo-4c-2013",
     "make": "Alfa Romeo",
     "model": "4C",
     "year": 2013,
@@ -650,6 +906,7 @@
     "supercar": false
   },
   {
+    "id": "mini-cooper-1959",
     "make": "Mini",
     "model": "Cooper",
     "year": 1959,
@@ -657,9 +914,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Mini_One_%28R50%29_%E2%80%93_Frontansicht%2C_12._Juni_2011%2C_D%C3%BCsseldorf.jpg/960px-Mini_One_%28R50%29_%E2%80%93_Frontansicht%2C_12._Juni_2011%2C_D%C3%BCsseldorf.jpg",
     "hint": "British icon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Mini",
+      "Mini Cooper",
+      "Mini Cooper S"
+    ]
   },
   {
+    "id": "land-rover-defender-1983",
     "make": "Land Rover",
     "model": "Defender",
     "year": 1983,
@@ -667,9 +930,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/2015_Land_Rover_Defender_%28L316_MY15%29_90_3-door_wagon_%282015-10-24%29_01.jpg/960px-2015_Land_Rover_Defender_%28L316_MY15%29_90_3-door_wagon_%282015-10-24%29_01.jpg",
     "hint": "Rugged British off-roader",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Defender 90",
+      "Defender 110",
+      "90",
+      "110"
+    ]
   },
   {
+    "id": "lotus-esprit-1976",
     "make": "Lotus",
     "model": "Esprit",
     "year": 1976,
@@ -680,6 +950,7 @@
     "supercar": false
   },
   {
+    "id": "mclaren-f1-1992",
     "make": "McLaren",
     "model": "F1",
     "year": 1992,
@@ -690,6 +961,7 @@
     "supercar": true
   },
   {
+    "id": "triumph-spitfire-1962",
     "make": "Triumph",
     "model": "Spitfire",
     "year": 1962,
@@ -700,6 +972,7 @@
     "supercar": false
   },
   {
+    "id": "rolls-royce-silver-shadow-1965",
     "make": "Rolls-Royce",
     "model": "Silver Shadow",
     "year": 1965,
@@ -710,6 +983,7 @@
     "supercar": false
   },
   {
+    "id": "jaguar-xj220-1992",
     "make": "Jaguar",
     "model": "XJ220",
     "year": 1992,
@@ -720,6 +994,7 @@
     "supercar": true
   },
   {
+    "id": "trabant-601-1963",
     "make": "Trabant",
     "model": "601",
     "year": 1963,
@@ -727,10 +1002,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/3/38/1988_VEB_Sachenring_Trabant_P601S_Beige_%281_bearb_Sp%29_%28cropped%29.jpg",
     "hint": "East German icon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Trabi",
+      "Trabant"
+    ]
   },
   {
-    "make": "Citro\u00ebn",
+    "id": "citroen-sm-1970",
+    "make": "Citroën",
     "model": "SM",
     "year": 1970,
     "region": "france",
@@ -740,6 +1020,7 @@
     "supercar": false
   },
   {
+    "id": "tvr-griffith-1991",
     "make": "TVR",
     "model": "Griffith",
     "year": 1991,
@@ -750,6 +1031,7 @@
     "supercar": false
   },
   {
+    "id": "reliant-robin-1973",
     "make": "Reliant",
     "model": "Robin",
     "year": 1973,
@@ -757,9 +1039,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/1977_Reliant_Robin_850_%2814136529926%29_%28cropped%29.jpg/960px-1977_Reliant_Robin_850_%2814136529926%29_%28cropped%29.jpg",
     "hint": "Three-wheeled British oddity",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Reliant Robin"
+    ]
   },
   {
+    "id": "vector-w8-1989",
     "make": "Vector",
     "model": "W8",
     "year": 1989,
@@ -770,6 +1056,7 @@
     "supercar": true
   },
   {
+    "id": "toyota-celica-gt-four-1990",
     "make": "Toyota",
     "model": "Celica GT-Four",
     "year": 1990,
@@ -777,9 +1064,16 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/1990_Toyota_Celica_GT-Four_%28ST185%29_%2851297501181%29.jpg/960px-1990_Toyota_Celica_GT-Four_%28ST185%29_%2851297501181%29.jpg",
     "hint": "Group A rally Celica",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "ST185",
+      "GT4",
+      "Celica GT4",
+      "Celica All-Trac"
+    ]
   },
   {
+    "id": "toyota-corolla-gt-s-1988",
     "make": "Toyota",
     "model": "Corolla GT-S",
     "year": 1988,
@@ -787,9 +1081,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/1/14/Tuned_%2788-%2790_Toyota_Corolla_Coupe_%285eme_picnic_et_BBQ_2011_du_club_de_Lowrider_LuxuriouS_Montr%C3%A9al%29.jpg",
     "hint": "FWD Corolla sport coupe",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "AE92",
+      "Corolla GTS"
+    ]
   },
   {
+    "id": "toyota-2000gt-1967",
     "make": "Toyota",
     "model": "2000GT",
     "year": 1967,
@@ -800,6 +1099,7 @@
     "supercar": true
   },
   {
+    "id": "nissan-skyline-gt-r-r32-1989",
     "make": "Nissan",
     "model": "Skyline GT-R R32",
     "year": 1989,
@@ -807,9 +1107,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/1991_Nissan_Skyline_GT-R.jpeg/960px-1991_Nissan_Skyline_GT-R.jpeg",
     "hint": "Godzilla's debut generation",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GT-R R32",
+      "R32 GT-R",
+      "Skyline R32"
+    ]
   },
   {
+    "id": "nissan-skyline-gt-r-r33-1995",
     "make": "Nissan",
     "model": "Skyline GT-R R33",
     "year": 1995,
@@ -817,9 +1123,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/1995_Nissan_Skyline_GT-R_R33_%2849729760316%29.jpg/960px-1995_Nissan_Skyline_GT-R_R33_%2849729760316%29.jpg",
     "hint": "Nurburgring record breaker",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GT-R R33",
+      "R33 GT-R",
+      "Skyline R33"
+    ]
   },
   {
+    "id": "nissan-fairlady-z-z32-1990",
     "make": "Nissan",
     "model": "Fairlady Z Z32",
     "year": 1990,
@@ -827,9 +1139,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/1998_Nissan_Fairlady_Z_2by2_300ZX_Twin_Turbo_T-Bar_Roof.jpg/960px-1998_Nissan_Fairlady_Z_2by2_300ZX_Twin_Turbo_T-Bar_Roof.jpg",
     "hint": "300ZX twin-turbo",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "300ZX",
+      "Z32",
+      "300ZX Twin Turbo"
+    ]
   },
   {
+    "id": "nissan-pao-1989",
     "make": "Nissan",
     "model": "Pao",
     "year": 1989,
@@ -840,6 +1158,7 @@
     "supercar": false
   },
   {
+    "id": "nissan-figaro-1991",
     "make": "Nissan",
     "model": "Figaro",
     "year": 1991,
@@ -850,6 +1169,7 @@
     "supercar": false
   },
   {
+    "id": "mazda-cosmo-1990",
     "make": "Mazda",
     "model": "Cosmo",
     "year": 1990,
@@ -857,9 +1177,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/OJ_C_202301015_of_2023_-_LV_Latvian.pdf/page1-960px-OJ_C_202301015_of_2023_-_LV_Latvian.pdf.jpg",
     "hint": "Triple-rotor luxury coupe",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Eunos Cosmo"
+    ]
   },
   {
+    "id": "mazda-rx-8-2003",
     "make": "Mazda",
     "model": "RX-8",
     "year": 2003,
@@ -870,6 +1194,7 @@
     "supercar": false
   },
   {
+    "id": "mazda-323-gtx-1988",
     "make": "Mazda",
     "model": "323 GTX",
     "year": 1988,
@@ -877,9 +1202,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/R%C3%A9tromobile_2011_-_Mazda_323_4WD_Groupe_N_-_001.jpg/960px-R%C3%A9tromobile_2011_-_Mazda_323_4WD_Groupe_N_-_001.jpg",
     "hint": "Rally homologation hatch",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Familia GTX",
+      "323"
+    ]
   },
   {
+    "id": "honda-integra-type-r-1995",
     "make": "Honda",
     "model": "Integra Type R",
     "year": 1995,
@@ -887,9 +1217,18 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Honda_Integra_Type_R_DC2_1998.jpg/960px-Honda_Integra_Type_R_DC2_1998.jpg",
     "hint": "FWD handling benchmark",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "DC2",
+      "Integra",
+      "Acura Integra Type R"
+    ],
+    "makeAliases": [
+      "Acura"
+    ]
   },
   {
+    "id": "honda-city-turbo-1984",
     "make": "Honda",
     "model": "City Turbo",
     "year": 1984,
@@ -900,6 +1239,7 @@
     "supercar": false
   },
   {
+    "id": "honda-prelude-1991",
     "make": "Honda",
     "model": "Prelude",
     "year": 1991,
@@ -910,6 +1250,7 @@
     "supercar": false
   },
   {
+    "id": "mitsubishi-3000gt-1990",
     "make": "Mitsubishi",
     "model": "3000GT",
     "year": 1990,
@@ -917,9 +1258,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Mitsubishi_GTO_VR4_1990_%2832646604038%29.jpg/960px-Mitsubishi_GTO_VR4_1990_%2832646604038%29.jpg",
     "hint": "Tech-laden Japanese GT",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GTO",
+      "3000GT VR-4",
+      "3000 GT"
+    ]
   },
   {
+    "id": "mitsubishi-pajero-1991",
     "make": "Mitsubishi",
     "model": "Pajero",
     "year": 1991,
@@ -927,9 +1274,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/2007_Mitsubishi_Pajero_3.8_SWB_silver_rear.jpg/960px-2007_Mitsubishi_Pajero_3.8_SWB_silver_rear.jpg",
     "hint": "Dakar-winning SUV",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Montero",
+      "Shogun"
+    ]
   },
   {
+    "id": "subaru-svx-1991",
     "make": "Subaru",
     "model": "SVX",
     "year": 1991,
@@ -937,9 +1289,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/1992_Subaru_SVX_in_Maroon_-_Rear.jpg/960px-1992_Subaru_SVX_in_Maroon_-_Rear.jpg",
     "hint": "Glass-canopy Subaru GT",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Alcyone SVX",
+      "Alcyone"
+    ]
   },
   {
+    "id": "subaru-360-1958",
     "make": "Subaru",
     "model": "360",
     "year": 1958,
@@ -950,6 +1307,7 @@
     "supercar": false
   },
   {
+    "id": "toyota-sera-1990",
     "make": "Toyota",
     "model": "Sera",
     "year": 1990,
@@ -960,6 +1318,7 @@
     "supercar": false
   },
   {
+    "id": "toyota-century-1997",
     "make": "Toyota",
     "model": "Century",
     "year": 1997,
@@ -970,6 +1329,7 @@
     "supercar": false
   },
   {
+    "id": "isuzu-117-coupe-1968",
     "make": "Isuzu",
     "model": "117 Coupe",
     "year": 1968,
@@ -977,9 +1337,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/1977-1981_Isuzu_117_Coupe_XG.jpg/960px-1977-1981_Isuzu_117_Coupe_XG.jpg",
     "hint": "Giugiaro-styled Isuzu coupe",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "117"
+    ]
   },
   {
+    "id": "daihatsu-copen-2002",
     "make": "Daihatsu",
     "model": "Copen",
     "year": 2002,
@@ -990,6 +1354,7 @@
     "supercar": false
   },
   {
+    "id": "nissan-cedric-1987",
     "make": "Nissan",
     "model": "Cedric",
     "year": 1987,
@@ -1000,6 +1365,7 @@
     "supercar": false
   },
   {
+    "id": "toyota-soarer-1991",
     "make": "Toyota",
     "model": "Soarer",
     "year": 1991,
@@ -1007,9 +1373,18 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/1988_Toyota_Soarer_2.0GT_Twin_Turbo.jpg/960px-1988_Toyota_Soarer_2.0GT_Twin_Turbo.jpg",
     "hint": "Lexus SC's Japanese twin",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "SC300",
+      "SC400",
+      "Lexus SC"
+    ],
+    "makeAliases": [
+      "Lexus"
+    ]
   },
   {
+    "id": "suzuki-alto-works-1987",
     "make": "Suzuki",
     "model": "Alto Works",
     "year": 1987,
@@ -1020,6 +1395,7 @@
     "supercar": false
   },
   {
+    "id": "porsche-959-1986",
     "make": "Porsche",
     "model": "959",
     "year": 1986,
@@ -1030,6 +1406,7 @@
     "supercar": true
   },
   {
+    "id": "porsche-944-1982",
     "make": "Porsche",
     "model": "944",
     "year": 1982,
@@ -1040,6 +1417,7 @@
     "supercar": false
   },
   {
+    "id": "porsche-cayenne-2002",
     "make": "Porsche",
     "model": "Cayenne",
     "year": 2002,
@@ -1050,6 +1428,7 @@
     "supercar": false
   },
   {
+    "id": "bmw-2002-1968",
     "make": "BMW",
     "model": "2002",
     "year": 1968,
@@ -1057,9 +1436,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/1974_BMW_2002_turbo.jpg/960px-1974_BMW_2002_turbo.jpg",
     "hint": "Compact sport sedan pioneer",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "02",
+      "2002 tii",
+      "2002tii",
+      "2002 Turbo"
+    ]
   },
   {
+    "id": "bmw-m5-1998",
     "make": "BMW",
     "model": "M5",
     "year": 1998,
@@ -1067,9 +1453,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/2000_BMW_M5.jpg/960px-2000_BMW_M5.jpg",
     "hint": "Benchmark super-sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "E39 M5",
+      "E39"
+    ]
   },
   {
+    "id": "bmw-8-series-1989",
     "make": "BMW",
     "model": "8 Series",
     "year": 1989,
@@ -1077,9 +1468,16 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/1995_BMW_E31_8_Series_Coupe_%2846138484524%29.jpg/960px-1995_BMW_E31_8_Series_Coupe_%2846138484524%29.jpg",
     "hint": "V12 flagship grand tourer",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "E31",
+      "850i",
+      "850CSi",
+      "850"
+    ]
   },
   {
+    "id": "bmw-isetta-1955",
     "make": "BMW",
     "model": "Isetta",
     "year": 1955,
@@ -1090,6 +1488,7 @@
     "supercar": false
   },
   {
+    "id": "mercedes-benz-300sl-1954",
     "make": "Mercedes-Benz",
     "model": "300SL",
     "year": 1954,
@@ -1097,9 +1496,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Mercedes_Benz_300SL_gullwing_1954_2993cc.jpg/960px-Mercedes_Benz_300SL_gullwing_1954_2993cc.jpg",
     "hint": "Gullwing doors icon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Gullwing",
+      "300 SL Gullwing",
+      "W198"
+    ]
   },
   {
+    "id": "mercedes-benz-g-class-1979",
     "make": "Mercedes-Benz",
     "model": "G-Class",
     "year": 1979,
@@ -1107,9 +1512,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/1979_Mercedes-Benz_G-Class.jpg/960px-1979_Mercedes-Benz_G-Class.jpg",
     "hint": "Military-derived boxy 4x4",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "G-Wagon",
+      "G Wagen",
+      "Gelandewagen",
+      "G-Wagen",
+      "W460"
+    ]
   },
   {
+    "id": "mercedes-benz-w123-1976",
     "make": "Mercedes-Benz",
     "model": "W123",
     "year": 1976,
@@ -1117,9 +1530,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/1980_Mercedes-Benz_W123.jpg/960px-1980_Mercedes-Benz_W123.jpg",
     "hint": "Overengineered diesel sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "E-Class",
+      "230E",
+      "240D",
+      "300D",
+      "280E"
+    ]
   },
   {
+    "id": "audi-tt-1998",
     "make": "Audi",
     "model": "TT",
     "year": 1998,
@@ -1130,6 +1551,7 @@
     "supercar": false
   },
   {
+    "id": "audi-100-coupe-s-1970",
     "make": "Audi",
     "model": "100 Coupe S",
     "year": 1970,
@@ -1140,6 +1562,7 @@
     "supercar": false
   },
   {
+    "id": "volkswagen-golf-1983",
     "make": "Volkswagen",
     "model": "Golf",
     "year": 1983,
@@ -1147,9 +1570,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/1987_Volkswagen_Golf_GTi_%2831488973161%29.jpg/960px-1987_Volkswagen_Golf_GTi_%2831488973161%29.jpg",
     "hint": "Second-gen hot hatch",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Rabbit",
+      "Golf Mk2"
+    ]
   },
   {
+    "id": "volkswagen-corrado-1988",
     "make": "Volkswagen",
     "model": "Corrado",
     "year": 1988,
@@ -1160,6 +1588,7 @@
     "supercar": false
   },
   {
+    "id": "volkswagen-scirocco-1974",
     "make": "Volkswagen",
     "model": "Scirocco",
     "year": 1974,
@@ -1170,6 +1599,7 @@
     "supercar": false
   },
   {
+    "id": "opel-gt-1968",
     "make": "Opel",
     "model": "GT",
     "year": 1968,
@@ -1180,6 +1610,7 @@
     "supercar": false
   },
   {
+    "id": "opel-kadett-gsi-1984",
     "make": "Opel",
     "model": "Kadett GSi",
     "year": 1984,
@@ -1187,9 +1618,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/1986_Opel_Kadett_GSi_%2811600590723%29.jpg/960px-1986_Opel_Kadett_GSi_%2811600590723%29.jpg",
     "hint": "Compact hot hatch",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Kadett",
+      "Kadett GSI",
+      "Astra GTE"
+    ]
   },
   {
+    "id": "maybach-57-2002",
     "make": "Maybach",
     "model": "57",
     "year": 2002,
@@ -1200,6 +1637,7 @@
     "supercar": false
   },
   {
+    "id": "wartburg-353-1966",
     "make": "Wartburg",
     "model": "353",
     "year": 1966,
@@ -1210,6 +1648,7 @@
     "supercar": false
   },
   {
+    "id": "smart-fortwo-1998",
     "make": "Smart",
     "model": "Fortwo",
     "year": 1998,
@@ -1217,9 +1656,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Smart_fortwo_Cabrio_electric%2C_IAA_2017%2C_Frankfurt_%281Y7A1891%29.jpg/960px-Smart_fortwo_Cabrio_electric%2C_IAA_2017%2C_Frankfurt_%281Y7A1891%29.jpg",
     "hint": "Tiny two-seat city car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "City Coupe",
+      "For Two"
+    ]
   },
   {
+    "id": "ford-gt-2005",
     "make": "Ford",
     "model": "GT",
     "year": 2005,
@@ -1230,6 +1674,7 @@
     "supercar": false
   },
   {
+    "id": "ford-mustang-mach-1-1969",
     "make": "Ford",
     "model": "Mustang Mach 1",
     "year": 1969,
@@ -1240,6 +1685,7 @@
     "supercar": false
   },
   {
+    "id": "ford-bronco-1966",
     "make": "Ford",
     "model": "Bronco",
     "year": 1966,
@@ -1250,6 +1696,7 @@
     "supercar": false
   },
   {
+    "id": "ford-thunderbird-1955",
     "make": "Ford",
     "model": "Thunderbird",
     "year": 1955,
@@ -1257,9 +1704,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/1955_Ford_Thunderbird_rear.jpg/960px-1955_Ford_Thunderbird_rear.jpg",
     "hint": "Personal luxury car pioneer",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "T-Bird",
+      "TBird"
+    ]
   },
   {
+    "id": "chevrolet-corvette-zr-1-1990",
     "make": "Chevrolet",
     "model": "Corvette ZR-1",
     "year": 1990,
@@ -1267,9 +1719,16 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Chevrolet_Corvette_ZR-1_Coup%C3%A9_%28C4%2C_1990%29_%2855220000631%29.jpg/960px-Chevrolet_Corvette_ZR-1_Coup%C3%A9_%28C4%2C_1990%29_%2855220000631%29.jpg",
     "hint": "King of the Hill Corvette",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "ZR1",
+      "C4 ZR-1",
+      "C4 Corvette",
+      "C4"
+    ]
   },
   {
+    "id": "chevrolet-chevelle-ss-1970",
     "make": "Chevrolet",
     "model": "Chevelle SS",
     "year": 1970,
@@ -1277,9 +1736,15 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/1970_Chevrolet_Chevelle_SS_-_01.jpg/960px-1970_Chevrolet_Chevelle_SS_-_01.jpg",
     "hint": "Big-block muscle sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Chevelle",
+      "Chevelle SS 454",
+      "Malibu SS"
+    ]
   },
   {
+    "id": "chevrolet-el-camino-1959",
     "make": "Chevrolet",
     "model": "El Camino",
     "year": 1959,
@@ -1290,6 +1755,7 @@
     "supercar": false
   },
   {
+    "id": "chevrolet-nova-ss-1968",
     "make": "Chevrolet",
     "model": "Nova SS",
     "year": 1968,
@@ -1297,9 +1763,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/1968_Chevrolet_Nova_SS_%2820389767164%29.jpg/960px-1968_Chevrolet_Nova_SS_%2820389767164%29.jpg",
     "hint": "Compact muscle car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Nova",
+      "Chevy II"
+    ]
   },
   {
+    "id": "pontiac-gto-1966",
     "make": "Pontiac",
     "model": "GTO",
     "year": 1966,
@@ -1307,9 +1778,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/1966_%26_1969_Pontiac_GTO_%2834841847634%29.jpg/960px-1966_%26_1969_Pontiac_GTO_%2834841847634%29.jpg",
     "hint": "The original muscle car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Goat",
+      "LeMans GTO"
+    ]
   },
   {
+    "id": "oldsmobile-442-1970",
     "make": "Oldsmobile",
     "model": "442",
     "year": 1970,
@@ -1317,9 +1793,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/1970_Oldsmobile_442_07-27-2019.jpg/960px-1970_Oldsmobile_442_07-27-2019.jpg",
     "hint": "GM performance rival",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "4-4-2",
+      "Cutlass 442"
+    ]
   },
   {
+    "id": "studebaker-avanti-1962",
     "make": "Studebaker",
     "model": "Avanti",
     "year": 1962,
@@ -1330,6 +1811,7 @@
     "supercar": false
   },
   {
+    "id": "chrysler-pt-cruiser-2000",
     "make": "Chrysler",
     "model": "PT Cruiser",
     "year": 2000,
@@ -1340,6 +1822,7 @@
     "supercar": false
   },
   {
+    "id": "lincoln-continental-mark-iii-1958",
     "make": "Lincoln",
     "model": "Continental Mark III",
     "year": 1958,
@@ -1347,9 +1830,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/1958_Lincoln_Continental_Mark_III_%2829719387991%29.jpg/960px-1958_Lincoln_Continental_Mark_III_%2829719387991%29.jpg",
     "hint": "Suicide-door luxury sedan",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Continental",
+      "Mark III"
+    ]
   },
   {
+    "id": "cadillac-cts-v-2004",
     "make": "Cadillac",
     "model": "CTS-V",
     "year": 2004,
@@ -1360,6 +1848,7 @@
     "supercar": false
   },
   {
+    "id": "hummer-h1-1992",
     "make": "Hummer",
     "model": "H1",
     "year": 1992,
@@ -1370,6 +1859,7 @@
     "supercar": false
   },
   {
+    "id": "chevrolet-bel-air-1957",
     "make": "Chevrolet",
     "model": "Bel Air",
     "year": 1957,
@@ -1380,6 +1870,7 @@
     "supercar": false
   },
   {
+    "id": "shelby-cobra-1962",
     "make": "Shelby",
     "model": "Cobra",
     "year": 1962,
@@ -1387,9 +1878,16 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/1963_Shelby_Cobra_289%2C_Tour_Auto_2015%2C_Toulouse.jpg/960px-1963_Shelby_Cobra_289%2C_Tour_Auto_2015%2C_Toulouse.jpg",
     "hint": "British body, American V8",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "AC Cobra",
+      "289 Cobra",
+      "427 Cobra",
+      "Shelby Cobra"
+    ]
   },
   {
+    "id": "ford-shelby-gt500-1967",
     "make": "Ford",
     "model": "Shelby GT500",
     "year": 1967,
@@ -1397,9 +1895,19 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/1967_Ford_Mustang_Shelby_GT500_White_%2B_Blue.jpg/960px-1967_Ford_Mustang_Shelby_GT500_White_%2B_Blue.jpg",
     "hint": "Carroll Shelby's Mustang",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "GT500",
+      "Mustang GT500",
+      "Mustang Shelby GT500",
+      "Eleanor"
+    ],
+    "makeAliases": [
+      "Shelby"
+    ]
   },
   {
+    "id": "plymouth-road-runner-1968",
     "make": "Plymouth",
     "model": "Road Runner",
     "year": 1968,
@@ -1410,6 +1918,7 @@
     "supercar": false
   },
   {
+    "id": "ford-falcon-1964",
     "make": "Ford",
     "model": "Falcon",
     "year": 1964,
@@ -1420,17 +1929,23 @@
     "supercar": false
   },
   {
-    "make": "Citro\u00ebn",
+    "id": "citroen-traction-avant-1934",
+    "make": "Citroën",
     "model": "Traction Avant",
     "year": 1934,
     "region": "france",
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Citro%C3%ABn_Traction_Avant_11B%2C_Bj._1938_%282008-06-28_Sp%29.JPG/960px-Citro%C3%ABn_Traction_Avant_11B%2C_Bj._1938_%282008-06-28_Sp%29.JPG",
     "hint": "Front-wheel-drive pioneer",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "11CV",
+      "Traction"
+    ]
   },
   {
-    "make": "Citro\u00ebn",
+    "id": "citroen-cx-1985",
+    "make": "Citroën",
     "model": "CX",
     "year": 1985,
     "region": "france",
@@ -1440,7 +1955,8 @@
     "supercar": false
   },
   {
-    "make": "Citro\u00ebn",
+    "id": "citroen-ax-1986",
+    "make": "Citroën",
     "model": "AX",
     "year": 1986,
     "region": "france",
@@ -1450,6 +1966,7 @@
     "supercar": false
   },
   {
+    "id": "renault-4-1961",
     "make": "Renault",
     "model": "4",
     "year": 1961,
@@ -1457,9 +1974,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Renault_4_CV_1956_rear.jpg/960px-Renault_4_CV_1956_rear.jpg",
     "hint": "Utilitarian people's car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "4L",
+      "R4",
+      "Quatrelle",
+      "Renault 4"
+    ]
   },
   {
+    "id": "renault-clio-williams-1993",
     "make": "Renault",
     "model": "Clio Williams",
     "year": 1993,
@@ -1467,9 +1991,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/1994_Renault_Clio_Williams_16V_%289066809986%29.jpg/960px-1994_Renault_Clio_Williams_16V_%289066809986%29.jpg",
     "hint": "Homologation hot hatch",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Clio"
+    ]
   },
   {
+    "id": "renault-twingo-1992",
     "make": "Renault",
     "model": "Twingo",
     "year": 1992,
@@ -1480,6 +2008,7 @@
     "supercar": false
   },
   {
+    "id": "renault-espace-1984",
     "make": "Renault",
     "model": "Espace",
     "year": 1984,
@@ -1490,6 +2019,7 @@
     "supercar": false
   },
   {
+    "id": "peugeot-504-1978",
     "make": "Peugeot",
     "model": "504",
     "year": 1978,
@@ -1500,6 +2030,7 @@
     "supercar": false
   },
   {
+    "id": "peugeot-205-turbo-16-1984",
     "make": "Peugeot",
     "model": "205 Turbo 16",
     "year": 1984,
@@ -1507,9 +2038,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Peugeot_205_%281990%E2%80%931998%29_Wien_26_July_2020_JM_%281%29.jpg/960px-Peugeot_205_%281990%E2%80%931998%29_Wien_26_July_2020_JM_%281%29.jpg",
     "hint": "Group B rally monster",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "205 T16",
+      "T16"
+    ]
   },
   {
+    "id": "peugeot-306-1993",
     "make": "Peugeot",
     "model": "306",
     "year": 1993,
@@ -1520,6 +2056,7 @@
     "supercar": false
   },
   {
+    "id": "matra-djet-1962",
     "make": "Matra",
     "model": "Djet",
     "year": 1962,
@@ -1527,9 +2064,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Matra-Bonnet-Djet-VS-1966-Gordini-1100-powered_3-4_front.jpg/960px-Matra-Bonnet-Djet-VS-1966-Gordini-1100-powered_3-4_front.jpg",
     "hint": "Mid-engine French sports car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Jet",
+      "Rene Bonnet Djet"
+    ]
   },
   {
+    "id": "venturi-400-gt-1994",
     "make": "Venturi",
     "model": "400 GT",
     "year": 1994,
@@ -1540,6 +2082,7 @@
     "supercar": true
   },
   {
+    "id": "alpine-a310-1971",
     "make": "Alpine",
     "model": "A310",
     "year": 1971,
@@ -1550,6 +2093,7 @@
     "supercar": false
   },
   {
+    "id": "simca-1000-1961",
     "make": "Simca",
     "model": "1000",
     "year": 1961,
@@ -1560,6 +2104,7 @@
     "supercar": false
   },
   {
+    "id": "ds-automobiles-ds3-2010",
     "make": "DS Automobiles",
     "model": "DS3",
     "year": 2010,
@@ -1570,6 +2115,7 @@
     "supercar": false
   },
   {
+    "id": "alfa-romeo-spider-1966",
     "make": "Alfa Romeo",
     "model": "Spider",
     "year": 1966,
@@ -1577,9 +2123,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/1967-Alfa-Romeo-Duetto-Red-Front-Angle-st.jpg/960px-1967-Alfa-Romeo-Duetto-Red-Front-Angle-st.jpg",
     "hint": "The Graduate's roadster",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Duetto",
+      "Spider Duetto"
+    ]
   },
   {
+    "id": "alfa-romeo-montreal-1970",
     "make": "Alfa Romeo",
     "model": "Montreal",
     "year": 1970,
@@ -1590,6 +2141,7 @@
     "supercar": false
   },
   {
+    "id": "alfa-romeo-156-1997",
     "make": "Alfa Romeo",
     "model": "156",
     "year": 1997,
@@ -1600,6 +2152,7 @@
     "supercar": false
   },
   {
+    "id": "lamborghini-miura-1966",
     "make": "Lamborghini",
     "model": "Miura",
     "year": 1966,
@@ -1610,6 +2163,7 @@
     "supercar": true
   },
   {
+    "id": "lamborghini-espada-1968",
     "make": "Lamborghini",
     "model": "Espada",
     "year": 1968,
@@ -1620,6 +2174,7 @@
     "supercar": true
   },
   {
+    "id": "ferrari-250-gto-1962",
     "make": "Ferrari",
     "model": "250 GTO",
     "year": 1962,
@@ -1627,9 +2182,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/1962_Ferrari_250_GTO_34_2.jpg/960px-1962_Ferrari_250_GTO_34_2.jpg",
     "hint": "Most valuable classic car",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "GTO"
+    ]
   },
   {
+    "id": "ferrari-dino-246-1969",
     "make": "Ferrari",
     "model": "Dino 246",
     "year": 1969,
@@ -1637,9 +2196,16 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/1970_Ferrari_Dino_246_GT_LC24.jpg/960px-1970_Ferrari_Dino_246_GT_LC24.jpg",
     "hint": "Entry-level mid-engine Ferrari",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "246 GT",
+      "Dino",
+      "246",
+      "Dino 246 GT"
+    ]
   },
   {
+    "id": "ferrari-daytona-1968",
     "make": "Ferrari",
     "model": "Daytona",
     "year": 1968,
@@ -1647,9 +2213,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/1969_Ferrari_365_GTB4_Daytona.jpg/960px-1969_Ferrari_365_GTB4_Daytona.jpg",
     "hint": "Front-engine V12 GT",
-    "supercar": true
+    "supercar": true,
+    "modelAliases": [
+      "365 GTB/4",
+      "365 GTB4",
+      "365"
+    ]
   },
   {
+    "id": "fiat-124-spider-1966",
     "make": "Fiat",
     "model": "124 Spider",
     "year": 1966,
@@ -1657,9 +2229,14 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Fiat_124_Spider%2C_1%2C4_l%2C_Bj._1970_%282016-07-02_Sp%29.JPG/960px-Fiat_124_Spider%2C_1%2C4_l%2C_Bj._1970_%282016-07-02_Sp%29.JPG",
     "hint": "Pininfarina-styled roadster",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "124",
+      "Spider"
+    ]
   },
   {
+    "id": "fiat-panda-1980",
     "make": "Fiat",
     "model": "Panda",
     "year": 1980,
@@ -1670,6 +2247,7 @@
     "supercar": false
   },
   {
+    "id": "lancia-stratos-1973",
     "make": "Lancia",
     "model": "Stratos",
     "year": 1973,
@@ -1677,9 +2255,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/1975_Lancia_Stratos_HF_Stradale_7.jpg/960px-1975_Lancia_Stratos_HF_Stradale_7.jpg",
     "hint": "Purpose-built rally weapon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Stratos HF"
+    ]
   },
   {
+    "id": "lancia-fulvia-1965",
     "make": "Lancia",
     "model": "Fulvia",
     "year": 1965,
@@ -1687,9 +2269,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/1968_Lancia_Fulvia_Series_I_Coup%C3%A9%2C_front_right_-_in_Greenwich.jpg/960px-1968_Lancia_Fulvia_Series_I_Coup%C3%A9%2C_front_right_-_in_Greenwich.jpg",
     "hint": "Elegant compact coupe",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Fulvia Coupe"
+    ]
   },
   {
+    "id": "de-tomaso-pantera-1971",
     "make": "De Tomaso",
     "model": "Pantera",
     "year": 1971,
@@ -1700,6 +2286,7 @@
     "supercar": true
   },
   {
+    "id": "maserati-bora-1971",
     "make": "Maserati",
     "model": "Bora",
     "year": 1971,
@@ -1710,6 +2297,7 @@
     "supercar": true
   },
   {
+    "id": "iso-grifo-1965",
     "make": "Iso",
     "model": "Grifo",
     "year": 1965,
@@ -1720,6 +2308,7 @@
     "supercar": true
   },
   {
+    "id": "jaguar-xk120-1948",
     "make": "Jaguar",
     "model": "XK120",
     "year": 1948,
@@ -1730,6 +2319,7 @@
     "supercar": false
   },
   {
+    "id": "jaguar-xjs-1975",
     "make": "Jaguar",
     "model": "XJS",
     "year": 1975,
@@ -1737,9 +2327,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/1983_Jaguar_XJS_3.6L_Police_Demonstrator_Car.jpg/960px-1983_Jaguar_XJS_3.6L_Police_Demonstrator_Car.jpg",
     "hint": "Long-running GT successor to E-Type",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "XJ-S"
+    ]
   },
   {
+    "id": "lotus-elan-1962",
     "make": "Lotus",
     "model": "Elan",
     "year": 1962,
@@ -1750,6 +2344,7 @@
     "supercar": false
   },
   {
+    "id": "lotus-seven-1957",
     "make": "Lotus",
     "model": "Seven",
     "year": 1957,
@@ -1757,9 +2352,15 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/1965LotusSevenSeriesII.jpg/960px-1965LotusSevenSeriesII.jpg",
     "hint": "Minimalist track-day icon",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "7",
+      "Super Seven",
+      "Lotus 7"
+    ]
   },
   {
+    "id": "mg-mgb-1962",
     "make": "MG",
     "model": "MGB",
     "year": 1962,
@@ -1770,6 +2371,7 @@
     "supercar": false
   },
   {
+    "id": "mg-midget-1961",
     "make": "MG",
     "model": "Midget",
     "year": 1961,
@@ -1780,6 +2382,7 @@
     "supercar": false
   },
   {
+    "id": "austin-healey-3000-1959",
     "make": "Austin-Healey",
     "model": "3000",
     "year": 1959,
@@ -1787,9 +2390,13 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Austin-Healey_3000_Mk_II_BN7_%281962%29_Solitude_Revival_2022_1X7A0090.jpg/960px-Austin-Healey_3000_Mk_II_BN7_%281962%29_Solitude_Revival_2022_1X7A0090.jpg",
     "hint": "Big Healey rally winner",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Big Healey"
+    ]
   },
   {
+    "id": "triumph-tr6-1968",
     "make": "Triumph",
     "model": "TR6",
     "year": 1968,
@@ -1800,6 +2407,7 @@
     "supercar": false
   },
   {
+    "id": "morris-minor-1948",
     "make": "Morris",
     "model": "Minor",
     "year": 1948,
@@ -1810,6 +2418,7 @@
     "supercar": false
   },
   {
+    "id": "vauxhall-chevette-1975",
     "make": "Vauxhall",
     "model": "Chevette",
     "year": 1975,
@@ -1820,6 +2429,7 @@
     "supercar": false
   },
   {
+    "id": "land-rover-series-i-1948",
     "make": "Land Rover",
     "model": "Series I",
     "year": 1948,
@@ -1827,9 +2437,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Land_Rover_Series_I_1948_%28HUE_166%29.jpg/960px-Land_Rover_Series_I_1948_%28HUE_166%29.jpg",
     "hint": "Original Land Rover",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Series 1",
+      "Series One"
+    ]
   },
   {
+    "id": "range-rover-classic-1970",
     "make": "Range Rover",
     "model": "Classic",
     "year": 1970,
@@ -1837,9 +2452,17 @@
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Range_Rover_Classic_%281970%29_Classic-Gala_2022_1X7A0287.jpg/960px-Range_Rover_Classic_%281970%29_Classic-Gala_2022_1X7A0287.jpg",
     "hint": "Luxury off-roader pioneer",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Range Rover",
+      "Range Rover Classic"
+    ],
+    "makeAliases": [
+      "Land Rover"
+    ]
   },
   {
+    "id": "bentley-continental-gt-2003",
     "make": "Bentley",
     "model": "Continental GT",
     "year": 2003,
@@ -1850,6 +2473,7 @@
     "supercar": false
   },
   {
+    "id": "aston-martin-v8-vantage-1977",
     "make": "Aston Martin",
     "model": "V8 Vantage",
     "year": 1977,
@@ -1857,9 +2481,14 @@
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/1978_Aston_Martin_V8_Vantage_Oscar_India_BS_O24.jpg/960px-1978_Aston_Martin_V8_Vantage_Oscar_India_BS_O24.jpg",
     "hint": "Britain's original muscle car",
-    "supercar": false
+    "supercar": false,
+    "modelAliases": [
+      "Vantage",
+      "V8"
+    ]
   },
   {
+    "id": "noble-m12-2000",
     "make": "Noble",
     "model": "M12",
     "year": 2000,
@@ -1870,6 +2499,7 @@
     "supercar": true
   },
   {
+    "id": "dodge-challenger-srt-hellcat-2015",
     "make": "Dodge",
     "model": "Challenger SRT Hellcat",
     "year": 2015,
@@ -1877,9 +2507,15 @@
     "niche": false,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Dodge_Challenger_SRT_Hellcat_2015-20180909-RM-171853.jpg/1280px-Dodge_Challenger_SRT_Hellcat_2015-20180909-RM-171853.jpg",
-    "hint": "707 hp supercharged Hemi V8 muscle car"
+    "hint": "707 hp supercharged Hemi V8 muscle car",
+    "modelAliases": [
+      "Hellcat",
+      "Challenger Hellcat",
+      "Challenger"
+    ]
   },
   {
+    "id": "chevrolet-corvette-stingray-c8-2020",
     "make": "Chevrolet",
     "model": "Corvette Stingray (C8)",
     "year": 2020,
@@ -1887,9 +2523,17 @@
     "niche": false,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/2020_Chevrolet_Corvette_C8_%28white%29.jpg/1280px-2020_Chevrolet_Corvette_C8_%28white%29.jpg",
-    "hint": "First mid-engine production Corvette"
+    "hint": "First mid-engine production Corvette",
+    "modelAliases": [
+      "C8",
+      "C8 Corvette"
+    ],
+    "makeAliases": [
+      "Corvette"
+    ]
   },
   {
+    "id": "ford-f-150-raptor-2021",
     "make": "Ford",
     "model": "F-150 Raptor",
     "year": 2021,
@@ -1897,9 +2541,14 @@
     "niche": false,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/2021_Ford_F-150_Raptor%2C_front.jpg/1280px-2021_Ford_F-150_Raptor%2C_front.jpg",
-    "hint": "Factory desert-racing pickup truck"
+    "hint": "Factory desert-racing pickup truck",
+    "modelAliases": [
+      "Raptor",
+      "F150"
+    ]
   },
   {
+    "id": "tesla-cybertruck-2024",
     "make": "Tesla",
     "model": "Cybertruck",
     "year": 2024,
@@ -1910,6 +2559,7 @@
     "hint": "Stainless-steel exoskeleton EV pickup"
   },
   {
+    "id": "cadillac-ct5-v-blackwing-2022",
     "make": "Cadillac",
     "model": "CT5-V Blackwing",
     "year": 2022,
@@ -1917,9 +2567,15 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Cadillac_CT5-V_Blackwing_6DC79_Black_Raven_%2813%29.jpg/1280px-Cadillac_CT5-V_Blackwing_6DC79_Black_Raven_%2813%29.jpg",
-    "hint": "Cadillac's last manual-transmission V8 sedan"
+    "hint": "Cadillac's last manual-transmission V8 sedan",
+    "modelAliases": [
+      "CT5 Blackwing",
+      "Blackwing",
+      "CT5-V"
+    ]
   },
   {
+    "id": "chevrolet-camaro-zl1-2018",
     "make": "Chevrolet",
     "model": "Camaro ZL1",
     "year": 2018,
@@ -1927,9 +2583,13 @@
     "niche": false,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/2018_Chevrolet_Camaro_ZL1_1LE_SCD_24.jpg/1280px-2018_Chevrolet_Camaro_ZL1_1LE_SCD_24.jpg",
-    "hint": "Supercharged Camaro track weapon"
+    "hint": "Supercharged Camaro track weapon",
+    "modelAliases": [
+      "ZL1"
+    ]
   },
   {
+    "id": "gmc-hummer-ev-2022",
     "make": "GMC",
     "model": "Hummer EV",
     "year": 2022,
@@ -1937,9 +2597,13 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/GMC_Hummer_EV.jpg/1280px-GMC_Hummer_EV.jpg",
-    "hint": "Electric revival of the military-derived Hummer"
+    "hint": "Electric revival of the military-derived Hummer",
+    "modelAliases": [
+      "Hummer"
+    ]
   },
   {
+    "id": "ssc-tuatara-2019",
     "make": "SSC",
     "model": "Tuatara",
     "year": 2019,
@@ -1950,6 +2614,7 @@
     "hint": "American hypercar that chased the top-speed record"
   },
   {
+    "id": "saleen-s7-2005",
     "make": "Saleen",
     "model": "S7",
     "year": 2005,
@@ -1960,6 +2625,7 @@
     "hint": "First American supercar of the modern era"
   },
   {
+    "id": "hennessey-venom-gt-2013",
     "make": "Hennessey",
     "model": "Venom GT",
     "year": 2013,
@@ -1967,9 +2633,13 @@
     "niche": true,
     "supercar": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Hennessey_Venom_GT_%2816040233465%29.jpg/1280px-Hennessey_Venom_GT_%2816040233465%29.jpg",
-    "hint": "Lotus-based hypercar with over 1200 hp"
+    "hint": "Lotus-based hypercar with over 1200 hp",
+    "modelAliases": [
+      "Venom"
+    ]
   },
   {
+    "id": "amc-javelin-amx-1971",
     "make": "AMC",
     "model": "Javelin AMX",
     "year": 1971,
@@ -1977,9 +2647,14 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/1971_AMC_Javelin_AMX_in_Matador_Red_with_red_interior_at_AMO_2024_show_1of2.jpg/1280px-1971_AMC_Javelin_AMX_in_Matador_Red_with_red_interior_at_AMO_2024_show_1of2.jpg",
-    "hint": "AMC's pony car answer to the Mustang and Camaro"
+    "hint": "AMC's pony car answer to the Mustang and Camaro",
+    "modelAliases": [
+      "Javelin",
+      "AMX"
+    ]
   },
   {
+    "id": "mercury-cougar-1967",
     "make": "Mercury",
     "model": "Cougar",
     "year": 1967,
@@ -1990,6 +2665,7 @@
     "hint": "Upscale Mustang sibling with hidden headlights"
   },
   {
+    "id": "chevrolet-impala-1964",
     "make": "Chevrolet",
     "model": "Impala",
     "year": 1964,
@@ -2000,6 +2676,7 @@
     "hint": "Best-selling full-size car of the 1960s"
   },
   {
+    "id": "dodge-dart-gt-1968",
     "make": "Dodge",
     "model": "Dart GT",
     "year": 1968,
@@ -2007,9 +2684,13 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/1968_Dodge_Dart_GT_%2834872873763%29.jpg/1280px-1968_Dodge_Dart_GT_%2834872873763%29.jpg",
-    "hint": "Compact Mopar with big-block potential"
+    "hint": "Compact Mopar with big-block potential",
+    "modelAliases": [
+      "Dart"
+    ]
   },
   {
+    "id": "buick-riviera-1963",
     "make": "Buick",
     "model": "Riviera",
     "year": 1963,
@@ -2020,6 +2701,7 @@
     "hint": "GM's answer to the personal luxury coupe"
   },
   {
+    "id": "chrysler-300c-srt8-2006",
     "make": "Chrysler",
     "model": "300C SRT8",
     "year": 2006,
@@ -2027,9 +2709,15 @@
     "niche": false,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/2006_Chrysler_300C_%28MY06%29_SRT-8_sedan_%2825646557983%29.jpg/1280px-2006_Chrysler_300C_%28MY06%29_SRT-8_sedan_%2825646557983%29.jpg",
-    "hint": "Hemi V8 gangster-luxury sedan"
+    "hint": "Hemi V8 gangster-luxury sedan",
+    "modelAliases": [
+      "300C",
+      "300 SRT8",
+      "SRT8"
+    ]
   },
   {
+    "id": "ford-torino-gt-1968",
     "make": "Ford",
     "model": "Torino GT",
     "year": 1968,
@@ -2037,9 +2725,13 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/1968_Ford_Torino_GT_Fastback.jpg/1280px-1968_Ford_Torino_GT_Fastback.jpg",
-    "hint": "NASCAR-bred fastback muscle car"
+    "hint": "NASCAR-bred fastback muscle car",
+    "modelAliases": [
+      "Torino"
+    ]
   },
   {
+    "id": "chevrolet-corvette-stingray-1968",
     "make": "Chevrolet",
     "model": "Corvette Stingray",
     "year": 1968,
@@ -2047,9 +2739,14 @@
     "niche": false,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/1968_Chevrolet_Corvette_Stingray_%2814176876910%29.jpg/1280px-1968_Chevrolet_Corvette_Stingray_%2814176876910%29.jpg",
-    "hint": "C3 generation with the Mako Shark-inspired body"
+    "hint": "C3 generation with the Mako Shark-inspired body",
+    "modelAliases": [
+      "C3",
+      "C3 Corvette"
+    ]
   },
   {
+    "id": "pontiac-firebird-trans-am-gta-1987",
     "make": "Pontiac",
     "model": "Firebird Trans Am GTA",
     "year": 1987,
@@ -2057,9 +2754,14 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/1987_Pontiac_Firebird_Trans_Am_GTA_JM_19.05.19.jpg/1280px-1987_Pontiac_Firebird_Trans_Am_GTA_JM_19.05.19.jpg",
-    "hint": "3rd-gen Firebird flagship trim"
+    "hint": "3rd-gen Firebird flagship trim",
+    "modelAliases": [
+      "Trans Am GTA",
+      "GTA"
+    ]
   },
   {
+    "id": "jeep-grand-wagoneer-1989",
     "make": "Jeep",
     "model": "Grand Wagoneer",
     "year": 1989,
@@ -2067,9 +2769,13 @@
     "niche": true,
     "supercar": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Jeep_Grand_Wagoneer_%28SJ%29_white_in_North_Carolina_1of5.jpg/1280px-Jeep_Grand_Wagoneer_%28SJ%29_white_in_North_Carolina_1of5.jpg",
-    "hint": "Woodgrain-sided SUV that defined a genre"
+    "hint": "Woodgrain-sided SUV that defined a genre",
+    "modelAliases": [
+      "Wagoneer"
+    ]
   },
   {
+    "id": "porsche-911-2010-rwb",
     "make": "Porsche",
     "model": "911",
     "year": 2010,
@@ -2085,8 +2791,9 @@
     ]
   },
   {
+    "id": "lamborghini-huracan-2016-liberty-walk",
     "make": "Lamborghini",
-    "model": "Hurac\u00e1n",
+    "model": "Huracán",
     "year": 2016,
     "region": "italy",
     "niche": true,
@@ -2097,10 +2804,14 @@
     "kitAliases": [
       "LB Performance",
       "LB Works",
-      "LB\u2605WORKS"
+      "LB★WORKS"
+    ],
+    "modelAliases": [
+      "Huracan"
     ]
   },
   {
+    "id": "nissan-gt-r-2016-liberty-walk",
     "make": "Nissan",
     "model": "GT-R",
     "year": 2016,
@@ -2113,10 +2824,11 @@
     "kitAliases": [
       "LB Performance",
       "LB Works",
-      "LB\u2605WORKS"
+      "LB★WORKS"
     ]
   },
   {
+    "id": "ferrari-458-spider-2013-liberty-walk",
     "make": "Ferrari",
     "model": "458 Spider",
     "year": 2013,
@@ -2129,10 +2841,15 @@
     "kitAliases": [
       "LB Performance",
       "LB Works",
-      "LB\u2605WORKS"
+      "LB★WORKS"
+    ],
+    "modelAliases": [
+      "458",
+      "458 Italia"
     ]
   },
   {
+    "id": "toyota-gt86-2015-rocket-bunny",
     "make": "Toyota",
     "model": "GT86",
     "year": 2015,
@@ -2145,9 +2862,17 @@
     "kitAliases": [
       "Pandem",
       "TRA Kyoto"
+    ],
+    "modelAliases": [
+      "86",
+      "FT86",
+      "GT 86",
+      "FR-S",
+      "BRZ"
     ]
   },
   {
+    "id": "lamborghini-aventador-s-2018-mansory",
     "make": "Lamborghini",
     "model": "Aventador S",
     "year": 2018,
@@ -2157,9 +2882,13 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Lamborghini_Aventador_S_Mansory_%2850583937952%29.jpg/1280px-Lamborghini_Aventador_S_Mansory_%2850583937952%29.jpg",
     "hint": "German tuner known for aggressive carbon-fiber aero",
     "kit": "Mansory",
-    "kitAliases": []
+    "kitAliases": [],
+    "modelAliases": [
+      "Aventador"
+    ]
   },
   {
+    "id": "ferrari-488-gtb-2018-novitec",
     "make": "Ferrari",
     "model": "488 GTB",
     "year": 2018,
@@ -2171,9 +2900,13 @@
     "kit": "Novitec",
     "kitAliases": [
       "Novitec Rosso"
+    ],
+    "modelAliases": [
+      "488"
     ]
   },
   {
+    "id": "lamborghini-aventador-2013-vorsteiner",
     "make": "Lamborghini",
     "model": "Aventador",
     "year": 2013,
@@ -2186,6 +2919,7 @@
     "kitAliases": []
   },
   {
+    "id": "lamborghini-aventador-2014-hamann",
     "make": "Lamborghini",
     "model": "Aventador",
     "year": 2014,
@@ -2198,6 +2932,7 @@
     "kitAliases": []
   },
   {
+    "id": "mercedes-benz-g-class-2022-brabus",
     "make": "Mercedes-Benz",
     "model": "G-Class",
     "year": 2022,
@@ -2210,6 +2945,7 @@
     "kitAliases": []
   },
   {
+    "id": "infiniti-qx60-2025-larte-design",
     "make": "Infiniti",
     "model": "QX60",
     "year": 2025,
@@ -2222,6 +2958,7 @@
     "kitAliases": []
   },
   {
+    "id": "audi-rs6-2014-abt-sportsline",
     "make": "Audi",
     "model": "RS6",
     "year": 2014,
@@ -2233,9 +2970,14 @@
     "kit": "ABT Sportsline",
     "kitAliases": [
       "ABT"
+    ],
+    "modelAliases": [
+      "RS 6",
+      "RS6 Avant"
     ]
   },
   {
+    "id": "bmw-3-series-2013-prior-design",
     "make": "BMW",
     "model": "3-Series",
     "year": 2013,
@@ -2245,6 +2987,10 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/c/c7/BMW_3-Series_F30_PD-M1_Prior-Design_Aerodynamic-Kit_%288551783566%29.jpg",
     "hint": "PD-M1 aero kit widened the F30's stock bodywork",
     "kit": "Prior Design",
-    "kitAliases": []
+    "kitAliases": [],
+    "modelAliases": [
+      "3 Series",
+      "F30"
+    ]
   }
 ]

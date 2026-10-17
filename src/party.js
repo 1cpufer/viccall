@@ -1,41 +1,7 @@
+const VCScore = require('../public/scoring.js');
 const TOTAL = 10;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
 const MAX_PLAYERS = 16;
-
-function clean(s) {
-  return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-}
-
-function scoreGuess(car, mg, mol, yr) {
-  const res = [];
-  let pts = 0;
-  if (mg) {
-    const hit = clean(mg) === clean(car.make);
-    const p = hit ? 1 : 0;
-    pts += p;
-    res.push({ label: 'Make', detail: hit ? car.make : `Not ${car.make}`, pts: p });
-  }
-  if (mol) {
-    const hit = clean(mol) === clean(car.model);
-    const p = hit ? 2 : 0;
-    pts += p;
-    res.push({ label: 'Model', detail: hit ? car.model : `Not ${car.model}`, pts: p });
-  }
-  if (yr) {
-    const yg = parseInt(yr, 10);
-    const ya = car.year;
-    let p = 0, d = '';
-    if (!isNaN(yg)) {
-      const df = Math.abs(yg - ya);
-      if (df === 0) { p = 2; d = `Exact — ${ya}`; }
-      else if (df <= 5) { p = 1; d = `Within 5 yrs — ${ya}`; }
-      else { p = 0; d = `Off by ${df} — ${ya}`; }
-    }
-    pts += p;
-    res.push({ label: 'Year', detail: d, pts: p });
-  }
-  return { pts, res };
-}
 
 function shuffle(a) {
   const r = [...a];
@@ -153,7 +119,7 @@ function attachParty(io, CARS, MODES) {
       const player = room.players.get(socket.id);
       if (!player || player.answered) return cb({ ok: false, error: 'Already answered' });
       const car = room.queue[room.curIdx];
-      const { pts, res } = scoreGuess(car, payload && payload.make, payload && payload.model, payload && payload.year);
+      const { pts, res } = VCScore.scoreRound(car, room.mode, payload);
       player.score += pts;
       player.answered = true;
       io.to(room.code).emit('party:progress', {
