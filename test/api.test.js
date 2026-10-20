@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer } = require('./helpers');
+const { fullModel } = require('../public/scoring.js');
 const CARS = require('../src/cars.json');
 
 const byImg = img => CARS.find(c => c.img === img && !c.kit) || CARS.find(c => c.img === img);
@@ -13,7 +14,7 @@ async function playPerfect(srv, mode = 'worldwide') {
   let last;
   for (let i = 0; i < 10; i++) {
     const car = byImg(images[i]);
-    const guess = mode === 'kit' ? { kit: car.kit, make: car.make, model: car.model } : { make: car.make, model: car.model, year: String(car.year) };
+    const guess = mode === 'kit' ? { kit: car.kit, make: car.make, model: fullModel(car) } : { make: car.make, model: fullModel(car), year: String(car.year) };
     last = await srv.api('POST', '/api/solo/guess', { sessionId, idx: i, ...guess });
     assert.equal(last.status, 200);
   }

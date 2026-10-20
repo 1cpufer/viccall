@@ -84,6 +84,12 @@ test('model + variant: base model is partial, both is full', () => {
   assert.match(r.res[1].note, /missed the trim: Competition/);
 });
 
+test('a different generation marker is partial: Evo X for an Evo VIII', () => {
+  const evo8 = car('Mitsubishi', 'Lancer Evolution', 2003);
+  assert.equal(modelLevel('Lancer Evolution X', evo8, S.RULES.competitive), 'partial');
+  assert.equal(modelLevel('Evo VIII', evo8, S.RULES.competitive), 'full');
+});
+
 test('right family, wrong generation is partial with a clear note', () => {
   assert.equal(modelLevel('Skyline', r34), 'partial');
   const m = S.matchModel('Skyline R32', r34);
@@ -166,9 +172,16 @@ test('no car gets full model credit for another car of the same make', () => {
     if (S.fullModel(a).toLowerCase() === S.fullModel(b).toLowerCase()) continue;
     if (modelLevel(g, b, S.RULES.competitive) === 'full') bad.push(`${g} -> ${b.id}`);
   }
-  // Known, legitimate overlaps (same car name across generations/trims).
-  const allowed = new Set((process.env.VC_ALLOWED_OVERLAPS || '').split(',').filter(Boolean));
-  const unexpected = bad.filter(x => !allowed.has(x) && !/^(Golf GTI -> volkswagen-golf-1983|Corvette Stingray -> chevrolet-corvette-1963)$/.test(x));
+  // Same model line across generations or trims: the model name is right, and the
+  // year box is what tells generations apart.
+  const allowed = new Set([
+    'Supra -> toyota-gr-supra-2020', 'Golf GTI -> volkswagen-golf-1983', 'Impreza WRX STI -> subaru-wrx-sti-2015',
+    'Miata MX-5 -> mazda-mx-5-miata-2016', 'G-Class -> mercedes-benz-g-63-2019', 'V8 Vantage -> aston-martin-vantage-2019',
+    'Corvette Stingray -> chevrolet-corvette-1963', 'GT-R Nismo -> nissan-gt-r-2009', 'WRX STI -> subaru-impreza-wrx-sti-1999',
+    'MX-5 Miata -> mazda-miata-mx-5-1990', '911 Turbo S -> porsche-911-1974', 'Golf R -> volkswagen-golf-1983',
+    'Vantage -> aston-martin-v8-vantage-1977',
+  ]);
+  const unexpected = bad.filter(x => !allowed.has(x));
   assert.deepEqual(unexpected, []);
 });
 
@@ -189,6 +202,13 @@ test('dataset integrity', () => {
     for (const k of ['make', 'model', 'region', 'img', 'hint']) assert.ok(typeof c[k] === 'string' && c[k], `${c.id}.${k}`);
     assert.ok(Number.isInteger(c.year) && c.year > 1880 && c.year <= new Date().getFullYear() + 1, `${c.id}.year`);
     assert.match(c.img, /^https:\/\//);
+    // Wikimedia paths embed md5(filename): a typo in a hand-entered URL breaks the photo.
+    const m = /\/commons\/(?:thumb\/)?([0-9a-f])\/([0-9a-f]{2})\/([^/]+)/.exec(c.img);
+    assert.ok(m, `${c.id}: Wikimedia Commons URL`);
+    const hash = require('crypto').createHash('md5').update(decodeURIComponent(m[3])).digest('hex');
+    assert.equal(`${m[1]}/${m[2]}`, `${hash[0]}/${hash.slice(0, 2)}`, `${c.id}: hash path matches file name`);
+    assert.ok([1, 2, 3].includes(c.difficulty), `${c.id}.difficulty`);
+    assert.ok(typeof c.credit === 'string' && c.credit.length > 4, `${c.id}.credit`);
     if (c.yearRange) {
       assert.ok(Array.isArray(c.yearRange) && c.yearRange.length === 2 && c.yearRange[0] <= c.year && c.year <= c.yearRange[1], `${c.id}.yearRange`);
     }

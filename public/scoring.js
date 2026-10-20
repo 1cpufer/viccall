@@ -169,9 +169,14 @@
     const candidates = stripped.length && stripped.length !== raw.length ? [raw, stripped] : [raw];
     const names = [car.model, ...(car.modelAliases || [])];
     const variantTokens = new Set([car.variant, ...(car.variantAliases || [])].filter(Boolean).flatMap(tokens));
-    const carCodes = new Set([...names, car.variant, ...(car.variantAliases || [])].filter(Boolean).flatMap(n => tokens(n).filter(isCode)));
-    // A code from another car ("Corvette C8" for a C3) caps the answer at partial.
-    const wrongCode = raw.some(t => isCode(t) && !carCodes.has(t));
+    const allNames = [...names, car.variant, ...(car.variantAliases || [])].filter(Boolean);
+    const carCodes = new Set(allNames.flatMap(n => tokens(n).filter(isCode)));
+    // Generation markers: roman numerals and MkN ("Evo X", "Golf Mk2").
+    const isMarker = t => /^(mk|mark)?[ivx]{1,4}$/.test(t) || /^mk\d{1,2}$/.test(t);
+    const carMarkers = new Set(allNames.flatMap(n => tokens(n).filter(isMarker)));
+    // A code or generation from another car ("Corvette C8" for a C3, "Evo X" for
+    // an Evo VIII) caps the answer at partial.
+    const wrongCode = raw.some(t => (isCode(t) && !carCodes.has(t) && !isMarker(t)) || (isMarker(t) && carMarkers.size > 0 && !carMarkers.has(t)));
 
     let best = null;
     for (const gt of candidates) {

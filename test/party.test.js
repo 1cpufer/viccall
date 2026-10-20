@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { startServer, emit, once, key, sleep } = require('./helpers');
 const CARS = require('../src/cars.json');
 const { buildQueue } = require('../src/party');
+const { fullModel } = require('../public/scoring.js');
 
 const fast = { party: { roundMs: 400, timeAttackMs: 300, graceMs: 300, awayMs: 150, sweepMs: 1000 } };
 
@@ -119,7 +120,7 @@ test('kit party scores tuner names', async () => {
     await emit(host, 'party:next', { idx: 0 });
     const { img } = await round2;
     const car = CARS.find(c => c.img === img && c.kit);
-    const good = await emit(host, 'party:guess', { kit: car.kit, make: car.make, model: car.model });
+    const good = await emit(host, 'party:guess', { kit: car.kit, make: car.make, model: fullModel(car) });
     assert.equal(good.pts, 10);
   } finally { await srv.stop(); }
 });
@@ -223,7 +224,7 @@ test('scores stay hidden until the reveal', async () => {
     const { img } = await roundP;
     const car = CARS.find(c => c.img === img && !c.kit);
     const prog = once(guests[0], 'party:progress');
-    const r = await emit(host, 'party:guess', { make: car.make, model: car.model, year: String(car.year) });
+    const r = await emit(host, 'party:guess', { make: car.make, model: fullModel(car), year: String(car.year) });
     assert.equal(r.pts, 10);
     const p = await prog;
     const h = p.players.find(x => x.name === 'Host');
