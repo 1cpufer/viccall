@@ -9,7 +9,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { createApp } = require('../src/server.js');
-const { fullModel } = require('../public/scoring.js');
+const { bestAnswer, buildIndex } = require('../public/scoring.js');
+const IDX = buildIndex(require('../src/cars.json'));
 
 const outDir = process.argv[2] || path.join(__dirname, 'shots');
 fs.mkdirSync(outDir, { recursive: true });
@@ -57,11 +58,9 @@ async function currentCar(page) {
 async function answer(page, car, { kit = false, wrong = false, enter = true } = {}) {
   if (kit) {
     await page.fill('#gKit', wrong ? 'Nope' : car.kit);
-    await page.fill('#gKitMake', wrong ? '' : car.make);
-    await page.fill('#gKitModel', wrong ? '' : fullModel(car));
+    await page.fill('#gKitCar', wrong ? '' : bestAnswer(car, IDX));
   } else {
-    await page.fill('#gMake', wrong ? 'Nope' : car.make);
-    await page.fill('#gModel', wrong ? '' : fullModel(car));
+    await page.fill('#gCar', wrong ? 'Nope' : bestAnswer(car, IDX));
     await page.fill('#gYear', wrong ? '' : String(car.year));
   }
   if (enter) await page.keyboard.press('Enter'); else await page.click('#gSubmit');
@@ -112,7 +111,7 @@ async function desktop(browser) {
   check(car.region === 'japan' && car.year >= 2010, `${vp}: free play respects filters (${car.make} ${car.model} ${car.year})`);
   // Empty guess -> message, no submit.
   await page.click('#gSubmit');
-  check((await page.textContent('#gMsg')).includes('at least one box'), `${vp}: empty guess asks for an answer`);
+  check((await page.textContent('#gMsg')).includes('Type the car'), `${vp}: empty guess asks for an answer`);
   await shot(page, vp, '03-round');
   await answer(page, car);
   check((await page.textContent('#gVerdict')).includes('Spot on'), `${vp}: perfect answer says Spot on`);
@@ -129,11 +128,26 @@ async function desktop(browser) {
   await loaded(page);
   // Make only -> partial verdict.
   car = await currentCar(page);
-  await page.fill('#gMake', car.make);
+  await page.fill('#gCar', car.make);
   await page.keyboard.press('Enter');
   await revealed(page);
   check(/Partly right|Not this time|Close/.test(await page.textContent('#gVerdict')), `${vp}: make-only answer is partial (${(await page.textContent('#gVerdict')).trim()})`);
   check((await page.textContent('#gChips')).includes('Left blank'), `${vp}: blank fields are called out`);
+
+  // ---- Recognition through the real UI: the shortest unique name earns full model credit.
+  await page.keyboard.press('Enter');
+  await loaded(page);
+  car = await currentCar(page);
+  const id = IDX.ids.get(require('../public/scoring.js').identityKey(car));
+  const short = id.exact.map(n => n.t.join(' ')).sort((a, b) => a.length - b.length)
+    .find(t => require('../public/scoring.js').understand(car, t, { ruleset: 'casual', index: IDX }).res.level === 'full');
+  if (short) {
+    await page.fill('#gCar', short);
+    await page.keyboard.press('Enter');
+    await revealed(page);
+    const chips = await page.textContent('#gChips');
+    check(/Model\s*\+5/.test(chips) && /Make\s*\+2/.test(chips), `${vp}: shorthand "${short}" for ${car.make} ${car.model} earns make and model (${chips.replace(/\s+/g, ' ').trim()})`);
+  }
 
   // ---- Leave mid-game with Escape -> confirm dialog.
   await page.keyboard.press('Enter');
@@ -154,7 +168,7 @@ async function desktop(browser) {
   await page.click('#builderStart');
   await loaded(page);
   check(await page.locator('#gClockNum').isVisible(), `${vp}: timer shows when chosen`);
-  await page.fill('#gMake', 'Toyota');
+  await page.fill('#gCar', 'Toyota');
   await page.waitForSelector('#gReveal:not([hidden])', { timeout: 20000 });
   const v = (await page.textContent('#gVerdict')).trim();
   check(!/Too late/.test(v), `${vp}: typed answer is sent when the clock runs out (${v})`);
@@ -199,7 +213,7 @@ async function desktop(browser) {
   await home(page);
   await page.click('[data-playlist="kits"]');
   await loaded(page);
-  check(await page.locator('#gKit').isVisible() && await page.locator('#gKitModel').isVisible(), `${vp}: kit rounds ask for tuner, make and model`);
+  check(await page.locator('#gKit').isVisible() && await page.locator('#gKitCar').isVisible(), `${vp}: kit rounds ask for the tuner and the car`);
   car = await currentCar(page);
   await answer(page, car, { kit: true });
   check((await page.textContent('#gChips')).includes('Tuner'), `${vp}: kit reveal scores the tuner`);
@@ -279,7 +293,7 @@ async function desktop(browser) {
   // ---- Report a car.
   await page.click('[data-playlist="world"]');
   await loaded(page);
-  await page.fill('#gMake', 'x');
+  await page.fill('#gCar', 'x');
   await page.keyboard.press('Enter');
   await revealed(page);
   await page.click('#gReport summary');
@@ -343,11 +357,10 @@ async function partyFlow(browser) {
   const room = app.party.rooms.get(code);
   const car = room.queue[room.curIdx];
   check(car.region === 'japan', 'party: JDM playlist used');
-  await A.page.fill('#pgMake', car.make);
-  await A.page.fill('#pgModel', fullModel(car));
+  await A.page.fill('#pgCar', bestAnswer(car, IDX));
   await A.page.fill('#pgYear', String(car.year));
   await A.page.keyboard.press('Enter');
-  await B.page.fill('#pgMake', 'Nope');
+  await B.page.fill('#pgCar', 'Nope');
   await B.page.keyboard.press('Enter');
   await A.page.waitForSelector('#pgReveal:not([hidden])');
   await B.page.waitForSelector('#pgReveal:not([hidden])');
@@ -362,9 +375,9 @@ async function partyFlow(browser) {
   for (let i = 1; i < 10; i++) {
     await A.page.keyboard.press('Enter');
     await A.page.waitForSelector('#pgForm:not([hidden])');
-    await A.page.fill('#pgMake', 'x'); await A.page.keyboard.press('Enter');
+    await A.page.fill('#pgCar', 'x'); await A.page.keyboard.press('Enter');
     await B.page.waitForSelector('#pgForm:not([hidden])');
-    await B.page.fill('#pgMake', 'y'); await B.page.keyboard.press('Enter');
+    await B.page.fill('#pgCar', 'y'); await B.page.keyboard.press('Enter');
     await A.page.waitForSelector('#pgReveal:not([hidden])');
   }
   await A.page.keyboard.press('Enter');

@@ -1,8 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer, key } = require('./helpers');
-const { fullModel } = require('../public/scoring.js');
+const { bestAnswer, buildIndex } = require('../public/scoring.js');
 const CARS = require('../src/cars.json');
+const IDX = buildIndex(CARS);
 
 // Plays a whole session with perfect answers, reading the answers off the server (tests only).
 async function play(srv, req, { answer = 'perfect', player } = {}) {
@@ -16,8 +17,8 @@ async function play(srv, req, { answer = 'perfect', player } = {}) {
     assert.equal(r.status, 200, JSON.stringify(r.body));
     const car = s.queue[i];
     const guess = answer === 'wrong' ? { make: 'Nope', model: 'Nope' }
-      : roundKind === 'kit' ? { kit: car.kit, make: car.make, model: fullModel(car) }
-      : { make: car.make, model: fullModel(car), year: String(car.year) };
+      : roundKind === 'kit' ? { kit: car.kit, car: bestAnswer(car, IDX) }
+      : { car: bestAnswer(car, IDX), year: String(car.year) };
     last = await srv.api('POST', '/api/solo/guess', { sessionId, idx: i, ...guess });
     assert.equal(last.status, 200, JSON.stringify(last.body));
   }
@@ -97,7 +98,7 @@ test('solo: an answer after the clock runs out scores nothing', async () => {
     await srv.api('POST', '/api/solo/round', { sessionId: body.sessionId, idx: 0 });
     s.openedAt -= 60_000; s.servedAt = 0; // pretend a minute passed and the photo was never fetched
     const car = s.queue[0];
-    const g = await srv.api('POST', '/api/solo/guess', { sessionId: body.sessionId, idx: 0, make: car.make, model: fullModel(car), year: String(car.year) });
+    const g = await srv.api('POST', '/api/solo/guess', { sessionId: body.sessionId, idx: 0, car: bestAnswer(car, IDX), year: String(car.year) });
     assert.equal(g.body.late, true);
     assert.equal(g.body.pts, 0);
     assert.equal(g.body.streak, 0);
@@ -119,7 +120,7 @@ test('solo: endless ends after three misses and serves no repeats', async () => 
     for (let i = 0; !(r && r.body.done); i++) {
       await srv.api('POST', '/api/solo/round', { sessionId: s.id, idx: i });
       const car = s.queue[i];
-      r = await srv.api('POST', '/api/solo/guess', { sessionId: s.id, idx: i, ...(i < 15 ? { make: car.make, model: fullModel(car), year: String(car.year) } : { make: 'x' }) });
+      r = await srv.api('POST', '/api/solo/guess', { sessionId: s.id, idx: i, ...(i < 15 ? { car: bestAnswer(car, IDX), year: String(car.year) } : { car: 'x' }) });
     }
     assert.equal(r.body.idx, 18);
     assert.equal(r.body.bestStreak, 15);

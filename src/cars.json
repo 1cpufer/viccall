@@ -3,17 +3,16 @@
     "id": "toyota-supra-1994",
     "make": "Toyota",
     "model": "Supra",
+    "generation": "A80",
+    "generationAliases": [
+      "Mk4"
+    ],
     "year": 1994,
     "region": "japan",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Toyota_Supra_mk4.jpg/1280px-Toyota_Supra_mk4.jpg",
     "hint": "Iconic JDM sports car",
     "supercar": false,
-    "modelAliases": [
-      "A80",
-      "MKIV Supra",
-      "Supra MK4"
-    ],
     "difficulty": 1,
     "credit": "Toyota Supra mk4.jpg"
   },
@@ -56,6 +55,7 @@
     "id": "honda-nsx-1991",
     "make": "Honda",
     "model": "NSX",
+    "generation": "NA1",
     "year": 1991,
     "region": "japan",
     "niche": false,
@@ -63,7 +63,6 @@
     "hint": "Honda's supercar",
     "supercar": true,
     "modelAliases": [
-      "NA1",
       "Acura NSX"
     ],
     "makeAliases": [
@@ -76,6 +75,10 @@
     "id": "mitsubishi-lancer-evolution-2003",
     "make": "Mitsubishi",
     "model": "Lancer Evolution",
+    "generation": "VIII",
+    "generationAliases": [
+      "8"
+    ],
     "year": 2003,
     "region": "japan",
     "niche": true,
@@ -85,9 +88,7 @@
     "modelAliases": [
       "Evo",
       "Lancer Evo",
-      "Evolution",
-      "Evo VIII",
-      "Evo 8"
+      "Evolution"
     ],
     "difficulty": 3,
     "credit": "2005 Mitsubishi Lancer Evolution IX BS O24.jpg"
@@ -96,16 +97,13 @@
     "id": "bmw-m3-2000",
     "make": "BMW",
     "model": "M3",
+    "generation": "E46",
     "year": 2000,
     "region": "germany",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/BMW_M3_coupe_E46.jpg/1280px-BMW_M3_coupe_E46.jpg",
     "hint": "E46 era German icon",
     "supercar": false,
-    "modelAliases": [
-      "E46 M3",
-      "E46"
-    ],
     "difficulty": 1,
     "credit": "BMW M3 coupe E46.jpg"
   },
@@ -113,6 +111,11 @@
     "id": "porsche-911-1974",
     "make": "Porsche",
     "model": "911",
+    "generation": "G-body",
+    "generationAliases": [
+      "G-series",
+      "G-model"
+    ],
     "year": 1974,
     "region": "germany",
     "niche": false,
@@ -125,8 +128,7 @@
     ],
     "modelAliases": [
       "911 Carrera",
-      "Carrera",
-      "G-body"
+      "Carrera"
     ],
     "difficulty": 1,
     "credit": "1988 Porsche 911 Carrera coupe (21477045232).jpg"
@@ -247,6 +249,7 @@
     "id": "renault-alpine-a110-1973",
     "make": "Renault",
     "model": "Alpine A110",
+    "generation": "Berlinette",
     "year": 1973,
     "region": "france",
     "niche": false,
@@ -254,8 +257,7 @@
     "hint": "Rally legend from France",
     "supercar": false,
     "modelAliases": [
-      "A110",
-      "Alpine"
+      "A110"
     ],
     "makeAliases": [
       "Alpine"
@@ -366,6 +368,7 @@
     "id": "honda-civic-type-r-1997",
     "make": "Honda",
     "model": "Civic Type R",
+    "generation": "EK9",
     "year": 1997,
     "region": "japan",
     "niche": true,
@@ -373,7 +376,6 @@
     "hint": "EK9 hot hatch",
     "supercar": false,
     "modelAliases": [
-      "EK9",
       "Type R"
     ],
     "difficulty": 3,
@@ -397,7 +399,8 @@
       "Impreza STI"
     ],
     "difficulty": 1,
-    "credit": "Subaru Impreza (GU) Automesse Ludwigsburg 2024 IMG 1593.jpg"
+    "credit": "Subaru Impreza (GU) Automesse Ludwigsburg 2024 IMG 1593.jpg",
+    "excluded": "photo is a 2023 Impreza (GU), not a 1999 WRX STI"
   },
   {
     "id": "toyota-mr2-1989",
@@ -416,6 +419,7 @@
     "id": "mazda-miata-mx-5-1990",
     "make": "Mazda",
     "model": "Miata MX-5",
+    "generation": "NA",
     "year": 1990,
     "region": "japan",
     "niche": false,
@@ -425,8 +429,7 @@
     "modelAliases": [
       "MX-5",
       "Miata",
-      "Eunos Roadster",
-      "NA Miata"
+      "Eunos Roadster"
     ],
     "difficulty": 1,
     "credit": "Mazda Roadster (MX-5) by Negawa Bridge (cropped).jpg"
@@ -434,7 +437,8 @@
   {
     "id": "nissan-silvia-s15-1999",
     "make": "Nissan",
-    "model": "Silvia S15",
+    "model": "Silvia",
+    "generation": "S15",
     "year": 1999,
     "region": "japan",
     "niche": true,
@@ -442,9 +446,7 @@
     "hint": "Drift favorite coupe",
     "supercar": false,
     "modelAliases": [
-      "S15",
-      "200SX",
-      "Silvia"
+      "200SX"
     ],
     "difficulty": 3,
     "credit": "Nissan Silvia S15 001.JPG"
@@ -581,7 +583,8 @@
   {
     "id": "bmw-3-series-e30-1982",
     "make": "BMW",
-    "model": "3 Series E30",
+    "model": "3 Series",
+    "generation": "E30",
     "year": 1982,
     "region": "germany",
     "niche": false,
@@ -589,11 +592,9 @@
     "hint": "Compact 80s BMW",
     "supercar": false,
     "modelAliases": [
-      "E30",
       "3er",
       "325i",
-      "318i",
-      "3 Series"
+      "318i"
     ],
     "difficulty": 2,
     "credit": "BMW E30 in silver (facelift), front left 2024-08-18.jpg"
@@ -638,6 +639,11 @@
     "id": "audi-r8-2006",
     "make": "Audi",
     "model": "R8",
+    "generation": "Mk1",
+    "generationAliases": [
+      "Typ 42",
+      "Type 42"
+    ],
     "year": 2006,
     "region": "germany",
     "niche": false,
@@ -1103,6 +1109,7 @@
     "id": "land-rover-defender-1983",
     "make": "Land Rover",
     "model": "Defender",
+    "generation": "L316",
     "year": 1983,
     "region": "uk",
     "niche": false,
@@ -1747,16 +1754,13 @@
     "id": "bmw-m5-1998",
     "make": "BMW",
     "model": "M5",
+    "generation": "E39",
     "year": 1998,
     "region": "germany",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/2000_BMW_M5.jpg/960px-2000_BMW_M5.jpg",
     "hint": "Benchmark super-sedan",
     "supercar": false,
-    "modelAliases": [
-      "E39 M5",
-      "E39"
-    ],
     "difficulty": 2,
     "credit": "2000 BMW M5.jpg"
   },
@@ -1818,6 +1822,7 @@
     "id": "mercedes-benz-g-class-1979",
     "make": "Mercedes-Benz",
     "model": "G-Class",
+    "generation": "W460",
     "year": 1979,
     "region": "germany",
     "niche": false,
@@ -1828,8 +1833,7 @@
       "G-Wagon",
       "G Wagen",
       "Gelandewagen",
-      "G-Wagen",
-      "W460"
+      "G-Wagen"
     ],
     "difficulty": 1,
     "credit": "1979 Mercedes-Benz G-Class.jpg"
@@ -2014,6 +2018,7 @@
     "id": "ford-gt-2005",
     "make": "Ford",
     "model": "GT",
+    "generation": "Mk1",
     "year": 2005,
     "region": "usa",
     "niche": false,
@@ -2040,6 +2045,7 @@
     "id": "ford-bronco-1966",
     "make": "Ford",
     "model": "Bronco",
+    "generation": "Mk1",
     "year": 1966,
     "region": "usa",
     "niche": false,
@@ -2945,21 +2951,15 @@
   },
   {
     "id": "range-rover-classic-1970",
-    "make": "Range Rover",
-    "model": "Classic",
+    "make": "Land Rover",
+    "model": "Range Rover",
+    "generation": "Classic",
     "year": 1970,
     "region": "uk",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Range_Rover_Classic_%281970%29_Classic-Gala_2022_1X7A0287.jpg/960px-Range_Rover_Classic_%281970%29_Classic-Gala_2022_1X7A0287.jpg",
     "hint": "Luxury off-roader pioneer",
     "supercar": false,
-    "modelAliases": [
-      "Range Rover",
-      "Range Rover Classic"
-    ],
-    "makeAliases": [
-      "Land Rover"
-    ],
     "difficulty": 2,
     "credit": "Range Rover Classic (1970) Classic-Gala 2022 1X7A0287.jpg"
   },
@@ -2967,6 +2967,10 @@
     "id": "bentley-continental-gt-2003",
     "make": "Bentley",
     "model": "Continental GT",
+    "generation": "Mk1",
+    "generationAliases": [
+      "3W"
+    ],
     "year": 2003,
     "region": "uk",
     "niche": false,
@@ -2987,7 +2991,6 @@
     "hint": "Britain's original muscle car",
     "supercar": false,
     "modelAliases": [
-      "Vantage",
       "V8"
     ],
     "difficulty": 3,
@@ -3326,6 +3329,7 @@
     "id": "porsche-911-2010-rwb",
     "make": "Porsche",
     "model": "911",
+    "generation": "997",
     "year": 2010,
     "region": "germany",
     "niche": true,
@@ -3408,6 +3412,7 @@
     "id": "toyota-gt86-2015-rocket-bunny",
     "make": "Toyota",
     "model": "GT86",
+    "generation": "ZN6",
     "year": 2015,
     "region": "japan",
     "niche": true,
@@ -3422,9 +3427,7 @@
     "modelAliases": [
       "86",
       "FT86",
-      "GT 86",
-      "FR-S",
-      "BRZ"
+      "FR-S"
     ],
     "difficulty": 2,
     "credit": "Rocket Bunny Toyota GT86, Bangladesh. (23776538809).jpg"
@@ -3432,7 +3435,8 @@
   {
     "id": "lamborghini-aventador-s-2018-mansory",
     "make": "Lamborghini",
-    "model": "Aventador S",
+    "model": "Aventador",
+    "variant": "S",
     "year": 2018,
     "region": "italy",
     "niche": true,
@@ -3441,9 +3445,6 @@
     "hint": "German tuner known for aggressive carbon-fiber aero",
     "kit": "Mansory",
     "kitAliases": [],
-    "modelAliases": [
-      "Aventador"
-    ],
     "difficulty": 2,
     "credit": "Lamborghini Aventador S Mansory (50583937952).jpg"
   },
@@ -3501,6 +3502,10 @@
     "id": "mercedes-benz-g-class-2022-brabus",
     "make": "Mercedes-Benz",
     "model": "G-Class",
+    "generation": "W464",
+    "generationAliases": [
+      "W463"
+    ],
     "year": 2022,
     "region": "germany",
     "niche": true,
@@ -3510,7 +3515,11 @@
     "kit": "Brabus",
     "kitAliases": [],
     "difficulty": 2,
-    "credit": "Brabus 800 Biturbo Widestar (2022) (52858662717).jpg"
+    "credit": "Brabus 800 Biturbo Widestar (2022) (52858662717).jpg",
+    "modelAliases": [
+      "G-Wagon",
+      "G-Wagen"
+    ]
   },
   {
     "id": "infiniti-qx60-2025-larte-design",
@@ -3531,6 +3540,7 @@
     "id": "audi-rs6-2014-abt-sportsline",
     "make": "Audi",
     "model": "RS6",
+    "generation": "C7",
     "year": 2014,
     "region": "germany",
     "niche": true,
@@ -3551,7 +3561,8 @@
   {
     "id": "bmw-3-series-2013-prior-design",
     "make": "BMW",
-    "model": "3-Series",
+    "model": "3 Series",
+    "generation": "F30",
     "year": 2013,
     "region": "germany",
     "niche": true,
@@ -3560,10 +3571,6 @@
     "hint": "PD-M1 aero kit widened the F30's stock bodywork",
     "kit": "Prior Design",
     "kitAliases": [],
-    "modelAliases": [
-      "3 Series",
-      "F30"
-    ],
     "difficulty": 2,
     "credit": "BMW 3-Series F30 PD-M1 Prior-Design Aerodynamic-Kit (8551783566).jpg"
   },
@@ -3571,6 +3578,10 @@
     "id": "toyota-gr-supra-2020",
     "make": "Toyota",
     "model": "GR Supra",
+    "generation": "A90",
+    "generationAliases": [
+      "Mk5"
+    ],
     "year": 2020,
     "yearRange": [
       2019,
@@ -3584,18 +3595,14 @@
     "difficulty": 1,
     "credit": "Toyota GR SUPRA SZ-R (3BA-DB22-ZTRW) front.jpg",
     "modelAliases": [
-      "Supra",
-      "A90",
-      "Supra A90",
-      "MK5 Supra",
-      "Supra MK5",
-      "GR Supra A90"
+      "Supra"
     ]
   },
   {
     "id": "toyota-gr86-2022",
     "make": "Toyota",
     "model": "GR86",
+    "generation": "ZN8",
     "year": 2022,
     "yearRange": [
       2021,
@@ -3609,9 +3616,7 @@
     "difficulty": 2,
     "credit": "Toyota GR 86 RZ (3BA-ZN8) (2).jpg",
     "modelAliases": [
-      "86",
-      "GR 86",
-      "ZN8"
+      "86"
     ]
   },
   {
@@ -3639,6 +3644,7 @@
     "id": "honda-civic-type-r-2017",
     "make": "Honda",
     "model": "Civic Type R",
+    "generation": "FK8",
     "year": 2017,
     "yearRange": [
       2017,
@@ -3652,15 +3658,14 @@
     "difficulty": 1,
     "credit": "Honda CIVIC TYPE R (DBA-FK8) front.jpg",
     "modelAliases": [
-      "FK8",
-      "Type R",
-      "Civic Type R FK8"
+      "Type R"
     ]
   },
   {
     "id": "honda-civic-type-r-2023",
     "make": "Honda",
     "model": "Civic Type R",
+    "generation": "FL5",
     "year": 2023,
     "yearRange": [
       2022,
@@ -3674,9 +3679,7 @@
     "difficulty": 2,
     "credit": "Honda CIVIC TYPE R (FL5) front.jpg",
     "modelAliases": [
-      "FL5",
-      "Type R",
-      "Civic Type R FL5"
+      "Type R"
     ]
   },
   {
@@ -3706,6 +3709,10 @@
     "id": "nissan-gt-r-nismo-2022",
     "make": "Nissan",
     "model": "GT-R",
+    "variant": "Nismo",
+    "variantAliases": [
+      "Nismo GT-R"
+    ],
     "year": 2022,
     "yearRange": [
       2014,
@@ -3718,10 +3725,6 @@
     "supercar": true,
     "difficulty": 2,
     "credit": "Nissan GT-R Nismo (R35), 2022, front.jpg",
-    "variant": "Nismo",
-    "variantAliases": [
-      "Nismo GT-R"
-    ],
     "modelAliases": [
       "R35",
       "GTR R35"
@@ -3752,6 +3755,10 @@
     "id": "subaru-wrx-sti-2015",
     "make": "Subaru",
     "model": "WRX STI",
+    "generation": "VA",
+    "generationAliases": [
+      "VAB"
+    ],
     "year": 2015,
     "yearRange": [
       2014,
@@ -3775,6 +3782,7 @@
     "id": "mazda-mx-5-miata-2016",
     "make": "Mazda",
     "model": "MX-5 Miata",
+    "generation": "ND",
     "year": 2016,
     "yearRange": [
       2015,
@@ -3789,16 +3797,17 @@
     "credit": "Mazda MX-5 Miata (ND, roadster).jpg",
     "modelAliases": [
       "MX-5",
-      "Miata",
-      "ND",
-      "ND Miata",
-      "MX5"
+      "Miata"
     ]
   },
   {
     "id": "mitsubishi-lancer-evolution-x-2008",
     "make": "Mitsubishi",
     "model": "Lancer Evolution",
+    "generation": "X",
+    "generationAliases": [
+      "10"
+    ],
     "year": 2008,
     "yearRange": [
       2007,
@@ -3811,11 +3820,6 @@
     "supercar": false,
     "difficulty": 1,
     "credit": "Mitsubishi Lancer Evolution X front view (United States).jpg",
-    "variant": "X",
-    "variantAliases": [
-      "10",
-      "Ten"
-    ],
     "modelAliases": [
       "Evo",
       "Lancer Evo",
@@ -3826,6 +3830,7 @@
     "id": "honda-nsx-2017",
     "make": "Honda",
     "model": "NSX",
+    "generation": "NC1",
     "year": 2017,
     "yearRange": [
       2016,
@@ -3839,7 +3844,6 @@
     "difficulty": 2,
     "credit": "Honda NSX (NC1) front.jpg",
     "modelAliases": [
-      "NC1",
       "Acura NSX"
     ],
     "makeAliases": [
@@ -3850,6 +3854,8 @@
     "id": "porsche-911-gt3-rs-2023",
     "make": "Porsche",
     "model": "911",
+    "variant": "GT3 RS",
+    "generation": "992",
     "year": 2023,
     "yearRange": [
       2022,
@@ -3861,19 +3867,14 @@
     "hint": "992 GT3 RS with a swan-neck rear wing",
     "supercar": false,
     "difficulty": 2,
-    "credit": "Porsche 911 GT3 RS (992.1).jpg",
-    "variant": "GT3 RS",
-    "variantAliases": [
-      "GT3RS"
-    ],
-    "modelAliases": [
-      "992"
-    ]
+    "credit": "Porsche 911 GT3 RS (992.1).jpg"
   },
   {
     "id": "porsche-911-turbo-s-2023",
     "make": "Porsche",
     "model": "911",
+    "variant": "Turbo S",
+    "generation": "992",
     "year": 2023,
     "yearRange": [
       2020,
@@ -3885,14 +3886,7 @@
     "hint": "992 Turbo S: 640 hp all-weather supercar",
     "supercar": false,
     "difficulty": 2,
-    "credit": "2023 Porsche 992 Turbo S in Peridot Metallic, front left.jpg",
-    "variant": "Turbo S",
-    "variantAliases": [
-      "TurboS"
-    ],
-    "modelAliases": [
-      "992"
-    ]
+    "credit": "2023 Porsche 992 Turbo S in Peridot Metallic, front left.jpg"
   },
   {
     "id": "porsche-taycan-2020",
@@ -3919,6 +3913,7 @@
     "id": "porsche-718-cayman-gt4-rs-2022",
     "make": "Porsche",
     "model": "718 Cayman",
+    "variant": "GT4 RS",
     "year": 2022,
     "yearRange": [
       2021,
@@ -3931,10 +3926,6 @@
     "supercar": false,
     "difficulty": 3,
     "credit": "Porsche 718 Cayman GT4 RS (982).jpg",
-    "variant": "GT4 RS",
-    "variantAliases": [
-      "GT4RS"
-    ],
     "modelAliases": [
       "Cayman",
       "718"
@@ -3944,6 +3935,7 @@
     "id": "bmw-m4-competition-2021",
     "make": "BMW",
     "model": "M4",
+    "variant": "Competition",
     "year": 2021,
     "yearRange": [
       2021,
@@ -3956,10 +3948,6 @@
     "supercar": false,
     "difficulty": 2,
     "credit": "BMW M4 Competition Coupé G82 front view.jpg",
-    "variant": "Competition",
-    "variantAliases": [
-      "Comp"
-    ],
     "modelAliases": [
       "G82"
     ]
@@ -3968,6 +3956,7 @@
     "id": "bmw-m3-2022",
     "make": "BMW",
     "model": "M3",
+    "generation": "G80",
     "year": 2022,
     "yearRange": [
       2021,
@@ -3981,7 +3970,6 @@
     "difficulty": 1,
     "credit": "BMW M3 (G80, 2022) (52226831912).jpg",
     "modelAliases": [
-      "G80",
       "M3 Competition"
     ]
   },
@@ -4010,6 +3998,7 @@
     "id": "bmw-m5-2019",
     "make": "BMW",
     "model": "M5",
+    "generation": "F90",
     "year": 2019,
     "yearRange": [
       2018,
@@ -4023,7 +4012,6 @@
     "difficulty": 2,
     "credit": "BMW M5 Competition (F90) front.jpg",
     "modelAliases": [
-      "F90",
       "M5 Competition"
     ]
   },
@@ -4051,6 +4039,8 @@
     "id": "mercedes-benz-amg-gt-black-series-2021",
     "make": "Mercedes-Benz",
     "model": "AMG GT",
+    "variant": "Black Series",
+    "generation": "C190",
     "year": 2021,
     "yearRange": [
       2020,
@@ -4063,12 +4053,6 @@
     "supercar": true,
     "difficulty": 3,
     "credit": "Mercedes-AMG GT Black Series Coupé (C190, 2022) (52572418088).jpg",
-    "variant": "Black Series",
-    "modelAliases": [
-      "GT",
-      "AMG GT R",
-      "C190"
-    ],
     "makeAliases": [
       "Mercedes-AMG"
     ]
@@ -4076,7 +4060,16 @@
   {
     "id": "mercedes-benz-g-63-2019",
     "make": "Mercedes-Benz",
-    "model": "G 63",
+    "model": "G-Class",
+    "variant": "G 63",
+    "variantAliases": [
+      "G63",
+      "AMG G63"
+    ],
+    "generation": "W464",
+    "generationAliases": [
+      "W463"
+    ],
     "year": 2019,
     "yearRange": [
       2018,
@@ -4090,15 +4083,10 @@
     "difficulty": 1,
     "credit": "Mercedes-AMG G63 (W464) front.jpg",
     "modelAliases": [
-      "G63",
-      "G-Class",
       "G Class",
       "G-Wagon",
       "G Wagon",
-      "G-Wagen",
-      "AMG G63",
-      "W464",
-      "W463"
+      "G-Wagen"
     ],
     "makeAliases": [
       "Mercedes-AMG"
@@ -4133,6 +4121,7 @@
     "id": "audi-rs6-2021",
     "make": "Audi",
     "model": "RS6",
+    "generation": "C8",
     "year": 2021,
     "yearRange": [
       2019,
@@ -4147,8 +4136,7 @@
     "credit": "2021 Audi RS6 Avant in Nardo Gray, front right.jpg",
     "modelAliases": [
       "RS 6",
-      "RS6 Avant",
-      "C8"
+      "RS6 Avant"
     ]
   },
   {
@@ -4241,6 +4229,11 @@
     "id": "audi-r8-2018",
     "make": "Audi",
     "model": "R8",
+    "generation": "Mk2",
+    "generationAliases": [
+      "4S",
+      "Typ 4S"
+    ],
     "year": 2018,
     "yearRange": [
       2015,
@@ -4255,14 +4248,14 @@
     "credit": "2018 Audi R8 Coupe V10 plus Front.jpg",
     "modelAliases": [
       "R8 V10",
-      "R8 V10 Plus",
-      "4S"
+      "R8 V10 Plus"
     ]
   },
   {
     "id": "ferrari-488-pista-2019",
     "make": "Ferrari",
     "model": "488",
+    "variant": "Pista",
     "year": 2019,
     "yearRange": [
       2018,
@@ -4274,8 +4267,7 @@
     "hint": "Track-honed 488 with 720 hp",
     "supercar": true,
     "difficulty": 3,
-    "credit": "Ferrari 488 Pista 4.jpg",
-    "variant": "Pista"
+    "credit": "Ferrari 488 Pista 4.jpg"
   },
   {
     "id": "ferrari-f8-tributo-2020",
@@ -4398,6 +4390,11 @@
     "id": "lamborghini-aventador-svj-2019",
     "make": "Lamborghini",
     "model": "Aventador",
+    "variant": "SVJ",
+    "variantAliases": [
+      "SV Jota",
+      "LP770-4"
+    ],
     "year": 2019,
     "yearRange": [
       2018,
@@ -4409,14 +4406,7 @@
     "hint": "Ultimate Aventador with active aero",
     "supercar": true,
     "difficulty": 2,
-    "credit": "Lamborghini Aventador SVJ 63.jpg",
-    "variant": "SVJ",
-    "variantAliases": [
-      "SV Jota"
-    ],
-    "modelAliases": [
-      "LP770-4"
-    ]
+    "credit": "Lamborghini Aventador SVJ 63.jpg"
   },
   {
     "id": "lamborghini-huracan-2015",
@@ -4497,6 +4487,11 @@
     "id": "alfa-romeo-giulia-quadrifoglio-2020",
     "make": "Alfa Romeo",
     "model": "Giulia",
+    "variant": "Quadrifoglio",
+    "variantAliases": [
+      "QV",
+      "Quadrifoglio Verde"
+    ],
     "year": 2020,
     "yearRange": [
       2016,
@@ -4508,12 +4503,7 @@
     "hint": "Sports sedan with a Ferrari-derived V6",
     "supercar": false,
     "difficulty": 2,
-    "credit": "2020 Alfa Romeo Giulia Quadrifoglio V6 Biturbo 2.9 Front.jpg",
-    "variant": "Quadrifoglio",
-    "variantAliases": [
-      "QV",
-      "Quadrifoglio Verde"
-    ]
+    "credit": "2020 Alfa Romeo Giulia Quadrifoglio V6 Biturbo 2.9 Front.jpg"
   },
   {
     "id": "pagani-huayra-2013",
@@ -4659,10 +4649,7 @@
     "hint": "AMG-engined Vantage with a gaping grille",
     "supercar": false,
     "difficulty": 2,
-    "credit": "2019 Aston Martin Vantage coupe, front right (Wings-n-Wheels 2023).jpg",
-    "modelAliases": [
-      "V8 Vantage"
-    ]
+    "credit": "2019 Aston Martin Vantage coupe, front right (Wings-n-Wheels 2023).jpg"
   },
   {
     "id": "aston-martin-dbs-superleggera-2019",
@@ -4743,6 +4730,7 @@
     "id": "bentley-continental-gt-2019",
     "make": "Bentley",
     "model": "Continental GT",
+    "generation": "Mk3",
     "year": 2019,
     "yearRange": [
       2018,
@@ -4781,6 +4769,7 @@
     "id": "land-rover-defender-2021",
     "make": "Land Rover",
     "model": "Defender",
+    "generation": "L663",
     "year": 2021,
     "yearRange": [
       2020,
@@ -4795,14 +4784,14 @@
     "credit": "2021 Land Rover Defender 110 P300 in Fuji White, front right.jpg",
     "modelAliases": [
       "Defender 110",
-      "Defender 90",
-      "L663"
+      "Defender 90"
     ]
   },
   {
     "id": "land-rover-range-rover-2022",
     "make": "Land Rover",
     "model": "Range Rover",
+    "generation": "L460",
     "year": 2022,
     "yearRange": [
       2022,
@@ -4814,14 +4803,7 @@
     "hint": "Fifth-generation Range Rover",
     "supercar": false,
     "difficulty": 1,
-    "credit": "Land Rover Range Rover Autobiography L460 Belgravia Green (1).jpg",
-    "modelAliases": [
-      "L460",
-      "Range Rover L460"
-    ],
-    "makeAliases": [
-      "Range Rover"
-    ]
+    "credit": "Land Rover Range Rover Autobiography L460 Belgravia Green (1).jpg"
   },
   {
     "id": "lotus-emira-2022",
@@ -4844,6 +4826,7 @@
     "id": "ford-gt-2017",
     "make": "Ford",
     "model": "GT",
+    "generation": "Mk2",
     "year": 2017,
     "yearRange": [
       2017,
@@ -4855,16 +4838,16 @@
     "hint": "Carbon-bodied Le Mans tribute with a twin-turbo V6",
     "supercar": true,
     "difficulty": 1,
-    "credit": "2017 Ford GT front.JPG",
-    "modelAliases": [
-      "Ford GT",
-      "GT 2017"
-    ]
+    "credit": "2017 Ford GT front.JPG"
   },
   {
     "id": "ford-mustang-shelby-gt350-2016",
     "make": "Ford",
     "model": "Mustang",
+    "variant": "Shelby GT350",
+    "variantAliases": [
+      "GT350"
+    ],
     "year": 2016,
     "yearRange": [
       2015,
@@ -4877,11 +4860,6 @@
     "supercar": false,
     "difficulty": 2,
     "credit": "2016 Ford Mustang Shelby GT350.JPG",
-    "variant": "Shelby GT350",
-    "variantAliases": [
-      "GT350",
-      "GT 350"
-    ],
     "modelAliases": [
       "S550"
     ],
@@ -4893,6 +4871,7 @@
     "id": "ford-mustang-dark-horse-2024",
     "make": "Ford",
     "model": "Mustang",
+    "variant": "Dark Horse",
     "year": 2024,
     "yearRange": [
       2024,
@@ -4905,7 +4884,6 @@
     "supercar": false,
     "difficulty": 3,
     "credit": "Ford Mustang Coupé Dark Horse (VII) – f 18052025.jpg",
-    "variant": "Dark Horse",
     "modelAliases": [
       "S650"
     ]
@@ -4914,6 +4892,7 @@
     "id": "ford-bronco-2021",
     "make": "Ford",
     "model": "Bronco",
+    "generation": "Mk6",
     "year": 2021,
     "yearRange": [
       2021,
@@ -4931,6 +4910,10 @@
     "id": "dodge-viper-acr-2016",
     "make": "Dodge",
     "model": "Viper",
+    "variant": "ACR",
+    "variantAliases": [
+      "American Club Racer"
+    ],
     "year": 2016,
     "yearRange": [
       2016,
@@ -4943,10 +4926,6 @@
     "supercar": false,
     "difficulty": 2,
     "credit": "2016 Dodge Viper ACR with Extreme Aero package, front left, 06-16-2024.jpg",
-    "variant": "ACR",
-    "variantAliases": [
-      "American Club Racer"
-    ],
     "modelAliases": [
       "Viper ACR",
       "SRT Viper"
@@ -5091,6 +5070,7 @@
     "id": "tesla-model-s-2022",
     "make": "Tesla",
     "model": "Model S",
+    "variant": "Plaid",
     "year": 2022,
     "yearRange": [
       2021,
@@ -5102,11 +5082,7 @@
     "hint": "Refreshed Model S, here in tri-motor Plaid form",
     "supercar": false,
     "difficulty": 1,
-    "credit": "Tesla Model S Plaid Autofrühling Ulm IMG 9278.jpg",
-    "modelAliases": [
-      "Model S Plaid",
-      "Plaid"
-    ]
+    "credit": "Tesla Model S Plaid Autofrühling Ulm IMG 9278.jpg"
   },
   {
     "id": "mercedes-benz-c-63-2016",
@@ -5330,6 +5306,7 @@
     "id": "nissan-silvia-2000-rocket-bunny",
     "make": "Nissan",
     "model": "Silvia",
+    "generation": "S15",
     "year": 2000,
     "yearRange": [
       1999,
@@ -5347,12 +5324,7 @@
       "Rocket Bunny Boss"
     ],
     "modelAliases": [
-      "S15",
-      "S14",
-      "Silvia S15",
-      "Silvia S14",
-      "200SX",
-      "240SX"
+      "200SX"
     ],
     "difficulty": 2,
     "credit": "Nissan Silvia S15 Rocket Bunny.jpg"
@@ -5361,6 +5333,7 @@
     "id": "nissan-silvia-1996-rocket-bunny",
     "make": "Nissan",
     "model": "Silvia",
+    "generation": "S14",
     "year": 1996,
     "yearRange": [
       1993,
@@ -5378,10 +5351,6 @@
       "Rocket Bunny Boss"
     ],
     "modelAliases": [
-      "S15",
-      "S14",
-      "Silvia S15",
-      "Silvia S14",
       "200SX",
       "240SX"
     ],
@@ -5392,6 +5361,7 @@
     "id": "porsche-911-1991-rwb",
     "make": "Porsche",
     "model": "911",
+    "generation": "964",
     "year": 1991,
     "yearRange": [
       1989,
@@ -5409,8 +5379,6 @@
       "RWB Porsche"
     ],
     "modelAliases": [
-      "964",
-      "993",
       "Carrera"
     ],
     "difficulty": 2,
@@ -5420,6 +5388,7 @@
     "id": "porsche-911-1996-rwb",
     "make": "Porsche",
     "model": "911",
+    "generation": "993",
     "year": 1996,
     "yearRange": [
       1994,
@@ -5437,8 +5406,6 @@
       "RWB Porsche"
     ],
     "modelAliases": [
-      "964",
-      "993",
       "Carrera"
     ],
     "difficulty": 2,

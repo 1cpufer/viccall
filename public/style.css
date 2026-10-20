@@ -449,14 +449,19 @@ body.in-game .bar { display: none; }
 
 .guess { display: flex; flex-direction: column; }
 .fields { display: grid; gap: 12px; margin-bottom: 16px; }
-@media (max-width: 899px) and (min-width: 520px) {
-  #gFields, #pgFields { grid-template-columns: 1fr 1fr 96px; }
-  #gKitFields, #pgKitFields { grid-template-columns: 1.2fr 1fr 1fr; }
+@media (max-width: 899px) {
+  #gFields, #pgFields { grid-template-columns: 1fr 96px; }
+  #gKitFields, #pgKitFields { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 519px) {
-  #gFields, #pgFields { grid-template-columns: 1fr 88px; }
-  #gFields .field:first-child, #pgFields .field:first-child { grid-column: 1 / -1; }
+@media (max-width: 400px) {
+  #gKitFields, #pgKitFields { grid-template-columns: 1fr; }
 }
+.field-help { grid-area: help; color: var(--text-3); font-size: 14px; margin-top: -4px; }
+#gFields, #pgFields { grid-template-areas: 'car' 'help' 'year'; }
+.field--car { grid-area: car; }
+.field--year { grid-area: year; }
+@media (max-width: 899px) { #gFields, #pgFields { grid-template-areas: 'car year' 'help help'; } }
+.nw { white-space: nowrap; }
 @media (min-width: 900px) { .field--year input { max-width: 120px; } }
 .rules-line { color: var(--text-3); font-size: 14px; margin-top: 12px; }
 

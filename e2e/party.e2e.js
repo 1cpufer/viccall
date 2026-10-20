@@ -44,7 +44,7 @@ const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
     check((await A.page.textContent('#lobbyStart')).includes('3 drivers'), 'lobby counts 3 drivers');
     await A.page.click('#lobbyStart');
     await B.page.waitForSelector('#pgKit:visible');
-    check(await B.page.locator('#pgKitModel').isVisible(), 'kit party shows tuner, make and model fields');
+    check(await B.page.locator('#pgKitCar').isVisible(), 'kit party shows tuner and car fields');
 
     // Nobody answers -> server timer reveals (round 3 s? roundMs 4 s for kit)
     const t0 = Date.now();

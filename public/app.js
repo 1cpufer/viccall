@@ -380,7 +380,7 @@
     $(prefix + 'Fields').hidden = kit;
     $(prefix + 'KitFields').hidden = !kit;
   }
-  const guessInputs = prefix => ['Make', 'Model', 'Year', 'Kit', 'KitMake', 'KitModel'].map(f => $(prefix + f));
+  const guessInputs = prefix => ['Car', 'Year', 'Kit', 'KitCar'].map(f => $(prefix + f));
   function resetGuess(prefix) {
     guessInputs(prefix).forEach(i => { i.value = ''; i.disabled = false; });
     $(prefix + 'Msg').textContent = '';
@@ -390,15 +390,15 @@
   }
   function readGuess(prefix, kind) {
     const v = f => $(prefix + f).value.trim();
-    if (kind === 'kit') return { kit: v('Kit'), make: v('KitMake'), model: v('KitModel') };
-    return { make: v('Make'), model: v('Model'), year: v('Year') };
+    if (kind === 'kit') return { kit: v('Kit'), car: v('KitCar') };
+    return { car: v('Car'), year: v('Year') };
   }
   const isEmptyGuess = g => !Object.values(g).some(Boolean);
   function focusFirst(prefix, kind) {
     if (coarse.matches) return; // don't throw the keyboard over the photo on phones
-    $(prefix + (kind === 'kit' ? 'Kit' : 'Make')).focus({ preventScroll: true });
+    $(prefix + (kind === 'kit' ? 'Kit' : 'Car')).focus({ preventScroll: true });
   }
-  const emptyMsg = kind => kind === 'kit' ? 'Type the tuner, or your best guess at the car underneath.' : 'Fill in at least one box: make, model or year.';
+  const emptyMsg = kind => kind === 'kit' ? 'Type the tuner, or your best guess at the car underneath.' : 'Type the car, or at least the make or the year.';
 
   function identifiedFrom(res, kind) {
     const hit = l => (res || []).some(r => r.label === l && r.verdict === 'hit');
@@ -424,9 +424,12 @@
   }
   const yearText = a => (Array.isArray(a.yearRange) && a.yearRange[0] !== a.yearRange[1] ? `${a.yearRange[0]}–${a.yearRange[1]}` : String(a.year));
   const carName = a => [a.make, a.model, a.variant].filter(Boolean).join(' ');
+  const detail = a => [a.generation, yearText(a)].filter(Boolean).join(', ');
+  // Keep hyphenated names ("MX-5", "GT-R") on one line.
+  const unbroken = text => esc(text).split(' ').map(w => (w.includes('-') ? `<span class="nw">${w}</span>` : w)).join(' ');
   function answerHtml(a, kind) {
-    if (kind === 'kit' || a.kit) return `${esc(a.kit)}<span class="yr">${esc(carName(a))}, ${esc(a.year)}</span>`;
-    return `${esc(carName(a))}<span class="yr">${esc(yearText(a))}</span>`;
+    if (kind === 'kit' || a.kit) return `${unbroken(a.kit)}<span class="yr">${esc(carName(a))}, ${esc(detail(a))}</span>`;
+    return `${unbroken(carName(a))}<span class="yr">${esc(detail(a))}</span>`;
   }
   function creditHtml(a) {
     if (!a.credit) return '';
@@ -702,7 +705,7 @@
 
     $('rLog').innerHTML = solo.results.map((r, i) => {
       const a = r.answer;
-      const name = a.kit ? `${esc(a.kit)} <small>${esc(carName(a))}</small>` : `${esc(carName(a))} <small>${esc(yearText(a))}${a.credit ? `<a href="${commonsLink(a.credit)}" target="_blank" rel="noopener">Photo source</a>` : ''}</small>`;
+      const name = a.kit ? `${esc(a.kit)} <small>${esc(carName(a))}</small>` : `${esc(carName(a))} <small>${esc(detail(a))}${a.credit ? `<a href="${commonsLink(a.credit)}" target="_blank" rel="noopener">Photo source</a>` : ''}</small>`;
       const cls = r.pts >= MAX ? 'is-hit' : r.pts === 0 ? 'is-miss' : '';
       return `<li><span class="n">${i + 1}</span><span class="car">${name}</span><span class="pts ${cls}">${r.pts}</span></li>`;
     }).join('');

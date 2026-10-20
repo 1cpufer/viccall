@@ -1,5 +1,42 @@
 # Changelog
 
+## 2026-10-20: Answer recognition (branch `game-expansion`)
+
+- **One answer box.** Players type the car the way they'd say it ("Porsche 918 Spyder", "918", "R34 GT-R"), plus the year. Kit rounds take the tuner and the car, and the tuner can also go in the car box. The API takes `car`, and the old `make` and `model` fields still work.
+- **Vehicle index** (`buildIndex` in `public/scoring.js`). Every answer is read against all 298 vehicles, not just the one on screen.
+  - Identifying words can be dropped if the rest is still unique ("918", "GT3 RS", "SVJ").
+  - Qualifiers can't be dropped: GT3 isn't a GT3 RS.
+  - Designations alone earn a 1-point hint (Spyder).
+  - Shared names earn partial credit, and the feedback lists the options ("Supra": A80 or A90).
+  - A stated make settles names shared across makes.
+  - Naming two cars earns nothing. Words outside the database are ignored.
+  - The make is implied by an unambiguous model.
+  - Formatting variants are normalised (GT 3 RS, 918Spyder, Spider/Spyder, Mk4/MkIV/Mark 4).
+  - A year typed in the car box counts.
+- **New feedback lines.** "Right model, missed the trim: GT3 RS", "That could be the Supra (A80) or GR Supra (A90)", "That's the 911, a different car", "Porsche, from the model".
+- **Data audit** (`src/cars.json`).
+  - New `generation` and `generationAliases` fields on 48 entries, wherever the database holds more than one generation of a name (M3 E46/G80, 911 G-body/964/993/997/992, Civic Type R EK9/FK8/FL5, Silvia S14/S15, Supra A80/A90, G-Class W460/W464 and others). Before this, an E46 M3 photo gave full credit for "G80".
+  - Fixed wrong aliases:
+    - Rocket Bunny Silvias tagged as both S14 and S15.
+    - "Aventador" as an exact alias of the Aventador S.
+    - "AMG GT R" on the Black Series.
+    - "BRZ" on a Toyota GT86.
+    - "V8 Vantage" on the 2018 Vantage.
+    - "Range Rover" as a make.
+  - Redundant squashed aliases removed (GT3RS, TurboS, GT4RS). The scorer now handles spacing itself.
+  - Aventador S and G 63 restructured as trims. The Evo VIII and Evo X became generations.
+  - Held back the "1999 Impreza WRX STI": its photo is a 2023 Impreza (GU). Six entries are now held back.
+- **Tests:**
+  - New recognition suite with 20 tests, including the 918 Spyder table.
+  - Whole-database guarantees: every car has a full-credit answer in both rule sets; aliases are exact or reviewed ambiguities; no car's name earns full credit for another car of the same make.
+  - The browser run gained a shorthand check through the real UI. 50 unit, 73 UI and 13 party checks pass, and axe-core reports no violations.
+
+### Known limits
+
+- Ambiguity is judged against this database. "Spyder" is always generic, but a nameplate is only ambiguous if two vehicles in the database share it. Adding cars can turn a full-credit answer into a partial one, which is the intended behaviour. The test suite reports every such collision.
+- The game doesn't ask "Which one did you mean?". Competitive scoring has to be deterministic, so an ambiguous answer earns partial credit and the feedback names the options instead.
+- "Alpine A110" is shared by the 1961 original and the 2017 revival. "A110 Berlinette" and "A110 Pure" each identify one of them.
+
 ## 2026-10-19: Game expansion (branch `game-expansion`)
 
 Built on `overnight-polish`. Commits, oldest first:

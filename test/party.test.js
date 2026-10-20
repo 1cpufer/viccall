@@ -3,7 +3,8 @@ const assert = require('node:assert/strict');
 const { startServer, emit, once, key, sleep } = require('./helpers');
 const CARS = require('../src/cars.json');
 const { buildQueue } = require('../src/party');
-const { fullModel } = require('../public/scoring.js');
+const { bestAnswer, buildIndex } = require('../public/scoring.js');
+const IDX = buildIndex(CARS);
 
 const fast = { party: { roundMs: 400, competitiveMs: 300, graceMs: 300, awayMs: 150, sweepMs: 1000 } };
 // Party photos are opaque proxy URLs; look the car up on the server (tests only).
@@ -125,7 +126,7 @@ test('kit party scores tuner names', async () => {
     const { img } = await round2;
     assert.match(img, /^\/api\/img\//, 'photo URL is opaque');
     const car = carNow(srv, code);
-    const good = await emit(host, 'party:guess', { kit: car.kit, make: car.make, model: fullModel(car) });
+    const good = await emit(host, 'party:guess', { kit: car.kit, car: bestAnswer(car, IDX) });
     assert.equal(good.pts, 10);
   } finally { await srv.stop(); }
 });
@@ -229,7 +230,7 @@ test('scores stay hidden until the reveal', async () => {
     await roundP;
     const car = carNow(srv, code);
     const prog = once(guests[0], 'party:progress');
-    const r = await emit(host, 'party:guess', { make: car.make, model: fullModel(car), year: String(car.year) });
+    const r = await emit(host, 'party:guess', { car: bestAnswer(car, IDX), year: String(car.year) });
     assert.equal(r.pts, 10);
     const p = await prog;
     const h = p.players.find(x => x.name === 'Host');

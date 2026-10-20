@@ -12,7 +12,7 @@ npm run dev    # or: npm start
 Serves on `http://localhost:3000` (override with `PORT`).
 
 ```
-npm test                                   # scoring, modes, API, photo proxy and multiplayer (node:test, 47 tests)
+npm test                                   # answer recognition, modes, API, photo proxy and multiplayer (node:test, 50 tests)
 node e2e/ui.e2e.js [shotDir]               # browser run of every mode, desktop + phone + a 2-player party
 node e2e/party.e2e.js                      # party edge cases (timers, host leaving, refresh, rematch)
 ```
@@ -49,30 +49,43 @@ On Render's free plan the service sleeps after 15 minutes without visitors (the 
 
 Ranked, Daily and Endless use the **competitive** rules; Free Play uses **casual**; parties choose. Ties on a leaderboard go to whoever used less time.
 
-## Scoring
+## Scoring and answer recognition
 
-Every car is worth 10 points. The same scorer (`public/scoring.js`) runs in the browser and on the server, and the server's result is the one that counts.
+Every car is worth 10 points. Players type the car into one box ("Porsche 918 Spyder", "918", "R34 GT-R"), plus a year box (kit rounds: tuner plus car). The scorer (`public/scoring.js`) reads the answer against an index of every vehicle in the database. Only the server's result counts.
 
 | Cars | Points |
 |---|---|
-| Make | 2 |
-| Model | 5 for the exact car. 3 for the right model with the trim missing (M4 for an M4 Competition) or the wrong generation (Evo VIII for an Evo X). |
+| Make | 2, typed or implied by the model ("918" means Porsche) |
+| Model | 5 for an answer that identifies the car. 3 for the right model with the trim or generation missing, or a name that fits several cars. 1 for a designation that's part of the name but identifies nothing (Spyder). |
 | Year | 3 for any year the car was built (`yearRange`). Casual: 2 within 2 years, 1 within 5. Competitive: 1 within 2 years. |
 
 | Body kits | Points |
 |---|---|
-| Tuner | 6 |
+| Tuner | 6 (typed in the tuner box or the car box) |
 | Make | 2 |
-| Model | 2, or 1 for the right model with the wrong trim |
+| Model | 2, or 1 for the right model with the trim or generation missing |
 
-What counts and what doesn't:
+### How an answer is read
 
-- Nicknames, chassis codes and per-car aliases count in both rule sets (Beemer, Chevy, R34, FD). They live in `src/cars.json` (`modelAliases`, `makeAliases`, `variantAliases`, `kitAliases`).
-- Casual rules forgive one slip in a word of six letters or more (Lamborgini). Competitive rules forgive nothing. Digits are never fuzzy-matched.
-- Partial words score nothing ("Lam" is not Lamborghini). Sharing a letter or two with the answer is worth nothing.
-- Hedging scores nothing: in "Silvia Skyline 350Z" every extra word has to be a trim (Spec-R, Type R, Competition), not another car.
-- A generation code from a different car (MkIV on a Mk5, Evo VIII on an Evo X) caps the model at partial credit.
-- Each answer field gets its own feedback line on the reveal: "Right model, missed the trim: Competition", "Off by 2 (2019–2024)", "Left blank".
+Each vehicle is an identity: make, model, trim (`variant`) and generation. Every identity carries verified names: the canonical name, model, trim and generation aliases, and chassis codes. A stock car and the same car under a body kit share one identity. Different generations don't: an E46 M3 and a G80 M3 are separate vehicles.
+
+- **Identifying words can be dropped** if what's left still points to exactly one vehicle. "918" is the 918 Spyder, "GT3 RS" is the 911 GT3 RS, "SVJ" is the Aventador SVJ, "R34" is the Skyline GT-R R34.
+- **Qualifiers can't be dropped.** Trims, designations and generation marks separate real cars: "GT3" isn't a GT3 RS, "M4" isn't an M4 Competition, "Civic" isn't a Civic Type R. Those earn 3.
+- **Designations never identify on their own.** Spyder, RS, Nismo, Quadrifoglio and similar could be dozens of cars. They earn 1 when they're part of the right name. "Porsche Spyder" for a 918 Spyder scores make 2 plus model 1.
+- **Shared names are partial.** "Supra" could be the A80 or the A90, and "Skyline" could be the R32, R33 or R34. The feedback lists the options and says which one it was. A stated make settles names shared across makes, so "Pontiac GTO" isn't the Mitsubishi GTO.
+- **Other cars earn nothing.** "Porsche 911 Spyder" for a 918 Spyder scores the make only. Naming two cars at once ("Civic Integra") earns nothing for the model, and a second trim stuffed into an answer caps it at partial.
+- **Unknown words are ignored.** A car that isn't in the database is never the answer, so extra words can't help a guess.
+- **Formatting is forgiven:** case, accents, spacing and hyphens ("GT 3 RS", "918Spyder", "GT-R"), Spider/Spyder, Mk4/MkIV/Mark 4. A year typed in the car box counts when the year box is empty.
+- **The rule sets differ only in spelling and years.** Casual forgives one slip in a word of six letters or more. Competitive forgives none, and digits are never fuzzy-matched.
+
+Every answer gets a feedback line per field, for example:
+- "Right model, missed the trim: GT3 RS"
+- "That could be the Supra (A80) or GR Supra (A90). This is the Supra (A80)"
+- "That's the 911, a different car"
+- "Spyder is part of it, but on its own it could be many cars"
+- "Porsche, from the model"
+
+`npm test` checks that every car in play has an answer worth full credit in both rule sets. It also checks that every alias is either exact or a reviewed ambiguity, and that no car's full name earns full credit for a different car of the same make.
 
 ## How ranked play is protected
 
@@ -83,15 +96,15 @@ What counts and what doesn't:
 
 ## Car database
 
-`src/cars.json`: 307 entries (302 in play, 5 held back because their photo doesn't show the right car), 84 makes.
+`src/cars.json`: 307 entries (301 in play, 6 held back because their photo doesn't show the right car), 298 distinct vehicles, 83 makes.
 
-- Eras: 110 from 2010 onward, 62 from 1990–2009, 130 before 1990.
-- Difficulty, from how recognisable the car is: 61 easy, 123 medium, 118 hard.
-- 59 supercars; 13 cars with a scored trim (`variant`, e.g. GT-R Nismo, M4 Competition).
+- Eras: 110 from 2010 onward, 61 from 1990–2009, 130 before 1990.
+- Difficulty, from how recognisable the car is: 60 easy, 123 medium, 118 hard.
+- 59 supercars, 15 cars with a scored trim (`variant`: GT-R Nismo, M4 Competition, 911 GT3 RS…) and 48 entries with a `generation` (E46, 992, S15, A80, W464…) wherever the database holds more than one generation of a name.
 - 25 tuner builds from 13 tuners: ABT Sportsline, Brabus, Hamann, Larte Design, Liberty Walk, Mansory, Novitec, Prior Design, RWB, Rocket Bunny, TechArt, VeilSide, Vorsteiner. Every build is a real one, photographed on the car it was made for.
 - Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). `npm test` checks every URL's Commons hash path, difficulty, credit and year range.
 
-Entry fields: `id, make, model, variant?, year, yearRange, region, niche, supercar, difficulty (1–3), img, credit, hint`, plus `kit` and `kitAliases` on tuner builds and optional alias lists.
+Entry fields: `id, make, model, variant?, variantAliases?, generation?, generationAliases?, year, yearRange, region, niche, supercar, difficulty (1–3), img, credit, hint`. Optional `modelAliases` and `makeAliases`; tuner builds add `kit` and `kitAliases`.
 
 ## Sound
 
@@ -117,7 +130,7 @@ All sound is synthesised in the browser (`public/audio.js`, Web Audio API). Ther
 | `GET /api/pool?era=&region=&type=&difficulty=` | How many cars a Free Play filter matches. |
 | `POST /api/solo/start` | `{ kind: 'free'|'ranked'|'daily'|'endless', playlist?, filters?, player? }` |
 | `POST /api/solo/round` | Opens round `idx` and returns its photo URL. |
-| `POST /api/solo/guess` | Scores the guess; returns per-field feedback, streak, strikes and the answer with its photo credit. |
+| `POST /api/solo/guess` | `{ sessionId, idx, car, year, kit? }` (older `make` + `model` fields still work). Returns per-field feedback, streak, strikes and the answer with generation and photo credit. |
 | `POST /api/scores` | Posts a finished ranked session. |
 | `GET /api/leaderboard?board=` | `ranked:<playlist>`, `daily:YYYY-MM-DD` or `endless`. |
 | `GET /api/img/:token` | Photo proxy for ranked and party rounds. |
@@ -137,6 +150,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-20, answer recognition:** one answer box, a vehicle index with generations, shorthand and implied makes, ambiguity handling, data audit.
 - **2026-10-19, game expansion** (branch `game-expansion`): 10-point scoring with casual and competitive rules, 302-car database with difficulty tiers and 25 tuner builds, Daily / Ranked / Endless / Free Play modes, photo proxy, desktop-first interface, synthesised sound effects and music.
 - **2026-10-17, overnight polish** (branch `overnight-polish`): visual identity, shared scoring, server-held answers, party hardening. See `OVERNIGHT_CHANGELOG.md`.
 - **2026-07-18 to 07-19:** prototype, leaderboard, party codes, Supercars, Kit Check, bug reports, USA roster.

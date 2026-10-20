@@ -24,6 +24,9 @@ function createApp(opts = {}) {
   const SCORES_FILE = path.join(dataDir, 'scores.json');
   const REPORTS_FILE = path.join(dataDir, 'reports.json');
   const images = createImageProxy({ fetch: opts.fetchImage });
+  // Every answer is read against the whole database, so "918" or "SVJ" can be
+  // recognised and "Supra" can be flagged as ambiguous.
+  const VEHICLES = VCScore.buildIndex(CARS);
 
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(SCORES_FILE)) fs.writeFileSync(SCORES_FILE, '[]');
@@ -174,8 +177,8 @@ function createApp(opts = {}) {
     // free skips, and only when the server couldn't deliver the photo itself.
     const photoSkip = !!b.photoFailed && (!s.plan.board || (!s.photoOk && s.freeSkips < 2));
     if (photoSkip && s.plan.board) s.freeSkips += 1;
-    const guess = photoSkip ? {} : { make: clip(b.make, 60), model: clip(b.model, 60), year: clip(b.year, 8), kit: clip(b.kit, 60) };
-    let result = VCScore.scoreRound(car, guess, { ruleset: s.plan.ruleset, kind: s.plan.roundKind });
+    const guess = photoSkip ? {} : { car: clip(b.car, 100), make: clip(b.make, 60), model: clip(b.model, 60), year: clip(b.year, 8), kit: clip(b.kit, 60) };
+    let result = VCScore.scoreRound(car, guess, { ruleset: s.plan.ruleset, kind: s.plan.roundKind, index: VEHICLES });
 
     const now = Date.now();
     const elapsed = now - (s.servedAt || s.openedAt);
@@ -202,7 +205,7 @@ function createApp(opts = {}) {
       late, timedOut, skipped: photoSkip, score: s.score, cars: s.cars, timeMs: s.timeMs, streak: s.streak, bestStreak: s.bestStreak,
       strikes: s.strikes, lives: s.plan.lives, idx: s.idx, done,
       answer: {
-        id: car.id, make: car.make, model: car.model, variant: car.variant || null, year: car.year,
+        id: car.id, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year,
         yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint, credit: car.credit || null,
       },
     });
@@ -282,7 +285,7 @@ function createApp(opts = {}) {
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));
 
-  const party = attachParty(io, CARS, { ...opts.party, images });
+  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES });
 
   return {
     app, server, io, sessions, party, images,

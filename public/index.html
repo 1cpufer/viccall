@@ -177,14 +177,13 @@
           <p class="side-count" id="gCount">Car 1 of 10</p>
           <form class="guess" id="gForm" autocomplete="off" novalidate>
             <div class="fields" id="gFields">
-              <label class="field"><span>Make</span><input id="gMake" name="make" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field"><span>Model and trim</span><input id="gModel" name="model" type="text" placeholder="Supra GR" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field field--year"><span>Year</span><input id="gYear" name="year" type="text" inputmode="numeric" placeholder="2020" maxlength="4" enterkeyhint="go"></label>
+              <label class="field field--car"><span>Car</span><input id="gCar" name="car" type="text" placeholder="Porsche 918 Spyder" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="100" enterkeyhint="next" aria-describedby="gCarHelp"></label>
+              <p class="field-help" id="gCarHelp">Make and model, as you'd say it: "918", "R34 GT-R", "BMW M4 Competition".</p>
+              <label class="field field--year"><span>Year</span><input id="gYear" name="year" type="text" inputmode="numeric" placeholder="2015" maxlength="4" enterkeyhint="go"></label>
             </div>
             <div class="fields fields--kit" id="gKitFields" hidden>
               <label class="field"><span>Tuner or body kit</span><input id="gKit" name="kit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field"><span>Make</span><input id="gKitMake" name="kitmake" type="text" list="makeList" placeholder="Nissan" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field"><span>Model</span><input id="gKitModel" name="kitmodel" type="text" placeholder="GT-R" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
+              <label class="field"><span>Car underneath</span><input id="gKitCar" name="kitcar" type="text" placeholder="Lamborghini Huracán" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="100" enterkeyhint="go"></label>
             </div>
             <p class="form-msg" id="gMsg" role="alert"></p>
             <button class="btn btn--primary btn--lg btn--block" id="gSubmit" type="submit">Lock it in <kbd class="kbd-hint">Enter</kbd></button>
@@ -246,13 +245,13 @@
     <!-- SCORING -->
     <section class="screen" id="s-scoring" data-screen="scoring" aria-labelledby="sc-title" hidden>
       <h2 class="h2" id="sc-title">How scoring works</h2>
-      <p class="block-sub">Every car is worth 10 points. The server checks every answer, so the score you see is the score that counts.</p>
+      <p class="block-sub">Every car is worth 10 points. Answers are read against the whole car list, so the game knows that “918” is the 918 Spyder and that “Supra” could be two different cars. The server checks every answer, so the score you see is the score that counts.</p>
       <div class="sc-grid">
         <section class="sc-card">
           <h3 class="h3">Cars</h3>
           <dl class="sc-points">
-            <div><dt>Make</dt><dd><b>2</b></dd></div>
-            <div><dt>Model</dt><dd><b>5</b> for the exact car. <b>3</b> if you name the right model but miss the trim (M4 for an M4 Competition) or the generation.</dd></div>
+            <div><dt>Make</dt><dd><b>2</b>, whether you type it or the model gives it away: “918” means Porsche.</dd></div>
+            <div><dt>Model</dt><dd><b>5</b> for an answer that pins down the car. <b>3</b> for the right model with the trim or generation missing (M4 for an M4 Competition), or a name that fits more than one car (Supra: Mk4 or Mk5?). <b>1</b> for a designation that’s part of the name but doesn’t identify it (Spyder).</dd></div>
             <div><dt>Year</dt><dd><b>3</b> for any year the car was built. Close years earn part of it, depending on the rules below.</dd></div>
           </dl>
         </section>
@@ -261,7 +260,7 @@
           <dl class="sc-points">
             <div><dt>Tuner</dt><dd><b>6</b> for Liberty Walk, RWB, Rocket Bunny and the rest</dd></div>
             <div><dt>Make</dt><dd><b>2</b></dd></div>
-            <div><dt>Model</dt><dd><b>2</b>, or <b>1</b> for the right model with the wrong trim</dd></div>
+            <div><dt>Model</dt><dd><b>2</b>, or <b>1</b> for the right model with the trim or generation missing</dd></div>
           </dl>
         </section>
       </div>
@@ -275,11 +274,18 @@
           <tr><th scope="row">Clock</th><td>Off unless you choose one</td><td>45 seconds, starts when the photo appears</td></tr>
         </tbody>
       </table>
-      <h3 class="h3 sc-h">What doesn’t count</h3>
+      <h3 class="h3 sc-h">What counts</h3>
       <ul class="sc-list">
-        <li>Partial words. “Lam” is not Lamborghini, and sharing a letter or two with the answer is worth nothing.</li>
-        <li>Hedging. “Silvia Skyline 350Z” scores nothing for the model: extra words have to be trims (Spec-R, Type R), not other cars.</li>
-        <li>The wrong generation’s code. Typing “Evo VIII” for an Evo X earns the partial model points at most.</li>
+        <li>Type it the way you’d say it, all in one box: “Porsche 918 Spyder”, “918”, “R34 GT-R”, “GT3 RS”, “SVJ”. A shorter answer is just as good when it can only mean one car.</li>
+        <li>Nicknames, chassis codes and generation marks: Beemer, E46, FD, Mk4. Spacing and punctuation don’t matter.</li>
+        <li>A year typed in the same box (“1999 Skyline R34”) counts when the year box is empty.</li>
+      </ul>
+      <h3 class="h3 sc-h">What doesn’t</h3>
+      <ul class="sc-list">
+        <li>Dropping the trim or generation. GT3 isn’t a GT3 RS and an M4 isn’t an M4 Competition, so those earn the 3-point partial.</li>
+        <li>Designations on their own. Spyder, RS or Competition could be dozens of cars, so they earn 1 point at most.</li>
+        <li>Naming more than one car. “Silvia Skyline 350Z” scores nothing for the model.</li>
+        <li>Partial words and shared letters. “Lam” isn’t Lamborghini.</li>
         <li>Answers after the clock. In ranked games the server times every car.</li>
       </ul>
     </section>
@@ -365,14 +371,13 @@
           <p class="side-count" id="pgCount">Car 1 of 10</p>
           <form class="guess" id="pgForm" autocomplete="off" novalidate>
             <div class="fields" id="pgFields">
-              <label class="field"><span>Make</span><input id="pgMake" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field"><span>Model and trim</span><input id="pgModel" type="text" placeholder="Supra GR" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field field--year"><span>Year</span><input id="pgYear" type="text" inputmode="numeric" placeholder="2020" maxlength="4" enterkeyhint="go"></label>
+              <label class="field field--car"><span>Car</span><input id="pgCar" type="text" placeholder="Porsche 918 Spyder" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="100" enterkeyhint="next" aria-describedby="pgCarHelp"></label>
+              <p class="field-help" id="pgCarHelp">Make and model, as you'd say it: "918", "R34 GT-R", "BMW M4 Competition".</p>
+              <label class="field field--year"><span>Year</span><input id="pgYear" type="text" inputmode="numeric" placeholder="2015" maxlength="4" enterkeyhint="go"></label>
             </div>
             <div class="fields fields--kit" id="pgKitFields" hidden>
               <label class="field"><span>Tuner or body kit</span><input id="pgKit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field"><span>Make</span><input id="pgKitMake" type="text" list="makeList" placeholder="Nissan" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-              <label class="field"><span>Model</span><input id="pgKitModel" type="text" placeholder="GT-R" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
+              <label class="field"><span>Car underneath</span><input id="pgKitCar" type="text" placeholder="Lamborghini Huracán" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="100" enterkeyhint="go"></label>
             </div>
             <p class="form-msg" id="pgMsg" role="alert"></p>
             <button class="btn btn--primary btn--lg btn--block" id="pgSubmit" type="submit">Lock it in <kbd class="kbd-hint">Enter</kbd></button>
@@ -443,7 +448,6 @@
   <datalist id="makeList"></datalist>
 
   <script src="/socket.io/socket.io.min.js" defer></script>
-  <script src="scoring.js" defer></script>
   <script src="audio.js" defer></script>
   <script src="app.js" defer></script>
 </body>

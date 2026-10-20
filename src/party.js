@@ -43,6 +43,7 @@ function buildQueue(CARS, playlist, total = TOTAL) {
 function attachParty(io, CARS, opts = {}) {
   const cfg = { ...DEFAULTS, ...opts };
   const images = opts.images || null;
+  const index = opts.index || VCScore.buildIndex(CARS);
   const rooms = new Map();
   const roundMsFor = room => (room.ruleset === 'competitive' ? cfg.competitiveMs : cfg.roundMs);
   const kindFor = room => Modes.PLAYLISTS[room.playlist].kind || 'car';
@@ -83,7 +84,7 @@ function attachParty(io, CARS, opts = {}) {
   function revealPayload(room) {
     const car = room.queue[room.curIdx];
     return {
-      idx: room.curIdx, make: car.make, model: car.model, variant: car.variant || null, year: car.year, yearRange: car.yearRange || null,
+      idx: room.curIdx, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year, yearRange: car.yearRange || null,
       kit: car.kit || null, hint: car.hint, credit: car.credit || null, carId: car.id, standings: standings(room),
     };
   }
@@ -313,8 +314,8 @@ function attachParty(io, CARS, opts = {}) {
       if (!room || room.state !== 'playing') return cb({ ok: false, error: 'Round is over' });
       if (player.answered) return cb({ ok: false, error: 'Already answered' });
       if (Number.isInteger(payload.idx) && payload.idx !== room.curIdx) return cb({ ok: false, error: 'Round is over' });
-      const guess = { make: str(payload.make, 60), model: str(payload.model, 60), year: str(payload.year, 8), kit: str(payload.kit, 60) };
-      const result = VCScore.scoreRound(room.queue[room.curIdx], guess, { ruleset: room.ruleset, kind: kindFor(room) });
+      const guess = { car: str(payload.car, 100), make: str(payload.make, 60), model: str(payload.model, 60), year: str(payload.year, 8), kit: str(payload.kit, 60) };
+      const result = VCScore.scoreRound(room.queue[room.curIdx], guess, { ruleset: room.ruleset, kind: kindFor(room), index });
       player.pending = result.pts;
       player.answered = true;
       player.lastPts = result.pts;
