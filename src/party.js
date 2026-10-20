@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const VCScore = require('../public/scoring.js');
 const Modes = require('./modes');
+const Pools = require('./pools');
 
 const TOTAL = Modes.ROUNDS;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
@@ -47,8 +48,29 @@ function attachParty(io, CARS, opts = {}) {
   const rooms = new Map();
   const roundMsFor = room => (room.ruleset === 'competitive' ? cfg.competitiveMs : cfg.roundMs);
   const kindFor = room => Modes.PLAYLISTS[room.playlist].kind || 'car';
+  // Community photos need the proxy (they're served by token) and a way to tell who's playing.
+  const community = images && opts.community ? opts.community : null;
+  const identify = opts.identify || (() => null);
+  // Everyone seated in the room counts, connected or not.
+  const ctxFor = room => ({ competitive: room.ruleset === 'competitive', participants: [...room.players.values()].map(p => p.userId || null) });
   // Photo URL players see. With the proxy it's opaque, so the file name can't give the car away.
-  const photo = car => (images ? images.issue(car.img) : car.img);
+  // A community photo's token checks the room's players again when it's fetched.
+  const photo = (room, car) => {
+    if (car.community) return images.issueLocal(() => community.photo(car.imageId, ctxFor(room)));
+    return images ? images.issue(car.img) : car.img;
+  };
+  // Last check before a round's photo goes out: a community photo that may no
+  // longer be shown to this room (removed, flagged, or a player's own) is
+  // replaced with a first-party photo.
+  function roundCar(room) {
+    let car = room.queue[room.curIdx];
+    if (car.community && !(community && Pools.communityAllowed(community.state(car.imageId), ctxFor(room)).ok)) {
+      car = Pools.replacement(room.queue, room.fallback);
+      if (!car) return null;
+      room.queue[room.curIdx] = car;
+    }
+    return car;
+  }
 
   function makeCode() {
     let code;
@@ -85,7 +107,7 @@ function attachParty(io, CARS, opts = {}) {
     const car = room.queue[room.curIdx];
     return {
       idx: room.curIdx, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year, yearRange: car.yearRange || null,
-      kit: car.kit || null, hint: car.hint, credit: car.credit || null, carId: car.id, standings: standings(room),
+      kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null, carId: car.id, standings: standings(room),
     };
   }
 
@@ -134,13 +156,21 @@ function attachParty(io, CARS, opts = {}) {
     const ms = roundMsFor(room);
     room.deadline = Date.now() + ms;
     room.timer = setTimeout(() => revealRound(room), ms);
+    const car = roundCar(room);
+    if (!car) { // nothing safe to show: end the game rather than show an excluded photo
+      clearRoundTimer(room);
+      room.state = 'final';
+      io.to(room.code).emit('party:final', { standings: standings(room) });
+      return;
+    }
+    room.imgs[room.curIdx] = photo(room, car);
     const next = room.queue[room.curIdx + 1];
     // Next photo: warm the server cache (proxied) or let clients preload it (direct).
-    if (next && images) images.warm(next.img);
+    if (next && images && !next.community) images.warm(next.img);
     io.to(room.code).emit('party:round', {
       idx: room.curIdx, total: TOTAL, img: room.imgs[room.curIdx], players: publicPlayers(room),
       deadline: room.deadline, durationMs: ms, serverNow: Date.now(),
-      nextImg: next && !images ? next.img : null,
+      nextImg: next && !images && !next.community ? next.img : null,
     });
   }
 
@@ -188,6 +218,7 @@ function attachParty(io, CARS, opts = {}) {
 
   function bind(socket, room, player) {
     player.socketId = socket.id;
+    player.userId = identify(socket); // re-read on every (re)connect: signing in or out changes it
     player.awaySince = 0;
     if (player.dropTimer) { clearTimeout(player.dropTimer); player.dropTimer = null; }
     socket.join(room.code);
@@ -242,7 +273,7 @@ function attachParty(io, CARS, opts = {}) {
       leaveCurrent(socket);
       const playlist = playlistFor(payload.playlist || payload.mode);
       const ruleset = payload.ruleset === 'competitive' ? 'competitive' : 'casual';
-      const room = { code: makeCode(), playlist, ruleset, hostId: null, players: new Map(), queue: [], imgs: [], curIdx: -1, state: 'lobby', timer: null, deadline: 0, lastActive: Date.now() };
+      const room = { code: makeCode(), playlist, ruleset, hostId: null, players: new Map(), queue: [], imgs: [], fallback: [], curIdx: -1, state: 'lobby', timer: null, deadline: 0, lastActive: Date.now() };
       rooms.set(room.code, room);
       const p = addPlayer(socket, room, sanitizeName(payload.name), payload.key);
       room.hostId = p.id;
@@ -300,8 +331,12 @@ function attachParty(io, CARS, opts = {}) {
       const { room, player } = myRoom();
       if (!room || room.hostId !== player.id) return cb({ ok: false, error: 'Only the host can start' });
       if (room.state !== 'lobby' && room.state !== 'final') return cb({ ok: false, error: 'Already started' });
-      room.queue = buildQueue(CARS, room.playlist);
-      room.imgs = room.queue.map(photo);
+      // First-party cars plus community photos cleared for everyone in the room.
+      const base = poolFor(CARS, room.playlist);
+      const extra = community ? Pools.eligible(community.items(), ctxFor(room)).filter(Modes.PLAYLISTS[room.playlist].filter) : [];
+      room.fallback = base;
+      room.queue = extra.length ? Pools.dedupe(Modes.pick(base.concat(extra), TOTAL), base) : Modes.pick(base, TOTAL);
+      room.imgs = [];
       room.curIdx = 0;
       room.players.forEach(p => { p.score = 0; p.pending = 0; });
       touch(room);

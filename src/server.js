@@ -7,6 +7,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { attachParty, sanitizeName } = require('./party');
 const Modes = require('./modes');
+const Pools = require('./pools');
 const { createImageProxy } = require('./images');
 const { openDb } = require('./db');
 const { createMailer } = require('./mailer');
@@ -114,6 +115,7 @@ function createApp(opts = {}) {
       makes: [...new Set(live.map(c => c.make))].sort((a, b) => a.localeCompare(b)),
       daily: { date: Modes.utcDateKey() },
       garage: garageOn,
+      community: garage ? garage.counts() : null,
     });
   });
 
@@ -141,7 +143,12 @@ function createApp(opts = {}) {
 
   app.post('/api/solo/start', limit(120, 60_000), (req, res) => {
     const b = req.body || {};
-    const plan = Modes.planGame(CARS, { kind: b.kind, playlist: b.playlist, filters: b.filters });
+    // Community photos: cleared for this player (signed in or not) and these rules.
+    const user = auth ? auth.currentUser(req) : null;
+    const userId = user && user.status === 'active' ? user.id : null;
+    const ctx = { competitive: b.kind !== 'free', participants: [userId] };
+    const extra = garage && b.kind !== 'daily' ? Pools.eligible(garage.roundItems(), ctx) : [];
+    const plan = Modes.planGame(CARS, { kind: b.kind, playlist: b.playlist, filters: b.filters }, { extra });
     if (!plan) return res.status(400).json({ error: 'Unknown game mode' });
     if (plan.error) return res.status(400).json({ error: plan.error });
     pruneSessions();
@@ -150,12 +157,12 @@ function createApp(opts = {}) {
       id: crypto.randomUUID(), plan, queue: plan.queue.slice(), idx: 0, player,
       openIdx: -1, openedAt: 0, servedAt: 0, photoOk: false, img: null, freeSkips: 0,
       score: 0, cars: 0, streak: 0, bestStreak: 0, strikes: 0, timeMs: 0, over: false,
-      results: [], created: Date.now(), saved: false,
+      results: [], created: Date.now(), saved: false, ctx: { competitive: plan.ruleset === 'competitive', participants: [userId] }, swaps: 0,
       unranked: plan.kind === 'daily' && dailyAlreadyPosted(plan.board, player),
     };
     if (plan.kind === 'endless') s.queue.push(Modes.nextEndless(plan, new Set(), 0));
     sessions.set(s.id, s);
-    if (plan.board) images.warm(s.queue[0].img);
+    if (plan.board && s.queue[0]) images.warm(s.queue[0].img);
     res.json({
       sessionId: s.id, kind: plan.kind, key: plan.key, title: plan.title, board: ranked(s) ? plan.board : null,
       ruleset: plan.ruleset, roundKind: plan.roundKind, clockMs: plan.clockMs, rounds: plan.rounds, lives: plan.lives,
@@ -171,22 +178,34 @@ function createApp(opts = {}) {
     if (!s) return res.status(404).json({ error: 'Session expired' });
     if (finished(s)) return res.status(409).json({ error: 'Game over' });
     if (b.idx !== s.idx) return res.status(409).json({ error: 'Wrong round' });
-    const car = s.queue[s.idx];
     if (s.openIdx !== s.idx) {
+      // Last check before a community photo is shown: still approved, and still
+      // allowed for this player. If not, a first-party photo takes its place.
+      let car = s.queue[s.idx];
+      if (car.community && !(garage && Pools.communityAllowed(garage.itemState(car.imageId), s.ctx).ok)) {
+        car = Pools.replacement(s.queue, s.plan.fallback);
+        if (!car) return res.status(503).json({ error: 'No photo is available for this round.' }); // fail closed
+        s.queue[s.idx] = car;
+        s.swaps += 1;
+      }
       s.openIdx = s.idx;
       s.openedAt = Date.now();
       s.servedAt = 0;
       s.photoOk = false;
-      if (s.plan.board) {
+      if (s.plan.board || car.community) {
         const idx = s.idx;
-        s.img = images.issue(car.img, ok => { if (s.openIdx === idx && !s.servedAt) { s.servedAt = Date.now(); s.photoOk = ok; } });
+        const onServe = ok => { if (s.openIdx === idx && !s.servedAt) { s.servedAt = Date.now(); s.photoOk = ok; } };
+        s.img = car.community
+          ? images.issueLocal(() => garage.roundPhoto(car.imageId, s.ctx), s.plan.board ? onServe : null)
+          : images.issue(car.img, onServe);
+        if (!s.plan.board) s.servedAt = s.openedAt;
       } else {
         s.img = car.img;
         s.servedAt = s.openedAt;
       }
     }
     const next = !s.plan.board && s.queue[s.idx + 1];
-    res.json({ idx: s.idx, img: s.img, next: next ? next.img : null, clockMs: s.plan.clockMs });
+    res.json({ idx: s.idx, img: s.img, next: next && !next.community ? next.img : null, clockMs: s.plan.clockMs });
   });
 
   app.post('/api/solo/guess', limit(600, 60_000), (req, res) => {
@@ -228,7 +247,7 @@ function createApp(opts = {}) {
       strikes: s.strikes, lives: s.plan.lives, idx: s.idx, done,
       answer: {
         id: car.id, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year,
-        yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint, credit: car.credit || null,
+        yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null,
       },
     });
   });
@@ -307,7 +326,15 @@ function createApp(opts = {}) {
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));
 
-  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES });
+  // Party players are identified from the session cookie on their socket, so
+  // competitive rooms can keep each player's own photos out.
+  const identify = auth ? socket => {
+    const headers = socket.request.headers || {};
+    const u = auth.currentUser({ get: h => headers[String(h).toLowerCase()] });
+    return u && u.status === 'active' ? u.id : null;
+  } : null;
+  const community = garage ? { items: () => garage.roundItems(), state: id => garage.itemState(id), photo: (id, ctx) => garage.roundPhoto(id, ctx) } : null;
+  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify });
 
   return {
     app, server, io, sessions, party, images, db: gdb, auth, garage,

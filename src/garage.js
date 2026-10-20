@@ -16,6 +16,7 @@ const fsp = require('fs/promises');
 const path = require('path');
 const sharp = require('sharp');
 const Photos = require('./photos');
+const Pools = require('./pools');
 
 const LICENCE_VERSION = '0.1-draft';
 const LICENCE_NAME = `VicCall Contributor Licence ${LICENCE_VERSION}`;
@@ -140,8 +141,64 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     return out;
   }
 
+  // ---- photos for games ----
+  // Approved photos as round items, cached for planning games. Every round
+  // re-reads the photo's state before it's shown (itemState), so the cache
+  // only decides what's considered, never what's allowed.
+  let itemCache = null, itemCacheAt = 0;
+  const invalidate = () => { itemCache = null; };
+  function toItem(row, contributors) {
+    const id = vehicleOf(row.vehicle_key);
+    if (!id) return null;
+    const cands = id.cars.map(c => carsById.get(c)).filter(Boolean);
+    const rep = cands.find(c => !c.kit && !c.excluded) || cands.find(c => !c.kit);
+    if (!rep) return null;
+    const year = row.year || rep.year;
+    const inRange = Array.isArray(rep.yearRange) && year >= rep.yearRange[0] && year <= rep.yearRange[1];
+    return {
+      ...rep, id: `community:${row.id}`, imageId: row.id, img: null, credit: null, kit: null, excluded: false,
+      year, yearRange: inRange ? rep.yearRange : null, difficulty: Pools.tierOf(row.difficulty || 3),
+      community: true, vkey: id.key, moderation: row.moderation, eligibility: row.eligibility, takedown: row.takedown,
+      flagged: !!row.flagged, contributors, photo: { source: 'community', by: creditFor(row.contributor_id) },
+    };
+  }
+  function roundItems() {
+    if (itemCache && now() - itemCacheAt < 60_000) return itemCache; // credits can change, so refresh now and then
+    const rows = db.all(`SELECT * FROM images WHERE source = 'community' AND moderation = 'approved' AND takedown = 'none'
+                         AND eligibility IN ('casual','competitive') AND vehicle_key IS NOT NULL`);
+    const who = new Map();
+    for (const r of db.all(`SELECT c.image_id, c.user_id FROM image_contributors c JOIN images i ON i.id = c.image_id WHERE i.moderation = 'approved'`)) {
+      if (!who.has(r.image_id)) who.set(r.image_id, []);
+      who.get(r.image_id).push(r.user_id);
+    }
+    itemCache = rows.map(r => toItem(r, who.get(r.id) || [])).filter(Boolean);
+    itemCacheAt = now();
+    return itemCache;
+  }
+  // The photo's state right now, straight from the database.
+  function itemState(imageId) {
+    const row = imageId && db.get('SELECT * FROM images WHERE id = ?', imageId);
+    if (!row) return null;
+    return {
+      community: true, imageId: row.id, moderation: row.moderation, eligibility: row.eligibility, takedown: row.takedown,
+      flagged: !!row.flagged, contributors: contributorsOf(row.id).map(c => c.user_id),
+    };
+  }
+  // The photo for a game round, only if it may still be shown to these players.
+  async function roundPhoto(imageId, ctx) {
+    if (!ID_RE.test(String(imageId))) return null;
+    if (!Pools.communityAllowed(itemState(imageId), ctx).ok) return null;
+    const buf = await store.get(`web/${imageId}/large.webp`);
+    return buf ? { buf, type: 'image/webp' } : null;
+  }
+  function counts() {
+    const items = roundItems();
+    return { casual: items.length, competitive: items.filter(i => i.eligibility === 'competitive' && !i.flagged).length };
+  }
+
   // Delete the files and take an image out of delivery and selection.
   async function retireImage(imageId, { moderation, actorId, reason, keepOriginal = false }) {
+    invalidate();
     db.tx(() => {
       db.run(`UPDATE images SET moderation = ?, eligibility = 'removed', updated_at = ? WHERE id = ?`, moderation, now(), imageId);
       db.audit(actorId, `image.${moderation === 'rejected' ? 'reject' : 'remove'}`, 'image', imageId, { reason });
@@ -153,6 +210,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
   // Put everyone with a claim on any copy of this photo on every copy, so the
   // competitive exclusion covers duplicates whoever uploaded them.
   function linkDuplicates(imageIds) {
+    invalidate();
     const ids = [...new Set(imageIds)];
     const users = new Set();
     for (const id of ids) for (const c of contributorsOf(id)) users.add(c.user_id);
@@ -516,6 +574,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
       db.run(`UPDATE images SET moderation = 'approved', eligibility = ?, vehicle_key = ?, year = ?, difficulty = ?, restrictions = ?, updated_at = ? WHERE id = ?`,
         eligibility, vehicle.key, year, difficulty, JSON.stringify(restrictions), now(), img.id);
       db.run(`UPDATE submissions SET status = 'approved', reason = NULL, updated_at = ? WHERE id = ?`, now(), s.id);
+      invalidate();
       db.audit(actor, 'submission.approve', 'submission', s.id, { image: img.id, vehicle: vehicle.key, year, difficulty, eligibility, blur: blur.length, note: reason || undefined });
     });
     res.json({ submission: viewSubmission(db.get('SELECT * FROM submissions WHERE id = ?', s.id), { forModerator: true }) });
@@ -556,6 +615,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     db.tx(() => {
       db.run('UPDATE images SET eligibility = ?, flagged = ?, difficulty = ?, vehicle_key = ?, year = ?, updated_at = ? WHERE id = ?',
         next.eligibility, next.flagged, next.difficulty, next.vehicle_key, next.year, now(), img.id);
+      invalidate();
       db.audit(req.user.id, 'image.state', 'image', img.id, { from: { eligibility: img.eligibility, flagged: img.flagged, difficulty: img.difficulty, vehicle: img.vehicle_key, year: img.year }, to: next, reason: text(b.reason, 300) || undefined });
     });
     res.json({ image: { id: img.id, ...next, flagged: !!next.flagged } });
@@ -628,7 +688,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     res.status(500).json({ error: 'Something went wrong. Try again.' });
   });
 
-  return { router, store, LICENCE_VERSION, creditFor };
+  return { router, store, LICENCE_VERSION, creditFor, roundItems, itemState, roundPhoto, counts, invalidate };
 }
 
 module.exports = { createGarage, LICENCE_VERSION, DECLARATIONS, STATUS_LABEL, ANON_CREDIT };

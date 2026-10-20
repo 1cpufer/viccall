@@ -10,6 +10,8 @@
  *   Endless     Keep going until you miss three cars. Strict rules.
  */
 
+const Pools = require('./pools');
+
 const ROUNDS = 10;
 const RANKED_CLOCK_MS = 45_000;
 const EUROPE = new Set(['germany', 'italy', 'uk', 'france', 'sweden', 'croatia']);
@@ -108,6 +110,8 @@ function dailyQueue(CARS, dateKey) {
   const pool = live(CARS).filter(c => !c.kit);
   const tier = d => pool.filter(c => c.difficulty === d);
   const chosen = [...pick(tier(1), 3, rand), ...pick(tier(2), 4, rand), ...pick(tier(3), 3, rand)];
+  // A short tier (small car lists) is topped up from the rest of the pool.
+  if (chosen.length < ROUNDS) chosen.push(...pick(pool.filter(c => !chosen.includes(c)), ROUNDS - chosen.length, rand));
   return ramp(chosen, rand);
 }
 
@@ -117,33 +121,42 @@ const ENDLESS_CAP = 250;            // a run this long ends on its own
 
 /*
  * Resolve a game request into a plan. Returns null if the request is invalid.
- * plan: { kind, key, title, board, ruleset, roundKind, clockMs, rounds, lives, pool, queue }
+ * plan: { kind, key, title, board, ruleset, roundKind, clockMs, rounds, lives, pool, queue, fallback }
  *   board: leaderboard key or null. rounds: number or null (endless).
+ *   fallback: the first-party cars for this game, used to replace a community
+ *   photo that can no longer be shown.
+ * opts.extra: community photos already cleared for this player and ruleset.
+ * The Daily Challenge never uses them: it must be the same for everyone.
  */
-function planGame(CARS, req) {
+function planGame(CARS, req, opts = {}) {
   const r = req && typeof req === 'object' ? req : {};
   const all = live(CARS);
+  const extra = Array.isArray(opts.extra) ? opts.extra : [];
   if (r.kind === 'free') {
     const f = cleanFilters(r.filters);
-    const pool = all.filter(freePlayFilter(f));
-    if (!pool.length) return { error: 'No cars match those filters. Try widening one.' };
+    const base = all.filter(freePlayFilter(f));
+    if (!base.length) return { error: 'No cars match those filters. Try widening one.' };
+    const pool = base.concat(extra.filter(freePlayFilter(f)));
     const roundKind = f.type === 'kit' ? 'kit' : 'car';
-    return { kind: 'free', key: 'free', title: 'Free Play', board: null, ruleset: 'casual', roundKind, clockMs: Number(f.timer) * 1000, rounds: ROUNDS, lives: null, filters: f, queue: pick(pool, ROUNDS), poolSize: pool.length };
+    return { kind: 'free', key: 'free', title: 'Free Play', board: null, ruleset: 'casual', roundKind, clockMs: Number(f.timer) * 1000, rounds: ROUNDS, lives: null, filters: f, queue: Pools.dedupe(pick(pool, ROUNDS), base), poolSize: pool.length, fallback: base };
   }
   if (r.kind === 'ranked') {
     if (typeof r.playlist !== 'string' || !Object.prototype.hasOwnProperty.call(PLAYLISTS, r.playlist)) return null;
     const p = PLAYLISTS[r.playlist];
-    const pool = all.filter(p.filter);
-    return { kind: 'ranked', key: r.playlist, title: p.title, board: `ranked:${r.playlist}`, ruleset: 'competitive', roundKind: p.kind || 'car', clockMs: RANKED_CLOCK_MS, rounds: ROUNDS, lives: null, queue: ramp(pick(pool, ROUNDS)), poolSize: pool.length };
+    const base = all.filter(p.filter);
+    if (!base.length) return { error: 'This playlist has no cars yet.' };
+    const pool = base.concat(extra.filter(p.filter));
+    return { kind: 'ranked', key: r.playlist, title: p.title, board: `ranked:${r.playlist}`, ruleset: 'competitive', roundKind: p.kind || 'car', clockMs: RANKED_CLOCK_MS, rounds: ROUNDS, lives: null, queue: ramp(Pools.dedupe(pick(pool, ROUNDS), base)), poolSize: pool.length, fallback: base };
   }
   if (r.kind === 'daily') {
     const date = utcDateKey();
-    return { kind: 'daily', key: date, title: `Daily Challenge`, date, board: `daily:${date}`, ruleset: 'competitive', roundKind: 'car', clockMs: RANKED_CLOCK_MS, rounds: ROUNDS, lives: null, queue: dailyQueue(CARS, date), poolSize: ROUNDS };
+    return { kind: 'daily', key: date, title: `Daily Challenge`, date, board: `daily:${date}`, ruleset: 'competitive', roundKind: 'car', clockMs: RANKED_CLOCK_MS, rounds: ROUNDS, lives: null, queue: dailyQueue(CARS, date), poolSize: ROUNDS, fallback: all.filter(c => !c.kit) };
   }
   if (r.kind === 'endless') {
     if (!endlessPools.has(CARS)) endlessPools.set(CARS, all.filter(c => !c.kit));
-    const pool = endlessPools.get(CARS);
-    return { kind: 'endless', key: 'endless', title: 'Endless', board: 'endless', ruleset: 'competitive', roundKind: 'car', clockMs: RANKED_CLOCK_MS, rounds: null, lives: 3, queue: [], pool, poolSize: pool.length };
+    const base = endlessPools.get(CARS);
+    const pool = extra.length ? base.concat(extra.filter(c => !c.kit)) : base;
+    return { kind: 'endless', key: 'endless', title: 'Endless', board: 'endless', ruleset: 'competitive', roundKind: 'car', clockMs: RANKED_CLOCK_MS, rounds: null, lives: 3, queue: [], pool, poolSize: pool.length, fallback: base };
   }
   return null;
 }

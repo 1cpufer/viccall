@@ -96,6 +96,16 @@ function createImageProxy(opts = {}) {
     return `/api/img/${token}`;
   }
 
+  // Same, for a photo the server holds itself (community photos). The loader
+  // runs at serve time and returns { buf, type }, or null if the photo may no
+  // longer be shown; the player then gets a "photo unavailable" skip.
+  function issueLocal(loader, onServe) {
+    if (tokens.size > MAX_TOKENS) sweep();
+    const token = crypto.randomBytes(16).toString('base64url');
+    tokens.set(token, { loader, onServe: onServe || null, exp: Date.now() + TOKEN_TTL_MS });
+    return `/api/img/${token}`;
+  }
+
   // ok = the photo itself went out (false = we redirected to Wikimedia instead).
   function served(t, ok) {
     if (t.onServe) { const f = t.onServe; t.onServe = null; try { f(ok); } catch {} }
@@ -104,6 +114,15 @@ function createImageProxy(opts = {}) {
   async function handle(req, res) {
     const t = tokens.get(String(req.params.token || ''));
     if (!t || t.exp < Date.now()) return res.status(404).json({ error: 'not found' });
+    if (t.loader) {
+      let entry = null;
+      try { entry = await t.loader(); } catch (e) { console.error('[img] local photo failed:', e); }
+      if (!entry) { served(t, false); res.set('Cache-Control', 'no-store'); return res.status(404).json({ error: 'not found' }); }
+      served(t, true);
+      res.set('Cache-Control', 'private, no-store');
+      res.set('Content-Type', entry.type);
+      return res.send(entry.buf);
+    }
     try {
       const { buf, type } = await load(t.url);
       served(t, true);
@@ -121,7 +140,7 @@ function createImageProxy(opts = {}) {
   const timer = setInterval(sweep, 10 * 60_000);
   if (timer.unref) timer.unref();
 
-  return { issue, handle, warm, load, close() { clearInterval(timer); }, stats: () => ({ cached: cache.size, bytes, tokens: tokens.size }) };
+  return { issue, issueLocal, handle, warm, load, close() { clearInterval(timer); }, stats: () => ({ cached: cache.size, bytes, tokens: tokens.size }) };
 }
 
 module.exports = { createImageProxy, originalOf, USER_AGENT };
