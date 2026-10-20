@@ -1,28 +1,20 @@
 const crypto = require('crypto');
 const VCScore = require('../public/scoring.js');
+const Modes = require('./modes');
 
-const TOTAL = 10;
+const TOTAL = Modes.ROUNDS;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
 const MAX_PLAYERS = 16;
 const MAX_ROOMS = 2000;
 
 const DEFAULTS = {
-  roundMs: 60_000,          // normal modes
-  timeAttackMs: 30_000,     // Time Attack
+  roundMs: 60_000,          // casual rules
+  competitiveMs: 45_000,    // competitive rules
   graceMs: 45_000,          // how long a dropped player keeps their seat
   awayMs: 8_000,            // how long the round waits for a dropped player before moving on
   idleRoomMs: 2 * 60 * 60_000,
   sweepMs: 60_000,
 };
-
-function shuffle(a) {
-  const r = [...a];
-  for (let i = r.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [r[i], r[j]] = [r[j], r[i]];
-  }
-  return r;
-}
 
 function sanitizeName(raw) {
   const cleaned = String(raw || '').replace(/[^\w \-'.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 20);
@@ -33,33 +25,29 @@ const str = (v, max) => (typeof v === 'string' || typeof v === 'number' ? String
 const obj = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 const validKey = k => typeof k === 'string' && /^[A-Za-z0-9_-]{16,64}$/.test(k);
 
-function poolFor(ALL, mode) {
-  // Entries flagged `excluded` (wrong photo etc.) stay in the data but never get served.
-  const CARS = ALL.filter(c => !c.excluded);
-  const pool = mode === 'niche' ? CARS.filter(c => c.niche && !c.kit)
-    : mode === 'supercar' ? CARS.filter(c => c.supercar && !c.kit)
-    : mode === 'kit' ? CARS.filter(c => c.kit)
-    : mode === 'worldwide' || mode === 'timeattack' ? CARS.filter(c => !c.kit)
-    : CARS.filter(c => c.region === mode && !c.kit);
-  return pool.length ? pool : CARS.filter(c => !c.kit);
+// Old clients sent a region "mode"; map those onto the closest playlist.
+const LEGACY = { worldwide: 'world', timeattack: 'world', japan: 'jdm', germany: 'euro', italy: 'euro', uk: 'euro', france: 'euro', usa: 'world', niche: 'world', supercar: 'super', kit: 'kits' };
+const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
+const playlistFor = p => (own(Modes.PLAYLISTS, p) ? p : own(LEGACY, p) ? LEGACY[p] : 'world');
+
+function poolFor(ALL, playlist) {
+  const pool = Modes.live(ALL).filter(Modes.PLAYLISTS[playlistFor(playlist)].filter);
+  return pool.length ? pool : Modes.live(ALL).filter(c => !c.kit);
 }
 
 // Ten cars, no repeats unless the pool is smaller than ten (then no back-to-back repeats).
-function buildQueue(CARS, mode, total = TOTAL) {
-  const pool = poolFor(CARS, mode);
-  const out = [];
-  while (out.length < total) {
-    const batch = shuffle(pool);
-    if (out.length && batch.length > 1 && batch[0] === out[out.length - 1]) batch.push(batch.shift());
-    out.push(...batch);
-  }
-  return out.slice(0, total);
+function buildQueue(CARS, playlist, total = TOTAL) {
+  return Modes.pick(poolFor(CARS, playlist), total);
 }
 
-function attachParty(io, CARS, MODES, opts = {}) {
+function attachParty(io, CARS, opts = {}) {
   const cfg = { ...DEFAULTS, ...opts };
+  const images = opts.images || null;
   const rooms = new Map();
-  const roundMsFor = mode => (mode === 'timeattack' ? cfg.timeAttackMs : cfg.roundMs);
+  const roundMsFor = room => (room.ruleset === 'competitive' ? cfg.competitiveMs : cfg.roundMs);
+  const kindFor = room => Modes.PLAYLISTS[room.playlist].kind || 'car';
+  // Photo URL players see. With the proxy it's opaque, so the file name can't give the car away.
+  const photo = car => (images ? images.issue(car.img) : car.img);
 
   function makeCode() {
     let code;
@@ -95,19 +83,19 @@ function attachParty(io, CARS, MODES, opts = {}) {
   function revealPayload(room) {
     const car = room.queue[room.curIdx];
     return {
-      idx: room.curIdx, make: car.make, model: car.model, year: car.year, yearRange: car.yearRange || null, kit: car.kit || null,
-      hint: car.hint, carId: car.id, standings: standings(room),
+      idx: room.curIdx, make: car.make, model: car.model, variant: car.variant || null, year: car.year, yearRange: car.yearRange || null,
+      kit: car.kit || null, hint: car.hint, credit: car.credit || null, carId: car.id, standings: standings(room),
     };
   }
 
   function snapshot(room, youId) {
     const s = {
-      code: room.code, mode: room.mode, state: room.state, youId, total: TOTAL,
+      code: room.code, playlist: room.playlist, ruleset: room.ruleset, kind: kindFor(room), state: room.state, youId, total: TOTAL,
       players: publicPlayers(room), serverNow: Date.now(),
     };
     if (room.state === 'playing' || room.state === 'reveal') {
       const car = room.queue[room.curIdx];
-      s.round = { idx: room.curIdx, img: car.img, deadline: room.deadline, durationMs: roundMsFor(room.mode) };
+      s.round = { idx: room.curIdx, img: room.imgs[room.curIdx], deadline: room.deadline, durationMs: roundMsFor(room) };
       const me = room.players.get(youId);
       if (me && me.answered) s.round.you = me.lastResult;
     }
@@ -142,15 +130,16 @@ function attachParty(io, CARS, MODES, opts = {}) {
     clearRoundTimer(room);
     room.state = 'playing';
     room.players.forEach(p => { p.answered = false; p.lastPts = null; p.lastResult = null; p.pending = 0; });
-    const ms = roundMsFor(room.mode);
+    const ms = roundMsFor(room);
     room.deadline = Date.now() + ms;
     room.timer = setTimeout(() => revealRound(room), ms);
-    const car = room.queue[room.curIdx];
     const next = room.queue[room.curIdx + 1];
+    // Next photo: warm the server cache (proxied) or let clients preload it (direct).
+    if (next && images) images.warm(next.img);
     io.to(room.code).emit('party:round', {
-      idx: room.curIdx, total: TOTAL, img: car.img, players: publicPlayers(room),
+      idx: room.curIdx, total: TOTAL, img: room.imgs[room.curIdx], players: publicPlayers(room),
       deadline: room.deadline, durationMs: ms, serverNow: Date.now(),
-      nextImg: next ? next.img : null,
+      nextImg: next && !images ? next.img : null,
     });
   }
 
@@ -250,8 +239,9 @@ function attachParty(io, CARS, MODES, opts = {}) {
     on('party:create', (payload, cb) => {
       if (rooms.size >= MAX_ROOMS) return cb({ ok: false, error: 'Server is busy, try again soon' });
       leaveCurrent(socket);
-      const mode = MODES.includes(payload.mode) ? payload.mode : 'worldwide';
-      const room = { code: makeCode(), mode, hostId: null, players: new Map(), queue: [], curIdx: -1, state: 'lobby', timer: null, deadline: 0, lastActive: Date.now() };
+      const playlist = playlistFor(payload.playlist || payload.mode);
+      const ruleset = payload.ruleset === 'competitive' ? 'competitive' : 'casual';
+      const room = { code: makeCode(), playlist, ruleset, hostId: null, players: new Map(), queue: [], imgs: [], curIdx: -1, state: 'lobby', timer: null, deadline: 0, lastActive: Date.now() };
       rooms.set(room.code, room);
       const p = addPlayer(socket, room, sanitizeName(payload.name), payload.key);
       room.hostId = p.id;
@@ -293,11 +283,24 @@ function attachParty(io, CARS, MODES, opts = {}) {
       cb({ ok: true, ...snapshot(room, player.id) });
     });
 
+    // Host picks the playlist and rules while in the lobby (or after a game, for a rematch).
+    on('party:settings', (payload, cb) => {
+      const { room, player } = myRoom();
+      if (!room || room.hostId !== player.id) return cb({ ok: false, error: 'Only the host can change settings' });
+      if (room.state !== 'lobby' && room.state !== 'final') return cb({ ok: false, error: 'Game in progress' });
+      if (payload.playlist !== undefined) room.playlist = playlistFor(payload.playlist);
+      if (payload.ruleset !== undefined) room.ruleset = payload.ruleset === 'competitive' ? 'competitive' : 'casual';
+      touch(room);
+      io.to(room.code).emit('party:settings', { playlist: room.playlist, ruleset: room.ruleset, kind: kindFor(room) });
+      cb({ ok: true, playlist: room.playlist, ruleset: room.ruleset });
+    });
+
     on('party:start', (payload, cb) => {
       const { room, player } = myRoom();
       if (!room || room.hostId !== player.id) return cb({ ok: false, error: 'Only the host can start' });
       if (room.state !== 'lobby' && room.state !== 'final') return cb({ ok: false, error: 'Already started' });
-      room.queue = buildQueue(CARS, room.mode);
+      room.queue = buildQueue(CARS, room.playlist);
+      room.imgs = room.queue.map(photo);
       room.curIdx = 0;
       room.players.forEach(p => { p.score = 0; p.pending = 0; });
       touch(room);
@@ -311,7 +314,7 @@ function attachParty(io, CARS, MODES, opts = {}) {
       if (player.answered) return cb({ ok: false, error: 'Already answered' });
       if (Number.isInteger(payload.idx) && payload.idx !== room.curIdx) return cb({ ok: false, error: 'Round is over' });
       const guess = { make: str(payload.make, 60), model: str(payload.model, 60), year: str(payload.year, 8), kit: str(payload.kit, 60) };
-      const result = VCScore.scoreRound(room.queue[room.curIdx], guess, { ruleset: 'casual', kind: room.mode === 'kit' ? 'kit' : 'car' });
+      const result = VCScore.scoreRound(room.queue[room.curIdx], guess, { ruleset: room.ruleset, kind: kindFor(room) });
       player.pending = result.pts;
       player.answered = true;
       player.lastPts = result.pts;

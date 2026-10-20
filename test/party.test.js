@@ -5,11 +5,13 @@ const CARS = require('../src/cars.json');
 const { buildQueue } = require('../src/party');
 const { fullModel } = require('../public/scoring.js');
 
-const fast = { party: { roundMs: 400, timeAttackMs: 300, graceMs: 300, awayMs: 150, sweepMs: 1000 } };
+const fast = { party: { roundMs: 400, competitiveMs: 300, graceMs: 300, awayMs: 150, sweepMs: 1000 } };
+// Party photos are opaque proxy URLs; look the car up on the server (tests only).
+const carNow = (srv, code) => { const r = srv.party.rooms.get(code); return r.queue[r.curIdx]; };
 
-async function lobby(srv, n = 2, mode = 'worldwide') {
+async function lobby(srv, n = 2, playlist = 'world', ruleset) {
   const host = await srv.client();
-  const created = await emit(host, 'party:create', { name: 'Host', mode, key: key('h') });
+  const created = await emit(host, 'party:create', { name: 'Host', playlist, ruleset, key: key('h') });
   assert.ok(created.ok);
   const guests = [];
   for (let i = 0; i < n - 1; i++) {
@@ -23,10 +25,11 @@ async function lobby(srv, n = 2, mode = 'worldwide') {
 
 test('buildQueue: no repeats when pool >= 10, kit pool only kit cars', () => {
   for (let i = 0; i < 50; i++) {
-    const q = buildQueue(CARS, 'worldwide');
+    const q = buildQueue(CARS, 'world');
     assert.equal(new Set(q).size, 10);
-    assert.ok(q.every(c => !c.kit));
-    const k = buildQueue(CARS, 'kit');
+    assert.ok(q.every(c => !c.kit && !c.excluded));
+    assert.ok(buildQueue(CARS, 'kit').every(c => c.kit), 'legacy mode names still map');
+    const k = buildQueue(CARS, 'kits');
     assert.ok(k.every(c => c.kit));
     for (let j = 1; j < k.length; j++) assert.notEqual(k[j], k[j - 1], 'no back-to-back repeat');
   }
@@ -106,7 +109,8 @@ test('server timer reveals the round if someone never answers', async () => {
 test('kit party scores tuner names', async () => {
   const srv = await startServer({ party: { ...fast.party, roundMs: 10_000 } });
   try {
-    const { host } = await lobby(srv, 1, 'kit');
+    const { host, code, created } = await lobby(srv, 1, 'kits');
+    assert.equal(created.kind, 'kit');
     const roundP = once(host, 'party:round');
     await emit(host, 'party:start', {});
     await roundP;
@@ -119,7 +123,8 @@ test('kit party scores tuner names', async () => {
     const round2 = once(host, 'party:round');
     await emit(host, 'party:next', { idx: 0 });
     const { img } = await round2;
-    const car = CARS.find(c => c.img === img && c.kit);
+    assert.match(img, /^\/api\/img\//, 'photo URL is opaque');
+    const car = carNow(srv, code);
     const good = await emit(host, 'party:guess', { kit: car.kit, make: car.make, model: fullModel(car) });
     assert.equal(good.pts, 10);
   } finally { await srv.stop(); }
@@ -218,11 +223,11 @@ test('cannot join a game in progress', async () => {
 test('scores stay hidden until the reveal', async () => {
   const srv = await startServer({ party: { ...fast.party, roundMs: 10_000 } });
   try {
-    const { host, guests } = await lobby(srv, 2);
+    const { host, guests, code } = await lobby(srv, 2);
     const roundP = once(host, 'party:round');
     await emit(host, 'party:start', {});
-    const { img } = await roundP;
-    const car = CARS.find(c => c.img === img && !c.kit);
+    await roundP;
+    const car = carNow(srv, code);
     const prog = once(guests[0], 'party:progress');
     const r = await emit(host, 'party:guess', { make: car.make, model: fullModel(car), year: String(car.year) });
     assert.equal(r.pts, 10);
@@ -235,5 +240,30 @@ test('scores stay hidden until the reveal', async () => {
     const d = await rev;
     assert.equal(d.standings.find(x => x.name === 'Host').score, 10);
     assert.equal(d.standings.find(x => x.name === 'Host').lastPts, 10);
+  } finally { await srv.stop(); }
+});
+
+test('host can switch playlist and rules in the lobby; competitive rules are stricter', async () => {
+  const srv = await startServer({ party: { ...fast.party, roundMs: 10_000, competitiveMs: 10_000 } });
+  try {
+    const { host, guests, code } = await lobby(srv, 2);
+    assert.equal((await emit(guests[0], 'party:settings', { playlist: 'jdm' })).ok, false, 'guests cannot change settings');
+    const seen = once(guests[0], 'party:settings');
+    const r = await emit(host, 'party:settings', { playlist: 'jdm', ruleset: 'competitive' });
+    assert.ok(r.ok);
+    assert.deepEqual(await seen, { playlist: 'jdm', ruleset: 'competitive', kind: 'car' });
+    assert.equal((await emit(host, 'party:settings', { playlist: 'constructor' })).playlist, 'world', 'unknown playlist falls back');
+    await emit(host, 'party:settings', { playlist: 'jdm' });
+    await emit(host, 'party:start', {});
+    const room = srv.party.rooms.get(code);
+    assert.ok(room.queue.every(c => c.region === 'japan'));
+    const car = carNow(srv, code);
+    // One letter off the make: casual forgives long words, competitive never does.
+    const typo = car.make.length >= 6 ? car.make.slice(0, -1) + 'x' : null;
+    if (typo) {
+      const g = await emit(host, 'party:guess', { make: typo });
+      assert.equal(g.pts, 0, `competitive: "${typo}" for ${car.make}`);
+    }
+    assert.equal((await emit(host, 'party:settings', { ruleset: 'casual' })).ok, false, 'locked during a game');
   } finally { await srv.stop(); }
 });

@@ -5,16 +5,17 @@ const fs = require('fs');
 const crypto = require('crypto');
 const http = require('http');
 const { Server } = require('socket.io');
-const { attachParty, buildQueue, poolFor, sanitizeName, TOTAL } = require('./party');
+const { attachParty, sanitizeName } = require('./party');
+const Modes = require('./modes');
+const { createImageProxy } = require('./images');
 const VCScore = require('../public/scoring.js');
 
-const MODES = ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'supercar', 'timeattack', 'kit'];
-const MAX_PER_MODE = 100;
+const MAX_PER_BOARD = 100;
 const MAX_REPORTS = 500;
 const MAX_SESSIONS = 5000;
 const SESSION_TTL_MS = 2 * 60 * 60_000;
-const TIME_ATTACK_MS = 30_000;
-const TIME_ATTACK_SLACK_MS = 4_000; // network + render allowance
+const CLOCK_SLACK_MS = 3_000; // network + render allowance on timed rounds
+const BOARD_RE = /^(ranked:[a-z]+|daily:\d{4}-\d{2}-\d{2}|endless)$/;
 
 function createApp(opts = {}) {
   const dataDir = opts.dataDir || path.join(__dirname, '..', 'data');
@@ -22,6 +23,7 @@ function createApp(opts = {}) {
   const ADMIN_TOKEN = opts.adminToken !== undefined ? opts.adminToken : process.env.ADMIN_TOKEN || '';
   const SCORES_FILE = path.join(dataDir, 'scores.json');
   const REPORTS_FILE = path.join(dataDir, 'reports.json');
+  const images = createImageProxy({ fetch: opts.fetchImage });
 
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(SCORES_FILE)) fs.writeFileSync(SCORES_FILE, '[]');
@@ -31,6 +33,7 @@ function createApp(opts = {}) {
   // Write to a temp file then rename, so a crash mid-write can't corrupt the leaderboard.
   const writeJson = (f, v) => { const tmp = `${f}.${process.pid}.tmp`; fs.writeFileSync(tmp, JSON.stringify(v)); fs.renameSync(tmp, f); };
   const clip = (v, max) => String(v == null ? '' : v).slice(0, max);
+  const hashKey = k => (typeof k === 'string' && /^[A-Za-z0-9_-]{16,64}$/.test(k) ? crypto.createHash('sha256').update(k).digest('base64url').slice(0, 16) : null);
 
   const app = express();
   const server = http.createServer(app);
@@ -63,7 +66,7 @@ function createApp(opts = {}) {
   const hits = new Map();
   function limit(max, windowMs) {
     return (req, res, next) => {
-      const key = `${req.path}|${req.ip}`;
+      const key = `${req.route ? req.route.path : req.path}|${req.ip}`;
       const now = Date.now();
       const h = hits.get(key);
       if (!h || now - h.t > windowMs) { hits.set(key, { t: now, n: 1 }); return next(); }
@@ -76,91 +79,163 @@ function createApp(opts = {}) {
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-  // Pool sizes per mode, for the UI. Answers are never sent before a guess.
+  // What the menus need: playlists, filter options, pool sizes. Never answers.
   app.get('/api/meta', (req, res) => {
+    const live = Modes.live(CARS);
     res.json({
-      total: TOTAL,
-      modes: Object.fromEntries(MODES.map(m => [m, poolFor(CARS, m).length])),
-      makes: [...new Set(CARS.filter(c => !c.excluded).map(c => c.make))].sort((a, b) => a.localeCompare(b)),
+      ...Modes.catalog(CARS),
+      maxPerCar: VCScore.MAX,
+      cars: live.length,
+      kits: live.filter(c => c.kit).length,
+      makes: [...new Set(live.map(c => c.make))].sort((a, b) => a.localeCompare(b)),
+      daily: { date: Modes.utcDateKey() },
     });
   });
 
-  // ---- Solo sessions: the server holds the answers and keeps score. ----
+  app.get('/api/img/:token', limit(400, 60_000), (req, res) => images.handle(req, res));
+
+  // ---- Solo sessions: the server holds the answers, runs the clock and keeps score. ----
   const sessions = new Map();
   function pruneSessions() {
     const now = Date.now();
     for (const [id, s] of sessions) if (now - s.created > SESSION_TTL_MS) sessions.delete(id);
     while (sessions.size > MAX_SESSIONS) sessions.delete(sessions.keys().next().value);
   }
+  const getSession = b => sessions.get(clip(b && b.sessionId, 64));
+  const ranked = s => !!s.plan.board && !s.unranked;
+  const finished = s => (s.plan.rounds ? s.idx >= s.plan.rounds : s.over);
 
-  app.post('/api/solo/start', limit(150, 60_000), (req, res) => {
-    const mode = MODES.includes(req.body && req.body.mode) ? req.body.mode : null;
-    if (!mode) return res.status(400).json({ error: 'invalid mode' });
+  // Best-effort daily lock: one ranked attempt per browser per day.
+  const dailyAlreadyPosted = (board, player) => player && readJson(SCORES_FILE).some(e => e.board === board && e.player === player);
+
+  app.post('/api/solo/start', limit(120, 60_000), (req, res) => {
+    const b = req.body || {};
+    const plan = Modes.planGame(CARS, { kind: b.kind, playlist: b.playlist, filters: b.filters });
+    if (!plan) return res.status(400).json({ error: 'Unknown game mode' });
+    if (plan.error) return res.status(400).json({ error: plan.error });
     pruneSessions();
-    const id = crypto.randomUUID();
-    const queue = buildQueue(CARS, mode);
-    const now = Date.now();
-    sessions.set(id, { id, mode, queue, idx: 0, score: 0, results: [], created: now, roundStart: now, saved: false });
-    res.json({ sessionId: id, mode, total: TOTAL, maxPerCar: VCScore.MAX, timeLimitMs: mode === 'timeattack' ? TIME_ATTACK_MS : 0, images: queue.map(c => c.img) });
+    const player = hashKey(b.player);
+    const s = {
+      id: crypto.randomUUID(), plan, queue: plan.queue.slice(), idx: 0, player,
+      openIdx: -1, openedAt: 0, servedAt: 0, img: null,
+      score: 0, cars: 0, streak: 0, bestStreak: 0, strikes: 0, timeMs: 0, over: false,
+      results: [], created: Date.now(), saved: false,
+      unranked: plan.kind === 'daily' && dailyAlreadyPosted(plan.board, player),
+    };
+    if (plan.kind === 'endless') s.queue.push(Modes.nextEndless(plan, new Set(), 0));
+    sessions.set(s.id, s);
+    if (plan.board) images.warm(s.queue[0].img);
+    res.json({
+      sessionId: s.id, kind: plan.kind, key: plan.key, title: plan.title, board: ranked(s) ? plan.board : null,
+      ruleset: plan.ruleset, roundKind: plan.roundKind, clockMs: plan.clockMs, rounds: plan.rounds, lives: plan.lives,
+      poolSize: plan.poolSize, maxPerCar: VCScore.MAX, filters: plan.filters || null, date: plan.date || null,
+      alreadyPlayed: s.unranked,
+    });
   });
 
-  // Client tells the server the round is on screen, so Time Attack can be checked.
-  app.post('/api/solo/shown', (req, res) => {
-    const s = sessions.get(clip(req.body && req.body.sessionId, 64));
-    if (!s) return res.status(404).json({ error: 'session expired' });
-    if (req.body.idx === s.idx) s.roundStart = Date.now();
-    res.json({ ok: true });
+  // Open a round: hands out the photo and starts the clock (from when the photo is first served).
+  app.post('/api/solo/round', limit(600, 60_000), (req, res) => {
+    const b = req.body || {};
+    const s = getSession(b);
+    if (!s) return res.status(404).json({ error: 'Session expired' });
+    if (finished(s)) return res.status(409).json({ error: 'Game over' });
+    if (b.idx !== s.idx) return res.status(409).json({ error: 'Wrong round' });
+    const car = s.queue[s.idx];
+    if (s.openIdx !== s.idx) {
+      s.openIdx = s.idx;
+      s.openedAt = Date.now();
+      s.servedAt = 0;
+      if (s.plan.board) {
+        const idx = s.idx;
+        s.img = images.issue(car.img, () => { if (s.openIdx === idx && !s.servedAt) s.servedAt = Date.now(); });
+      } else {
+        s.img = car.img;
+        s.servedAt = s.openedAt;
+      }
+    }
+    const next = !s.plan.board && s.queue[s.idx + 1];
+    res.json({ idx: s.idx, img: s.img, next: next ? next.img : null, clockMs: s.plan.clockMs });
   });
 
   app.post('/api/solo/guess', limit(600, 60_000), (req, res) => {
     const b = req.body || {};
-    const s = sessions.get(clip(b.sessionId, 64));
-    if (!s) return res.status(404).json({ error: 'session expired' });
-    if (b.idx !== s.idx || s.idx >= TOTAL) return res.status(409).json({ error: 'round already answered' });
+    const s = getSession(b);
+    if (!s) return res.status(404).json({ error: 'Session expired' });
+    if (finished(s) || b.idx !== s.idx || s.openIdx !== s.idx) return res.status(409).json({ error: 'Round already answered' });
     const car = s.queue[s.idx];
     const guess = { make: clip(b.make, 60), model: clip(b.model, 60), year: clip(b.year, 8), kit: clip(b.kit, 60) };
-    let result = VCScore.scoreRound(car, guess, { ruleset: 'casual', kind: s.mode === 'kit' ? 'kit' : 'car' });
-    const late = s.mode === 'timeattack' && Date.now() - s.roundStart > TIME_ATTACK_MS + TIME_ATTACK_SLACK_MS;
-    if (late) result = { ...result, pts: 0, res: result.res.map(r => ({ ...r, pts: 0 })), late: true };
+    let result = VCScore.scoreRound(car, guess, { ruleset: s.plan.ruleset, kind: s.plan.roundKind });
+
+    const now = Date.now();
+    const elapsed = now - (s.servedAt || s.openedAt);
+    const late = s.plan.clockMs > 0 && elapsed > s.plan.clockMs + CLOCK_SLACK_MS;
+    const timedOut = !!b.timedOut || late;
+    if (late) result = { ...result, pts: 0, identified: false, perfect: false, res: result.res.map(r => ({ ...r, pts: 0 })) };
+
     s.score += result.pts;
+    s.timeMs += s.plan.clockMs > 0 ? Math.min(elapsed, s.plan.clockMs) : elapsed;
+    if (result.identified) { s.cars += 1; s.streak += 1; s.bestStreak = Math.max(s.bestStreak, s.streak); } else { s.streak = 0; }
+    if (s.plan.kind === 'endless' && !result.identified) s.strikes += 1;
     s.results.push({ carId: car.id, pts: result.pts });
     s.idx += 1;
-    s.roundStart = Date.now();
+
+    if (s.plan.kind === 'endless') {
+      if (s.strikes >= s.plan.lives || s.idx >= Modes.ENDLESS_CAP) s.over = true;
+      else s.queue.push(Modes.nextEndless(s.plan, new Set(s.queue.map(c => c.id)), s.streak));
+    }
+    const done = finished(s);
+    if (!done && s.plan.board) images.warm(s.queue[s.idx].img);
+
     res.json({
-      pts: result.pts, res: result.res, late: !!result.late, score: s.score, idx: s.idx, done: s.idx >= TOTAL,
-      answer: { id: car.id, make: car.make, model: car.model, year: car.year, yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint },
+      pts: result.pts, res: result.res, identified: result.identified, perfect: result.perfect,
+      late, timedOut, score: s.score, cars: s.cars, streak: s.streak, bestStreak: s.bestStreak,
+      strikes: s.strikes, lives: s.plan.lives, idx: s.idx, done,
+      answer: {
+        id: car.id, make: car.make, model: car.model, variant: car.variant || null, year: car.year,
+        yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint, credit: car.credit || null,
+      },
     });
   });
 
-  // ---- Leaderboard ----
+  // ---- Leaderboards: one per ranked playlist, one per daily challenge, one for endless. ----
+  const sortBoard = (a, b) => b.score - a.score || (a.timeMs || 0) - (b.timeMs || 0) || a.ts - b.ts;
+
   app.post('/api/scores', limit(40, 60_000), (req, res) => {
     const b = req.body || {};
-    const s = sessions.get(clip(b.sessionId, 64));
+    const s = getSession(b);
     if (!s) return res.status(400).json({ error: 'Play a full game to post a score' });
-    if (s.idx < TOTAL) return res.status(400).json({ error: 'Game not finished' });
+    if (!s.plan.board) return res.status(400).json({ error: 'Free Play games are not ranked' });
+    if (!finished(s)) return res.status(400).json({ error: 'Game not finished' });
+    if (s.unranked) return res.status(409).json({ error: "You've already posted today's Daily Challenge" });
     if (s.saved) return res.status(409).json({ error: 'Score already saved' });
+    const board = s.plan.board;
+    if (board.startsWith('daily:') && dailyAlreadyPosted(board, s.player)) return res.status(409).json({ error: "You've already posted today's Daily Challenge" });
     s.saved = true;
 
-    const entry = { id: crypto.randomUUID(), name: sanitizeName(b.name), mode: s.mode, score: s.score, maxScore: TOTAL * VCScore.MAX, ts: Date.now() };
+    const maxScore = s.plan.rounds ? s.plan.rounds * VCScore.MAX : s.idx * VCScore.MAX;
+    const entry = {
+      id: crypto.randomUUID(), name: sanitizeName(b.name), board, score: s.score, maxScore,
+      cars: s.cars, rounds: s.idx, bestStreak: s.bestStreak, timeMs: s.timeMs, player: s.player, ts: Date.now(),
+    };
     const scores = readJson(SCORES_FILE);
     scores.push(entry);
-    const forMode = scores.filter(x => x.mode === s.mode).sort((a, c) => c.score - a.score || a.ts - c.ts);
-    const rank = forMode.findIndex(x => x.id === entry.id) + 1;
-    if (forMode.length > MAX_PER_MODE) {
-      const keep = new Set(forMode.slice(0, MAX_PER_MODE).map(x => x.id));
-      writeJson(SCORES_FILE, scores.filter(x => x.mode !== s.mode || keep.has(x.id)));
+    const forBoard = scores.filter(x => x.board === board).sort(sortBoard);
+    const rank = forBoard.findIndex(x => x.id === entry.id) + 1;
+    if (forBoard.length > MAX_PER_BOARD) {
+      const keep = new Set(forBoard.slice(0, MAX_PER_BOARD).map(x => x.id));
+      writeJson(SCORES_FILE, scores.filter(x => x.board !== board || keep.has(x.id)));
     } else writeJson(SCORES_FILE, scores);
-    res.json({ rank, total: Math.min(forMode.length, MAX_PER_MODE) });
+    res.json({ rank: rank <= MAX_PER_BOARD ? rank : null, total: Math.min(forBoard.length, MAX_PER_BOARD) });
   });
 
   app.get('/api/leaderboard', (req, res) => {
-    const mode = MODES.includes(req.query.mode) ? req.query.mode : 'worldwide';
+    const board = BOARD_RE.test(String(req.query.board || '')) ? req.query.board : 'ranked:world';
     const lim = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 50);
     res.json(readJson(SCORES_FILE)
-      .filter(s => s.mode === mode)
-      .sort((a, b) => b.score - a.score || a.ts - b.ts)
+      .filter(s => s.board === board)
+      .sort(sortBoard)
       .slice(0, lim)
-      .map(({ name, score, maxScore, ts }) => ({ name, score, maxScore, ts })));
+      .map(({ name, score, maxScore, cars, rounds, bestStreak, timeMs, ts }) => ({ name, score, maxScore, cars, rounds, bestStreak, timeMs, ts })));
   });
 
   // ---- Bug / crash reports ----
@@ -173,7 +248,7 @@ function createApp(opts = {}) {
       : null;
     const reports = readJson(REPORTS_FILE);
     reports.push({
-      id: crypto.randomUUID(), type, mode: MODES.includes(body.mode) ? body.mode : 'unknown', car,
+      id: crypto.randomUUID(), type, mode: clip(body.mode, 40).replace(/[^\w:-]/g, '') || 'unknown', car,
       message: clip(body.message, 500), stack: clip(body.stack, 2000), note: clip(body.note, 500),
       userAgent: clip(body.userAgent, 300), ts: Date.now(),
     });
@@ -196,11 +271,11 @@ function createApp(opts = {}) {
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));
 
-  const party = attachParty(io, CARS, MODES, opts.party);
+  const party = attachParty(io, CARS, { ...opts.party, images });
 
   return {
-    app, server, io, sessions,
-    close() { clearInterval(hitSweep); party.close(); io.close(); server.close(); },
+    app, server, io, sessions, party, images,
+    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); },
   };
 }
 
@@ -210,4 +285,4 @@ if (require.main === module) {
   server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }
 
-module.exports = { createApp, MODES };
+module.exports = { createApp };
