@@ -240,3 +240,18 @@ test('an under-13 birth date while finishing sign-up closes the account', async 
     assert.equal(srv.db.get('SELECT COUNT(*) AS n FROM identities').n, 0);
   } finally { await srv.stop(); }
 });
+
+test('the date of birth is asked once: a teen account can’t re-enter a different date', async () => {
+  const { srv } = await garage();
+  try {
+    const a = agent(srv);
+    assert.equal((await signup(a, { birthDate: TEEN })).status, 201);
+    const me = (await a.req('GET', '/api/auth/me')).body.user;
+    assert.equal(me.adult, false);
+    assert.equal(me.ageChecked, true);
+    const again = await a.req('POST', '/api/auth/profile', { birthDate: ADULT });
+    assert.equal(again.status, 400);
+    assert.equal(again.body.field, 'birthDate');
+    assert.equal((await a.req('GET', '/api/auth/me')).body.user.adult, false);
+  } finally { await srv.stop(); }
+});

@@ -169,7 +169,7 @@ function createAuth(opts) {
 
   const publicUser = u => u && {
     id: u.id, displayName: u.display_name, email: u.email, emailVerified: !!u.email_verified, adult: !!u.adult,
-    role: u.role, status: u.status, profileComplete: !!u.profile_complete, hasPassword: !!u.password_hash,
+    role: u.role, status: u.status, profileComplete: !!u.profile_complete, hasPassword: !!u.password_hash, ageChecked: !!u.age_checked_at,
     creditAnonymous: !!u.credit_anonymous,
     providers: db.all('SELECT provider FROM identities WHERE user_id = ?', u.id).map(r => r.provider),
   };
@@ -321,7 +321,8 @@ function createAuth(opts) {
       sets.push('display_name = ?'); vals.push(name);
     }
     if (b.birthDate !== undefined) {
-      if (u.adult) return res.status(400).json({ error: 'Your age is already confirmed.', field: 'birthDate' });
+      // Asked once: changing it later would let anyone re-enter a different date.
+      if (u.adult || u.age_checked_at) return res.status(400).json({ error: 'Your date of birth is already set.', field: 'birthDate' });
       const age = ageFrom(b.birthDate);
       if (age === null) return res.status(400).json({ error: 'Enter your date of birth.', field: 'birthDate' });
       if (age < 13) {

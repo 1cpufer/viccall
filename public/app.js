@@ -52,7 +52,7 @@
     try {
       const res = await fetch(url, {
         method, signal: ctrl.signal,
-        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        headers: body ? { 'Content-Type': 'application/json', 'X-VicCall': '1' } : { 'X-VicCall': '1' },
         body: body ? JSON.stringify(body) : undefined,
       });
       let data = null;
@@ -168,7 +168,9 @@
     if (replace) history.replaceState({ screen: name, depth }, '');
     else if (push) { depth += 1; history.pushState({ screen: name, depth }, ''); }
     if (name === 'home') renderHome();
+    showHooks.forEach(fn => { try { fn(name); } catch (e) { captureCrash(e.message, e.stack); } });
   }
+  const showHooks = []; // garage.js renders its screens when they open
   history.replaceState({ screen: 'home', depth: 0 }, '');
 
   addEventListener('popstate', e => {
@@ -207,13 +209,19 @@
   menuBtns.forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      if (btn.getAttribute('aria-expanded') === 'true') closeMenu(btn); else openMenu(btn);
+      // A click right after hovering it open keeps it open (the pointer got there first).
+      if (btn.getAttribute('aria-expanded') === 'true' && Date.now() - (btn._hoverOpenedAt || 0) > 600) closeMenu(btn); else openMenu(btn);
     });
     btn.addEventListener('keydown', e => {
       if (e.key === 'ArrowDown') { e.preventDefault(); openMenu(btn, { focus: true }); }
     });
     const wrap = btn.parentElement;
-    wrap.addEventListener('mouseenter', () => { if (!desktopNav()) return; clearTimeout(hoverTimer); openMenu(btn); });
+    wrap.addEventListener('mouseenter', () => {
+      if (!desktopNav()) return;
+      clearTimeout(hoverTimer);
+      if (btn.getAttribute('aria-expanded') !== 'true') btn._hoverOpenedAt = Date.now();
+      openMenu(btn);
+    });
     wrap.addEventListener('mouseleave', () => { if (!desktopNav()) return; hoverTimer = setTimeout(() => closeMenu(btn), 160); });
     popFor(btn).addEventListener('keydown', e => {
       const items = [...popFor(btn).querySelectorAll('button')];
@@ -431,9 +439,23 @@
     if (kind === 'kit' || a.kit) return `${unbroken(a.kit)}<span class="yr">${esc(carName(a))}, ${esc(detail(a))}</span>`;
     return `${unbroken(carName(a))}<span class="yr">${esc(detail(a))}</span>`;
   }
+  // Photo credit under the reveal. Community photos name the photographer
+  // (profile opens in a new tab so a game in progress isn't lost); first-party
+  // photos name the author and licence stated on Wikimedia Commons.
   function creditHtml(a) {
+    if (a.photo && a.photo.source === 'community') {
+      const by = a.photo.profile
+        ? `<a href="/?profile=${encodeURIComponent(a.photo.profile)}" target="_blank" rel="noopener">${esc(a.photo.by)}</a>`
+        : esc(a.photo.by);
+      return `Photo: ${by}, VicCall Community Garage`;
+    }
     if (!a.credit) return '';
-    return `Photo: <a href="${commonsLink(a.credit)}" target="_blank" rel="noopener">${esc(a.credit.replace(/\.(jpe?g|png|webp)$/i, ''))}</a>, Wikimedia Commons`;
+    const at = a.attribution;
+    const name = at && at.author ? at.author : a.credit.replace(/\.(jpe?g|png|webp)$/i, '');
+    const licence = at && at.licence
+      ? `, ${at.licenceUrl ? `<a href="${esc(at.licenceUrl)}" target="_blank" rel="noopener">${esc(at.licence)}</a>` : esc(at.licence)}`
+      : '';
+    return `Photo: <a href="${commonsLink(a.credit)}" target="_blank" rel="noopener">${esc(name)}</a>${licence}, Wikimedia Commons`;
   }
   function playReveal(el) {
     el.hidden = false;
@@ -635,7 +657,7 @@
     $('gHint').textContent = d.answer.hint || '';
     $('gChips').innerHTML = chipsHtml(d.res, d.skipped);
     $('gCredit').innerHTML = creditHtml(d.answer);
-    $('gCredit').hidden = !d.answer.credit;
+    $('gCredit').hidden = !$('gCredit').innerHTML;
     $('gForm').hidden = true;
     soloClock.hide();
     $('gNext').innerHTML = `${d.done ? 'See results' : 'Next car'} <kbd class="kbd-hint">Enter</kbd>`;
@@ -772,6 +794,13 @@
     if (!last) return;
     const note = $('gReportNote').value.trim();
     const a = last.answer;
+    const kind = META && META.garage ? $('gReportKind').value : 'bug';
+    // Photo problems go to the moderators (Community Garage); everything else is a bug report.
+    if (kind !== 'bug' && window.VCGarage) {
+      const sent = await window.VCGarage.report(a, kind, note);
+      if (sent) { $('gReport').open = false; $('gReportNote').value = ''; }
+      return;
+    }
     const r = await api('POST', '/api/report', { type: 'bug', note, mode: solo.req.playlist || solo.kind, car: { id: a.id, make: a.make, model: a.model, year: a.year, kit: a.kit }, userAgent: navigator.userAgent });
     $('gReport').open = false;
     $('gReportNote').value = '';
@@ -1077,7 +1106,7 @@
     $('pgHint').textContent = d.hint || '';
     $('pgChips').innerHTML = mine ? chipsHtml(mine.res) : '';
     $('pgCredit').innerHTML = creditHtml(d);
-    $('pgCredit').hidden = !d.credit;
+    $('pgCredit').hidden = !$('pgCredit').innerHTML;
     playReveal($('pgReveal'));
     updateHostControls();
     renderStandings({ deltas: true });
@@ -1305,5 +1334,12 @@
 
   // Small hook for automated UI checks.
   window.VicCall = { show, startSolo, state: () => ({ current, solo: { ...solo }, party: { ...party } }) };
+  // Shared helpers for garage.js (accounts and the Community Garage).
+  window.VC = {
+    $, esc, api, toast, show, metaReady, meta: () => META, current: () => current, onShow: fn => showHooks.push(fn),
+    inGame: () => GAME_SCREENS.has(current),
+    // The socket carries the sign-in cookie from when it connected; reconnect after signing in or out.
+    reconnectSocket: () => { if (socket && socket.connected && !party.code) { socket.disconnect(); socket.connect(); } },
+  };
   metaReady.catch(() => {});
 })();

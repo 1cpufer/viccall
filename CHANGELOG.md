@@ -1,5 +1,63 @@
 # Changelog
 
+## 2026-10-20: Community Garage (branch `game-expansion`, switched off by default)
+
+Off unless `GARAGE_ENABLED=1`. Every game mode still works without an account. Full write-up: `docs/COMMUNITY_GARAGE.md`.
+
+- **Accounts** (`src/auth.js`, `src/db.js`, `src/mailer.js`).
+  - Sign-in: email and password (scrypt), Google (PKCE) and Discord.
+  - Sessions: HttpOnly session cookies, of which only a hash is stored. State-changing requests need an `X-VicCall` header.
+  - Email: confirmation and reset links through Resend.
+  - Age: 13+ for an account and 18+ to submit. The date of birth is asked once and not stored.
+  - Admins come from `ADMIN_EMAILS` and appoint moderators.
+  - Closing an account deletes personal details and removes that person's photos.
+- **Submissions** (`src/garage.js`, `src/photos.js`).
+  - Gate: contributor licence acceptance (versioned), six declarations per photo, 20 a day and 25 waiting at once.
+  - Refused outright: wrong format, over 15 MB, under 1200 × 700, damaged file.
+  - Flagged for moderators: dark, blurry, heavily compressed, AI or C2PA metadata, location data, no camera data.
+  - Originals are stored privately. Players get WebP copies with metadata stripped and blur applied.
+  - Duplicates: SHA-256 plus crop-aware difference hashes. Everyone with a claim on any copy is linked to all copies.
+- **Moderation.** Review queue, blur boxes, vehicle suggestions from the answer engine plus search, year, difficulty, casual or all-modes eligibility, approve, ask for a correction or reject with a reason, removals, an audit log, and admin roles and suspensions.
+- **Community photos in games** (`src/pools.js`).
+  - The rule: approved photos for the ruleset, minus photos any participant contributed.
+  - Competitive games need all-modes, unflagged photos and every player signed in. The Daily Challenge stays first-party.
+  - Each round re-checks its photo before it's shown and swaps in a first-party photo if needed. One-time photo links check again when fetched.
+- **Credit and profiles.** The photographer's name, or "Community photographer", appears after the round. Public profiles show approved photos and badges, and the place or event only by choice.
+- **Reports and copyright.**
+  - Reports from the game need no account.
+  - Automatic effects: copyright and privacy reports pull a photo from all play at once; wrong-car reports pull it from competitive play.
+  - Moderators dismiss, fix (re-blur, correct the car) or uphold.
+  - Copyright notices collect the 512(c)(3) elements. After an upheld complaint the original is kept for a 30-day counter-notice window, then deleted.
+  - Counter-notices, reinstatement (casual only) and a two-strike rule.
+- **First-party photo credits** (`src/provenance.js`).
+  - Lookup: authors and licences as stated on Wikimedia Commons, fetched in batches, saved, and refreshed weekly in production.
+  - Display: shown after each round, with a link to the licence.
+  - Review: non-commercial or unclear licences are listed for an admin.
+- **Manufacturer media researched, not used.**
+  - Porsche, BMW, Toyota/Lexus and Ford press terms limit photos to editorial or press use and require written permission for anything else.
+  - Findings and how a licensed source would be added are in `docs/IMAGE_SOURCES.md`.
+- **Client** (`public/garage.js`).
+  - Sign-in and sign-up dialog, finishing a Google or Discord account, account settings.
+  - Garage screens: add a photo with upload progress, your photos with statuses and reasons, corrections, withdrawal, counter-notices.
+  - Public profiles and the moderation screens.
+  - The report button asks what's wrong when the Garage is on.
+  - Pages: the contributor licence draft (`/contributor-licence.html`) and an interim terms summary (`/terms.html`).
+- **Dependencies.** `sharp` 0.35.5, which clears the high-severity advisories in the image libraries it bundles (libvips, libheif, librsvg). `npm audit` reports no vulnerabilities.
+- **Small fixes.**
+  - A menu opened by hovering no longer closes when it's then clicked.
+  - The Daily Challenge tops up a short difficulty tier instead of coming up short (only with small car lists).
+  - A teen account can't re-enter a different date of birth.
+- **Tests:** 88 unit and integration tests, 38 of them new.
+  - `garage.test.js`: uploads, checks, moderation, duplicates, removal and limits.
+  - `integrity.test.js`: exclusion in real solo and party games, plus a 10,000-case property test. Mutation-checked: the suite fails if the exclusion or the per-round recheck is removed.
+  - `community.test.js`: credit, profiles, reports, copyright and provenance.
+  - Browser: a new `e2e/garage.e2e.js` with 60 checks, including axe-core on each new screen. The existing 73 UI and 13 party checks still pass.
+- **Not done yet:**
+  - Never deployed.
+  - Real OAuth apps, the email key and the live Commons lookup are untested.
+  - The licence awaits legal review, and full terms aren't written.
+  - Moderators can only approve cars already in the database.
+
 ## 2026-10-20: Answer recognition (branch `game-expansion`)
 
 - **One answer box.** Players type the car the way they'd say it ("Porsche 918 Spyder", "918", "R34 GT-R"), plus the year. Kit rounds take the tuner and the car, and the tuner can also go in the car box. The API takes `car`, and the old `make` and `model` fields still work.

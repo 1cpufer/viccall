@@ -1,6 +1,6 @@
 # VicCall
 
-Vehicle Identification Call: a car-guessing game. You see one photo and name the make, model and year, or for a modified car, the tuner behind the body kit. No account needed for anything.
+Vehicle Identification Call: a car-guessing game. You see one photo and name the make, model and year, or for a modified car, the tuner behind the body kit. No account needed to play. Accounts exist only for the optional Community Garage, where players submit their own photos.
 
 ## Running it
 
@@ -12,12 +12,13 @@ npm run dev    # or: npm start
 Serves on `http://localhost:3000` (override with `PORT`).
 
 ```
-npm test                                   # answer recognition, modes, API, photo proxy and multiplayer (node:test, 50 tests)
+npm test                                   # node:test, 88 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, competitive integrity
 node e2e/ui.e2e.js [shotDir]               # browser run of every mode, desktop + phone + a 2-player party
 node e2e/party.e2e.js                      # party edge cases (timers, host leaving, refresh, rematch)
+node e2e/garage.e2e.js [shotDir]           # accounts, upload, moderation, credit, reports, counter-notice, phone
 ```
 
-The two browser scripts need Playwright (`npm i --no-save playwright && npx playwright install chromium`). They start their own server, stub the photo upstream, and need no network.
+The browser scripts need Playwright (`npm i --no-save playwright && npx playwright install chromium`). They start their own server, stub the photo upstream, and need no network.
 
 ### Configuration
 
@@ -26,10 +27,12 @@ The two browser scripts need Playwright (`npm i --no-save playwright && npx play
 | `PORT` | Port to listen on (default 3000). |
 | `ADMIN_TOKEN` | Required to read `/api/reports` (`/api/reports?token=...`). Without it, reports can only be read from the server machine itself. |
 | `TRUST_PROXY` | Set to `1` behind a reverse proxy (Render, Railway, nginx) so rate limits see real client IPs. |
+| `GARAGE_ENABLED` | `1` turns on accounts and the Community Garage (off by default). Its other settings (`PUBLIC_URL`, `ADMIN_EMAILS`, Google, Discord and email keys) are listed in `docs/COMMUNITY_GARAGE.md`. |
+| `COMMONS_META` | `0` stops the weekly lookup of first-party photo authors and licences on Wikimedia Commons. |
 
 ### Dependencies
 
-Runtime: `express`, `compression`, `socket.io`. Dev: `socket.io-client` (tests). No dependencies were added in the expansion pass; audio is generated with the browser's Web Audio API and the photo proxy uses Node's built-in `fetch` (Node 18+).
+Runtime: `express`, `compression`, `socket.io`, and `sharp` (image checks and resizing for the Garage). Dev: `socket.io-client` (tests). Needs Node 22.13 or newer: the Garage uses the built-in `node:sqlite`, so there's no database server. Audio is generated with the browser's Web Audio API and the photo proxy uses Node's built-in `fetch`.
 
 ## Deploying
 
@@ -102,9 +105,20 @@ Every answer gets a feedback line per field, for example:
 - Difficulty, from how recognisable the car is: 60 easy, 123 medium, 118 hard.
 - 59 supercars, 15 cars with a scored trim (`variant`: GT-R Nismo, M4 Competition, 911 GT3 RS…) and 48 entries with a `generation` (E46, 992, S15, A80, W464…) wherever the database holds more than one generation of a name.
 - 25 tuner builds from 13 tuners: ABT Sportsline, Brabus, Hamann, Larte Design, Liberty Walk, Mansory, Novitec, Prior Design, RWB, Rocket Bunny, TechArt, VeilSide, Vorsteiner. Every build is a real one, photographed on the car it was made for.
-- Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). `npm test` checks every URL's Commons hash path, difficulty, credit and year range.
+- Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). The server looks up each file's author and licence on Commons and shows them after the round (`src/provenance.js`, see `docs/IMAGE_SOURCES.md`). `npm test` checks every URL's Commons hash path, difficulty, credit and year range.
 
 Entry fields: `id, make, model, variant?, variantAliases?, generation?, generationAliases?, year, yearRange, region, niche, supercar, difficulty (1–3), img, credit, hint`. Optional `modelAliases` and `makeAliases`; tuner builds add `kit` and `kitAliases`.
+
+## Community Garage
+
+Off unless `GARAGE_ENABLED=1`. Full details in `docs/COMMUNITY_GARAGE.md`.
+
+- **Accounts.** Email and password, Google or Discord. 13+ for an account and 18+ to submit. The date of birth isn't stored.
+- **Submissions.** Upload, automatic checks, a moderator, then the game. Every photo has a licence and provenance record, and a person reviews it before anyone else sees it.
+- **Moderation.** Blur boxes for plates and faces, vehicle matching from the answer engine, casual or all-modes eligibility, reasons the contributor sees, and an audit log.
+- **Competitive integrity.** Nobody gets a photo they or any other player in the game contributed, copies included. It's checked when a game is planned and again before each round. Competitive games use community photos only when every player is signed in. The Daily Challenge stays first-party.
+- **Reports and copyright.** Reports from the game, immediate takedown while disputed, DMCA-style notices, counter-notices, and a two-strike rule.
+- **Before launch.** The contributor licence is a draft awaiting legal review (`public/contributor-licence.html`), and the terms page is an interim summary. Manufacturer press photos were researched and aren't used, because their terms limit them to editorial use (`docs/IMAGE_SOURCES.md`).
 
 ## Sound
 
@@ -117,7 +131,7 @@ All sound is synthesised in the browser (`public/audio.js`, Web Audio API). Ther
 
 ## Interface
 
-- Desktop: a top bar with Singleplayer and Party menus (hover or keyboard), Leaderboards and How scoring works. The game screen puts the photo first with the answer panel beside it; the bar hides during play.
+- Desktop: a top bar with Singleplayer and Party menus (hover or keyboard), Leaderboards and How scoring works, plus Community Garage and Sign in when the Garage is on. The game screen puts the photo first with the answer panel beside it; the bar hides during play.
 - Phones: the same screens in one column, with the menu behind a button.
 - Keyboard: `Tab` between boxes, `Enter` to lock in and to move on, `Esc` to leave a game (asks first), `M` to mute, arrow keys in menus and leaderboard tabs.
 - Accessibility: labelled fields, visible focus, live regions for reveals, reduced-motion support. axe-core reports no violations on any screen at desktop or phone size.
@@ -135,6 +149,8 @@ All sound is synthesised in the browser (`public/audio.js`, Web Audio API). Ther
 | `GET /api/leaderboard?board=` | `ranked:<playlist>`, `daily:YYYY-MM-DD` or `endless`. |
 | `GET /api/img/:token` | Photo proxy for ranked and party rounds. |
 | `POST /api/report`, `GET /api/reports` | Bug and crash reports (reading needs `ADMIN_TOKEN`). |
+| `/api/auth/*` | Garage only. Sign-up, sign-in, sign-out, email links, profile, closing an account, Google and Discord sign-in. |
+| `/api/garage/*` | Garage only. Licence, submissions and uploads, photos, profiles, reports, counter-notices. Moderation lives under `/mod/*` and admin under `/admin/*`. State-changing requests need the `X-VicCall: 1` header. |
 
 Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `party:settings`, `party:start`, `party:guess`, `party:reveal`, `party:next`, `party:leave`.
 
@@ -144,12 +160,14 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 - Photos are checked by file name and hash path only. Wikimedia isn't reachable from the development sandbox, so nobody has looked at every image; the 5 held-back entries were caught by file name. The proxy was tested against a stubbed upstream, not live Wikimedia.
 - No free-licensed photos were found for Top Secret, Varis or newer Prior Design builds, so those tuners aren't in the game yet.
 - Scores from before the expansion used a 50-point scale and the old mode names. They stay in the scores file but aren't shown on the new boards.
-- Personal bests live in the browser only. There are no accounts.
+- Personal bests live in the browser only, also for signed-in players. Accounts are only used by the Community Garage.
+- The Community Garage has never run on the production server, and Google and Discord sign-in, Resend email and the Commons credit lookup have only been tested against stubs. Its own limitations are listed in `docs/COMMUNITY_GARAGE.md`.
 
 ## Updates
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-20, Community Garage** (off until switched on): accounts, photo submissions with automatic checks, moderation, competitive exclusion of contributors' photos, reports and copyright handling, first-party photo credits from Commons.
 - **2026-10-20, answer recognition:** one answer box, a vehicle index with generations, shorthand and implied makes, ambiguity handling, data audit.
 - **2026-10-19, game expansion** (branch `game-expansion`): 10-point scoring with casual and competitive rules, 302-car database with difficulty tiers and 25 tuner builds, Daily / Ranked / Endless / Free Play modes, photo proxy, desktop-first interface, synthesised sound effects and music.
 - **2026-10-17, overnight polish** (branch `overnight-polish`): visual identity, shared scoring, server-held answers, party hardening. See `OVERNIGHT_CHANGELOG.md`.

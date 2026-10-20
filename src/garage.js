@@ -795,13 +795,14 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     res.json({
       status, counts,
       reports: rows.map(r => {
-        const img = r.image_id && db.get('SELECT id, moderation, eligibility, takedown, flagged, contributor_id, vehicle_key FROM images WHERE id = ?', r.image_id);
+        const img = r.image_id && db.get('SELECT id, moderation, eligibility, takedown, flagged, contributor_id, vehicle_key, restrictions FROM images WHERE id = ?', r.image_id);
         const car = r.car_id && carsById.get(r.car_id);
         return {
           id: r.id, kind: r.kind, status: r.status, message: r.message, contact: r.contact, details: parseJson(r.details, null),
           createdAt: r.created_at, resolution: r.resolution,
           image: img && { id: img.id, moderation: img.moderation, eligibility: img.eligibility, takedown: img.takedown, flagged: !!img.flagged,
-            preview: img.moderation === 'removed' ? null : photoUrl(img.id, 'small'), vehicle: vehicleLabel(vehicleOf(img.vehicle_key)), contributor: creditFor(img.contributor_id) },
+            preview: img.moderation === 'removed' ? null : photoUrl(img.id, 'large'), vehicle: vehicleLabel(vehicleOf(img.vehicle_key)), vehicleKey: img.vehicle_key,
+            contributor: creditFor(img.contributor_id), blur: parseJson(img.restrictions, {}).blur || [] },
           car: car && { id: car.id, label: `${car.make} ${car.model} (${car.year})`, credit: car.credit || null },
         };
       }),

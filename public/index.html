@@ -70,9 +70,21 @@
         </div>
         <button class="nav-btn" data-action="goto" data-to="leaderboard">Leaderboards</button>
         <button class="nav-btn" data-action="goto" data-to="scoring">How scoring works</button>
+        <button class="nav-btn" data-action="goto" data-to="garage" id="navGarage" hidden>Community Garage</button>
       </nav>
 
       <div class="bar-tools">
+        <button class="btn btn--quiet acct-signin" id="signinBtn" data-action="signin" hidden>Sign in</button>
+        <div class="menu acct" id="acctWrap" hidden>
+          <button class="nav-btn acct-btn" id="acctBtn" aria-expanded="false" aria-controls="m-acct" data-menu="acct"><span class="acct-name" id="acctName"></span><svg class="ic ic--sm"><use href="#i-chevron-down"/></svg></button>
+          <div class="menu-pop menu-pop--right" id="m-acct" role="menu" aria-labelledby="acctBtn" hidden>
+            <button role="menuitem" data-action="goto" data-to="garage"><b>Your photos</b><span>Add photos and see where they are</span></button>
+            <button role="menuitem" data-action="my-profile" id="acctProfile" hidden><b>Your profile</b><span>Approved photos and badges</span></button>
+            <button role="menuitem" data-action="goto" data-to="mod" id="acctMod" hidden><b>Moderation</b><span>Review photos and reports</span></button>
+            <button role="menuitem" data-action="account-settings"><b>Account</b><span>Name, credit, sign-in, close account</span></button>
+            <button role="menuitem" data-action="signout"><b>Sign out</b></button>
+          </div>
+        </div>
         <button class="icon-btn" data-action="mute" aria-pressed="false" title="Mute (M)">
           <svg class="ic"><use href="#i-volume"/></svg><span class="sr-only">Mute sound</span>
         </button>
@@ -199,6 +211,15 @@
             <details class="report" id="gReport">
               <summary>Report this car</summary>
               <div class="report-body">
+                <label class="field" id="gReportKindWrap" hidden><span>What’s wrong?</span>
+                  <select id="gReportKind">
+                    <option value="bug">The scoring or the game</option>
+                    <option value="wrong_id">Wrong car or year</option>
+                    <option value="privacy">A readable number plate or a person’s face</option>
+                    <option value="quality">The photo is too poor to play</option>
+                    <option value="copyright">It’s my photo and I didn’t allow this</option>
+                  </select>
+                </label>
                 <textarea id="gReportNote" maxlength="300" placeholder="What’s wrong: the answer, the photo, or the scoring?"></textarea>
                 <button class="btn btn--ghost" data-action="report">Send report</button>
               </div>
@@ -288,6 +309,25 @@
         <li>Partial words and shared letters. “Lam” isn’t Lamborghini.</li>
         <li>Answers after the clock. In ranked games the server times every car.</li>
       </ul>
+    </section>
+
+    <!-- COMMUNITY GARAGE (shown only when the server has it switched on) -->
+    <section class="screen" id="s-garage" data-screen="garage" aria-labelledby="garage-title" hidden>
+      <h2 class="h2" id="garage-title">Community Garage</h2>
+      <p class="block-sub">Photograph cars you see and add them to the game. A person checks every photo before anyone sees it, and your own photos never come up in your competitive games.</p>
+      <div class="garage" id="garageBody"></div>
+    </section>
+
+    <section class="screen" id="s-profile" data-screen="profile" aria-labelledby="profile-title" hidden>
+      <div id="profileBody"></div>
+    </section>
+
+    <section class="screen" id="s-mod" data-screen="mod" aria-labelledby="mod-title" hidden>
+      <h2 class="h2" id="mod-title">Moderation</h2>
+      <div class="mod">
+        <div class="tabs" id="modTabs" role="tablist" aria-label="Moderation"></div>
+        <div class="mod-body" id="modBody"></div>
+      </div>
     </section>
 
     <!-- PARTY: CREATE / JOIN -->
@@ -445,10 +485,14 @@
     </form>
   </dialog>
 
+  <!-- Garage dialogs are filled in by garage.js -->
+  <dialog class="dialog dialog--wide" id="dlgGarage" aria-labelledby="dlgGarageTitle"></dialog>
+
   <datalist id="makeList"></datalist>
 
   <script src="/socket.io/socket.io.min.js" defer></script>
   <script src="audio.js" defer></script>
   <script src="app.js" defer></script>
+  <script src="garage.js" defer></script>
 </body>
 </html>
