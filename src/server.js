@@ -8,6 +8,9 @@ const { Server } = require('socket.io');
 const { attachParty, sanitizeName } = require('./party');
 const Modes = require('./modes');
 const { createImageProxy } = require('./images');
+const { openDb } = require('./db');
+const { createMailer } = require('./mailer');
+const { createAuth } = require('./auth');
 const VCScore = require('../public/scoring.js');
 
 const MAX_PER_BOARD = 100;
@@ -82,6 +85,21 @@ function createApp(opts = {}) {
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+  // ---- Accounts and Community Garage ----
+  // Off unless GARAGE_ENABLED=1: accounts and photos need a persistent disk,
+  // and the free hosting plan wipes its disk on every deploy.
+  const garageOn = opts.garage !== undefined ? !!opts.garage : process.env.GARAGE_ENABLED === '1';
+  let gdb = null, auth = null;
+  if (garageOn) {
+    gdb = opts.db || openDb(dataDir);
+    const mailer = opts.mailer || createMailer();
+    auth = createAuth({
+      db: gdb, mailer, limit, fetch: opts.fetchAuth, providers: opts.providers,
+      publicUrl: opts.publicUrl, adminEmails: opts.adminEmails, secureCookies: opts.secureCookies,
+    });
+    app.use('/api/auth', auth.router);
+  }
+
   // What the menus need: playlists, filter options, pool sizes. Never answers.
   app.get('/api/meta', (req, res) => {
     const live = Modes.live(CARS);
@@ -92,6 +110,7 @@ function createApp(opts = {}) {
       kits: live.filter(c => c.kit).length,
       makes: [...new Set(live.map(c => c.make))].sort((a, b) => a.localeCompare(b)),
       daily: { date: Modes.utcDateKey() },
+      garage: garageOn,
     });
   });
 
@@ -288,8 +307,8 @@ function createApp(opts = {}) {
   const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES });
 
   return {
-    app, server, io, sessions, party, images,
-    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); },
+    app, server, io, sessions, party, images, db: gdb, auth,
+    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
 
