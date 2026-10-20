@@ -132,6 +132,18 @@ const MIGRATIONS = [
 
   // 3: perceptual fingerprints of the whole frame and likely crops (JSON), for duplicate checks
   `ALTER TABLE images ADD COLUMN fingerprints TEXT;`,
+
+  // 4: reports and copyright notices
+  `ALTER TABLE users ADD COLUMN submit_blocked INTEGER NOT NULL DEFAULT 0;
+   ALTER TABLE reports ADD COLUMN details TEXT;
+   CREATE INDEX reports_status ON reports(status, created_at);
+   CREATE INDEX reports_image ON reports(image_id);
+   CREATE TABLE counter_notices (
+     id TEXT PRIMARY KEY, submission_id TEXT NOT NULL, image_id TEXT, user_id TEXT NOT NULL REFERENCES users(id),
+     name TEXT NOT NULL, contact TEXT NOT NULL, statement TEXT NOT NULL,
+     status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','forwarded','reinstated','closed')),
+     created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
+   );`,
 ];
 
 function openDb(dataDir, file = 'garage.db') {

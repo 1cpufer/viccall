@@ -37,6 +37,18 @@ const UPLOADS_PER_DAY = 20;
 const MAX_OPEN = 25;          // drafts + pending + needs correction at once
 const PUBLIC_ELIGIBILITY = ['casual', 'competitive'];
 const ANON_CREDIT = 'Community photographer';
+// Badges come from approved photos only.
+const BADGES = [
+  { id: 'first', name: 'First photo', desc: 'First photo approved', test: st => st.approved >= 1 },
+  { id: 'spotter', name: 'Spotter', desc: '5 approved photos', test: st => st.approved >= 5 },
+  { id: 'photographer', name: 'Photographer', desc: '25 approved photos', test: st => st.approved >= 25 },
+  { id: 'archivist', name: 'Archivist', desc: '100 approved photos', test: st => st.approved >= 100 },
+  { id: 'variety', name: 'Variety', desc: 'Approved photos of 10 different makes', test: st => st.makes >= 10 },
+  { id: 'competition', name: 'Competition grade', desc: 'A photo approved for competitive play', test: st => st.competitive >= 1 },
+];
+const REPORT_KINDS = ['wrong_id', 'copyright', 'privacy', 'quality', 'other'];
+const STRIKE_LIMIT = 2;                       // upheld copyright complaints before submission rights end (licence §9)
+const COUNTER_WINDOW_MS = 30 * 24 * 60 * 60_000; // originals of photos taken down for copyright are kept this long
 
 const newId = prefix => `${prefix}_${crypto.randomBytes(9).toString('base64url')}`;
 const ID_RE = /^(img|sub)_[A-Za-z0-9_-]{8,20}$/;
@@ -84,7 +96,8 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
 
   router.use(auth.csrf);
 
-  const contributor = auth.requireUser({ complete: true, verified: true, adult: true });
+  const contributor = [auth.requireUser({ complete: true, verified: true, adult: true }), (req, res, next) => (
+    req.user.submit_blocked ? res.status(403).json({ error: 'Your submission rights have been removed.', code: 'blocked' }) : next())];
   const signedIn = auth.requireUser();
   const moderator = auth.requireUser({ role: 'moderator' });
   const admin = auth.requireUser({ role: 'admin' });
@@ -94,6 +107,11 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     const u = userId && db.get('SELECT display_name, credit_anonymous, status FROM users WHERE id = ?', userId);
     if (!u || u.status === 'closed' || u.credit_anonymous || !u.display_name) return ANON_CREDIT;
     return u.display_name;
+  };
+  // The name a contributor's public profile lives at, or null if they credit anonymously.
+  const profileName = userId => {
+    const u = userId && db.get('SELECT display_name, credit_anonymous, status FROM users WHERE id = ?', userId);
+    return u && u.status !== 'closed' && !u.credit_anonymous && u.display_name ? u.display_name : null;
   };
   const acceptedLicence = userId => !!db.get('SELECT 1 FROM licence_acceptances WHERE user_id = ? AND version = ?', userId, LICENCE_VERSION);
   const vehicleOf = key => (key && index.ids.get(key)) || null;
@@ -159,7 +177,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
       ...rep, id: `community:${row.id}`, imageId: row.id, img: null, credit: null, kit: null, excluded: false,
       year, yearRange: inRange ? rep.yearRange : null, difficulty: Pools.tierOf(row.difficulty || 3),
       community: true, vkey: id.key, moderation: row.moderation, eligibility: row.eligibility, takedown: row.takedown,
-      flagged: !!row.flagged, contributors, photo: { source: 'community', by: creditFor(row.contributor_id) },
+      flagged: !!row.flagged, contributors, photo: { source: 'community', by: creditFor(row.contributor_id), profile: profileName(row.contributor_id) },
     };
   }
   function roundItems() {
@@ -280,7 +298,12 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     if (!u.adult) blockers.push('age');
     if (!acceptedLicence(u.id)) blockers.push('licence');
     const counts = Object.fromEntries(db.all('SELECT status, COUNT(*) n FROM submissions WHERE user_id = ? GROUP BY status', u.id).map(r => [r.status, r.n]));
-    res.json({ licenceVersion: LICENCE_VERSION, licenceAccepted: acceptedLicence(u.id), canSubmit: blockers.length === 0, blockers, counts, limits: { perDay: UPLOADS_PER_DAY, open: MAX_OPEN } });
+    if (u.submit_blocked) blockers.push('blocked');
+    const st = statsFor(u.id);
+    res.json({
+      licenceVersion: LICENCE_VERSION, licenceAccepted: acceptedLicence(u.id), canSubmit: blockers.length === 0, blockers, counts,
+      limits: { perDay: UPLOADS_PER_DAY, open: MAX_OPEN }, stats: st, badges: badgesFor(st), profile: st.approved ? profileName(u.id) : null,
+    });
   });
 
   router.post('/licence', auth.requireUser({ complete: true }), (req, res) => {
@@ -465,6 +488,114 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     });
     Promise.all(subs.filter(s => s.image_id).map(s => retireImage(s.image_id, { moderation: 'removed', actorId: userId, reason: 'account closed' })))
       .catch(e => console.error('[garage] removing photos for a closed account failed:', e));
+  });
+
+
+  // ---- profiles and badges (approved photos only) ----
+  function statsFor(userId) {
+    const rows = db.all(`SELECT vehicle_key, eligibility FROM images WHERE contributor_id = ? AND source = 'community' AND moderation = 'approved'
+                         AND takedown = 'none' AND eligibility IN ('casual','competitive')`, userId);
+    const makes = new Set(rows.map(r => (vehicleOf(r.vehicle_key) || {}).make).filter(Boolean));
+    return { approved: rows.length, makes: makes.size, competitive: rows.filter(r => r.eligibility === 'competitive').length };
+  }
+  const badgesFor = st => BADGES.filter(b => b.test(st)).map(({ id, name, desc }) => ({ id, name, desc }));
+
+  router.get('/profiles/:name', limit(120, 60_000), (req, res) => {
+    const u = db.get(`SELECT id, display_name, created_at, credit_anonymous, status FROM users WHERE display_name = ?`, text(req.params.name, 40));
+    if (!u || u.status === 'closed' || u.credit_anonymous) return res.status(404).json({ error: 'not found' });
+    const st = statsFor(u.id);
+    if (!st.approved) return res.status(404).json({ error: 'not found' });
+    const photos = db.all(`SELECT i.id, i.vehicle_key, i.year, i.width, i.height, i.updated_at, s.location_text, s.show_location, s.event
+                           FROM images i LEFT JOIN submissions s ON s.image_id = i.id
+                           WHERE i.contributor_id = ? AND i.source = 'community' AND i.moderation = 'approved' AND i.takedown = 'none'
+                           AND i.eligibility IN ('casual','competitive') ORDER BY i.updated_at DESC LIMIT 60`, u.id)
+      .map(r => ({
+        id: r.id, small: photoUrl(r.id, 'small'), medium: photoUrl(r.id, 'medium'), large: photoUrl(r.id, 'large'), width: r.width, height: r.height,
+        vehicle: vehicleLabel(vehicleOf(r.vehicle_key)), year: r.year,
+        location: r.show_location ? r.location_text : null, event: r.show_location ? r.event : null,
+      }));
+    res.json({ profile: { name: u.display_name, joined: u.created_at, stats: st, badges: badgesFor(st), photos } });
+  });
+
+  // ---- reports: wrong car, copyright, privacy, quality ----
+  // Anyone can report, no account needed. A copyright or privacy report takes
+  // a community photo out of every game straight away; a wrong-car report
+  // takes it out of competitive play. A moderator then decides.
+  function holdImage(img, change) {
+    const r = parseJson(img.restrictions, {});
+    if (!r.reportHold) r.reportHold = { flagged: img.flagged, takedown: img.takedown };
+    db.run('UPDATE images SET restrictions = ?, flagged = ?, takedown = ?, updated_at = ? WHERE id = ?',
+      JSON.stringify(r), change.flagged ?? img.flagged, change.takedown ?? img.takedown, now(), img.id);
+    invalidate();
+  }
+  function releaseImage(imageId) {
+    const img = db.get('SELECT * FROM images WHERE id = ?', imageId);
+    if (!img) return;
+    const open = db.get(`SELECT COUNT(*) n FROM reports WHERE image_id = ? AND status = 'open'`, imageId).n;
+    const r = parseJson(img.restrictions, {});
+    if (open || !r.reportHold) return;
+    const prev = r.reportHold;
+    delete r.reportHold;
+    db.run('UPDATE images SET restrictions = ?, flagged = ?, takedown = ?, updated_at = ? WHERE id = ?', JSON.stringify(r), prev.flagged, prev.takedown, now(), imageId);
+    invalidate();
+  }
+
+  router.post('/reports', limit(10, 60 * 60_000), (req, res) => {
+    const b = req.body || {};
+    const kind = REPORT_KINDS.includes(b.kind) ? b.kind : null;
+    if (!kind) return res.status(400).json({ error: 'Choose what’s wrong.' });
+    const target = text(b.target, 80);
+    const m = /^community:(img_[A-Za-z0-9_-]{8,20})$/.exec(target);
+    const img = m ? db.get('SELECT * FROM images WHERE id = ?', m[1]) : null;
+    const carId = !m && carsById.has(target) ? target : null;
+    if (!img && !carId) return res.status(400).json({ error: 'Which photo is this about?' });
+    const message = text(b.message, 1000);
+    let details = null, contact = text(b.contact, 120) || null;
+    if (kind === 'copyright') {
+      // What a takedown notice needs (17 U.S.C. 512(c)(3)), collected as fields.
+      const c = b.copyright || {};
+      details = {
+        name: text(c.name, 100), email: text(c.email, 120), work: text(c.work, 500), signature: text(c.signature, 100),
+        goodFaith: c.goodFaith === true, accurate: c.accurate === true,
+      };
+      if (!details.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(details.email) || !details.work || !details.signature || !details.goodFaith || !details.accurate) {
+        return res.status(400).json({ error: 'A copyright complaint needs your name, email, the original work, both statements and your signature.', code: 'copyright' });
+      }
+      contact = details.email;
+    } else if (!message && kind !== 'quality') {
+      return res.status(400).json({ error: 'Tell us what’s wrong.' });
+    }
+    const user = auth.currentUser(req);
+    const id = newId('rep');
+    db.tx(() => {
+      db.run(`INSERT INTO reports (id, image_id, car_id, reporter_id, kind, message, contact, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        id, img ? img.id : null, carId, user ? user.id : null, kind, message || null, contact, details && JSON.stringify(details), now());
+      if (img && img.moderation === 'approved') {
+        if (kind === 'copyright' || kind === 'privacy') { holdImage(img, { takedown: 'disputed' }); db.audit(null, 'image.dispute', 'image', img.id, { report: id, kind }); }
+        else if (kind === 'wrong_id') { holdImage(img, { flagged: 1 }); db.audit(null, 'image.flag', 'image', img.id, { report: id, kind }); }
+      }
+      db.audit(user ? user.id : null, 'report.create', 'report', id, { kind, image: img ? img.id : undefined, car: carId || undefined });
+    });
+    res.status(201).json({ ok: true, id });
+  });
+
+  // A contributor whose photo was taken down after a copyright complaint can
+  // send a counter-notice; a moderator forwards it to the complainant.
+  router.post('/submissions/:id/counter', signedIn, (req, res) => {
+    const s = ownSubmission(req, res);
+    if (!s) return;
+    const took = s.image_id && db.get(`SELECT 1 FROM reports WHERE image_id = ? AND kind = 'copyright' AND status = 'actioned'`, s.image_id);
+    if (!took) return res.status(409).json({ error: 'A counter-notice is only for photos taken down after a copyright complaint.' });
+    const b = req.body || {};
+    const name = text(b.name, 100), contact = text(b.contact, 300), statement = text(b.statement, 2000);
+    if (!name || !contact || statement.length < 20 || b.consent !== true) {
+      return res.status(400).json({ error: 'Give your full name, address and contact details, a statement, and agree to your details being sent to the complainant.' });
+    }
+    const id = newId('cn');
+    db.run(`INSERT INTO counter_notices (id, submission_id, image_id, user_id, name, contact, statement, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      id, s.id, s.image_id, req.user.id, name, contact, statement, now(), now());
+    db.audit(req.user.id, 'counter.create', 'submission', s.id, { notice: id });
+    res.status(201).json({ ok: true, id });
   });
 
   // ---- moderation ----
@@ -655,6 +786,170 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     res.json({ entries: rows.map(r => ({ ...r, detail: parseJson(r.detail, null) })) });
   });
 
+
+  // Reports, newest first.
+  mod.get('/reports', (req, res) => {
+    const status = ['open', 'actioned', 'dismissed'].includes(req.query.status) ? req.query.status : 'open';
+    const rows = db.all(`SELECT * FROM reports WHERE status = ? ORDER BY created_at ${status === 'open' ? 'ASC' : 'DESC'} LIMIT 100`, status);
+    const counts = Object.fromEntries(db.all('SELECT status, COUNT(*) n FROM reports GROUP BY status').map(r => [r.status, r.n]));
+    res.json({
+      status, counts,
+      reports: rows.map(r => {
+        const img = r.image_id && db.get('SELECT id, moderation, eligibility, takedown, flagged, contributor_id, vehicle_key FROM images WHERE id = ?', r.image_id);
+        const car = r.car_id && carsById.get(r.car_id);
+        return {
+          id: r.id, kind: r.kind, status: r.status, message: r.message, contact: r.contact, details: parseJson(r.details, null),
+          createdAt: r.created_at, resolution: r.resolution,
+          image: img && { id: img.id, moderation: img.moderation, eligibility: img.eligibility, takedown: img.takedown, flagged: !!img.flagged,
+            preview: img.moderation === 'removed' ? null : photoUrl(img.id, 'small'), vehicle: vehicleLabel(vehicleOf(img.vehicle_key)), contributor: creditFor(img.contributor_id) },
+          car: car && { id: car.id, label: `${car.make} ${car.model} (${car.year})`, credit: car.credit || null },
+        };
+      }),
+    });
+  });
+
+  // Decide a report: dismiss it, fix the photo (re-blur, correct the car), or uphold it (remove the photo).
+  mod.post('/reports/:id/resolve', safe(async (req, res) => {
+    const r = db.get('SELECT * FROM reports WHERE id = ?', text(req.params.id, 40));
+    if (!r) return res.status(404).json({ error: 'not found' });
+    if (r.status !== 'open') return res.status(409).json({ error: 'This report is already resolved.' });
+    const b = req.body || {};
+    const note = text(b.note, 500);
+    const action = b.action;
+    if (!['dismiss', 'fix', 'uphold'].includes(action)) return res.status(400).json({ error: 'Choose dismiss, fix or uphold.' });
+    if (note.length < 3) return res.status(400).json({ error: 'Add a note for the record.' });
+    const img = r.image_id && db.get('SELECT * FROM images WHERE id = ?', r.image_id);
+    const actor = req.user.id;
+    if (img && img.contributor_id === actor) return res.status(403).json({ error: 'You can’t decide a report about your own photo.' });
+    const close = (status, extra) => db.tx(() => {
+      db.run('UPDATE reports SET status = ?, resolution = ?, resolved_by = ?, resolved_at = ? WHERE id = ?', status, JSON.stringify({ action, note, ...extra }), actor, now(), r.id);
+      db.audit(actor, `report.${action}`, 'report', r.id, { image: img ? img.id : undefined, note, ...extra });
+    });
+
+    if (action === 'dismiss' || !img) {
+      close(action === 'dismiss' ? 'dismissed' : 'actioned');
+      if (img) releaseImage(img.id);
+      return res.json({ ok: true });
+    }
+    if (action === 'fix') {
+      if (img.moderation !== 'approved') return res.status(409).json({ error: 'Only an approved photo can be fixed.' });
+      const changes = {};
+      if (b.vehicleKey !== undefined) {
+        if (!vehicleOf(b.vehicleKey)) return res.status(400).json({ error: 'Choose the vehicle from the list.' });
+        changes.vehicle_key = b.vehicleKey;
+      }
+      if (b.year !== undefined) {
+        const y = Number(b.year);
+        const v = vehicleOf(changes.vehicle_key || img.vehicle_key);
+        if (!Number.isInteger(y) || (v && (y < v.lo - 1 || y > v.hi + 1))) return res.status(400).json({ error: 'That year doesn’t fit this vehicle.' });
+        changes.year = y;
+      }
+      if (b.blur !== undefined) {
+        const blur = cleanBlur(b.blur);
+        const original = await store.get(`originals/${img.id}`);
+        if (!original) return res.status(500).json({ error: 'The original file is missing.' });
+        const derived = await processing(() => Photos.derive(original, { blur }));
+        for (const [size, data] of Object.entries(derived)) await store.put(`web/${img.id}/${size}.webp`, data);
+        const rs = parseJson(db.get('SELECT restrictions FROM images WHERE id = ?', img.id).restrictions, {});
+        changes.restrictions = JSON.stringify({ ...rs, blur });
+      }
+      if (!Object.keys(changes).length) return res.status(400).json({ error: 'Nothing to fix: change the vehicle, year or blur.' });
+      db.run(`UPDATE images SET ${Object.keys(changes).map(k => `${k} = ?`).join(', ')}, updated_at = ? WHERE id = ?`, ...Object.values(changes), now(), img.id);
+      close('actioned', { fixed: Object.keys(changes) });
+      releaseImage(img.id);
+      return res.json({ ok: true });
+    }
+    // Uphold: the photo leaves the game. For copyright, the original is kept
+    // for the counter-notice window, and the contributor gets a strike.
+    const copyright = r.kind === 'copyright';
+    db.tx(() => {
+      for (const s of db.all(`SELECT id, status FROM submissions WHERE image_id = ? AND status != 'removed'`, img.id)) {
+        db.run(`UPDATE submissions SET status = 'removed', reason = ?, updated_at = ? WHERE id = ?`,
+          copyright ? 'Removed after a copyright complaint. If you believe this is a mistake, you can send a counter-notice.' : note, now(), s.id);
+        db.audit(actor, 'submission.remove', 'submission', s.id, { by: 'moderator', report: r.id, was: s.status });
+      }
+      const rs = parseJson(img.restrictions, {});
+      if (copyright) rs.purgeAfter = now() + COUNTER_WINDOW_MS;
+      db.run(`UPDATE images SET takedown = ?, restrictions = ? WHERE id = ?`, copyright ? 'removed' : img.takedown, JSON.stringify(rs), img.id);
+    });
+    close('actioned');
+    await retireImage(img.id, { moderation: 'removed', actorId: actor, reason: `report ${r.id}: ${note}`, keepOriginal: copyright });
+    let blocked = false;
+    if (copyright && img.contributor_id) {
+      const strikes = db.get(`SELECT COUNT(*) n FROM reports r JOIN images i ON i.id = r.image_id
+                              WHERE r.kind = 'copyright' AND r.status = 'actioned' AND i.contributor_id = ? AND r.resolution LIKE '%"action":"uphold"%'`, img.contributor_id).n;
+      if (strikes >= STRIKE_LIMIT) {
+        db.run('UPDATE users SET submit_blocked = 1, updated_at = ? WHERE id = ?', now(), img.contributor_id);
+        db.audit(actor, 'user.submit_blocked', 'user', img.contributor_id, { strikes });
+        blocked = true;
+      }
+    }
+    res.json({ ok: true, contributorBlocked: blocked });
+  }));
+
+  mod.get('/counter-notices', (req, res) => {
+    const rows = db.all(`SELECT c.*, u.display_name FROM counter_notices c LEFT JOIN users u ON u.id = c.user_id ORDER BY c.created_at DESC LIMIT 100`);
+    res.json({ notices: rows.map(c => ({ id: c.id, submission: c.submission_id, image: c.image_id, contributor: c.display_name, name: c.name, contact: c.contact,
+      statement: c.statement, status: c.status, createdAt: c.created_at })) });
+  });
+  mod.post('/counter-notices/:id', (req, res) => {
+    const c = db.get('SELECT * FROM counter_notices WHERE id = ?', text(req.params.id, 40));
+    if (!c) return res.status(404).json({ error: 'not found' });
+    const status = (req.body || {}).status;
+    if (!['forwarded', 'closed'].includes(status)) return res.status(400).json({ error: 'Mark it forwarded or closed.' });
+    db.run('UPDATE counter_notices SET status = ?, updated_at = ? WHERE id = ?', status, now(), c.id);
+    db.audit(req.user.id, `counter.${status}`, 'counter_notice', c.id, null);
+    res.json({ ok: true });
+  });
+
+  // Put a photo taken down for copyright back (after a counter-notice, if the
+  // complainant doesn't go to court). It returns as casual-only.
+  mod.post('/images/:id/reinstate', safe(async (req, res) => {
+    const img = ID_RE.test(req.params.id) && db.get('SELECT * FROM images WHERE id = ?', req.params.id);
+    if (!img) return res.status(404).json({ error: 'not found' });
+    const reason = text((req.body || {}).reason, 500);
+    if (reason.length < 3) return res.status(400).json({ error: 'Give a reason.' });
+    if (img.moderation !== 'removed' || img.takedown !== 'removed') return res.status(409).json({ error: 'Only photos taken down after a copyright complaint can be reinstated.' });
+    const original = await store.get(`originals/${img.id}`);
+    if (!original) return res.status(410).json({ error: 'The original has already been deleted.' });
+    const rs = parseJson(img.restrictions, {});
+    const derived = await processing(() => Photos.derive(original, { blur: rs.blur || [] }));
+    for (const [size, data] of Object.entries(derived)) await store.put(`web/${img.id}/${size}.webp`, data);
+    delete rs.purgeAfter;
+    delete rs.reportHold;
+    db.tx(() => {
+      db.run(`UPDATE images SET moderation = 'approved', eligibility = 'casual', takedown = 'none', flagged = 0, restrictions = ?, updated_at = ? WHERE id = ?`, JSON.stringify(rs), now(), img.id);
+      db.run(`UPDATE submissions SET status = 'approved', reason = NULL, updated_at = ? WHERE image_id = ? AND status = 'removed'`, now(), img.id);
+      db.run(`UPDATE counter_notices SET status = 'reinstated', updated_at = ? WHERE image_id = ?`, now(), img.id);
+      db.audit(req.user.id, 'image.reinstate', 'image', img.id, { reason });
+    });
+    invalidate();
+    res.json({ ok: true });
+  }));
+
+  // Everything on record about where a photo came from and what it may be used for.
+  mod.get('/images/:id/provenance', (req, res) => {
+    const img = db.get('SELECT * FROM images WHERE id = ?', text(req.params.id, 80));
+    if (!img) return res.status(404).json({ error: 'not found' });
+    const evidence = parseJson(img.licence_evidence, img.licence_evidence);
+    const acceptance = evidence && evidence.acceptance && db.get('SELECT id, version, accepted_at FROM licence_acceptances WHERE id = ?', evidence.acceptance);
+    const sub = db.get('SELECT id, status, declarations, licence_version, promo_opt_in, created_at FROM submissions WHERE image_id = ?', img.id);
+    res.json({
+      image: {
+        id: img.id, source: img.source, sourceRef: img.source_ref, photographer: img.photographer || (img.contributor_id ? creditFor(img.contributor_id) : null),
+        licence: img.licence, evidence, acceptance: acceptance || null, permissionAt: img.permission_at, commercialOk: img.commercial_ok == null ? null : !!img.commercial_ok,
+        attribution: img.attribution, restrictions: parseJson(img.restrictions, null), expiresAt: img.expires_at,
+        moderation: img.moderation, eligibility: img.eligibility, takedown: img.takedown, flagged: !!img.flagged,
+        sha256: img.sha256, createdAt: img.created_at, updatedAt: img.updated_at,
+      },
+      submission: sub && { id: sub.id, status: sub.status, licenceVersion: sub.licence_version, declarations: parseJson(sub.declarations, null), promo: !!sub.promo_opt_in, createdAt: sub.created_at },
+      contributors: contributorsOf(img.id).map(c => ({ relation: c.relation, credit: creditFor(c.user_id) })),
+      reports: db.all('SELECT id, kind, status, created_at FROM reports WHERE image_id = ? ORDER BY created_at', img.id),
+      history: db.all(`SELECT at, action, detail FROM audit_log WHERE (entity = 'image' AND entity_id = ?) OR (entity = 'submission' AND entity_id = ?) ORDER BY id`,
+        img.id, sub ? sub.id : '').map(h => ({ ...h, detail: parseJson(h.detail, null) })),
+    });
+  });
+
   router.use('/mod', mod);
 
   // ---- admin: moderators and submission rights ----
@@ -681,6 +976,25 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     res.json({ ok: true, role, status });
   });
 
+  // Delete originals kept for a copyright counter-notice once the window has passed.
+  async function purgeExpired() {
+    const rows = db.all(`SELECT id, restrictions FROM images WHERE moderation = 'removed' AND restrictions LIKE '%purgeAfter%'`);
+    let n = 0;
+    for (const r of rows) {
+      const rs = parseJson(r.restrictions, {});
+      if (!rs.purgeAfter || rs.purgeAfter > now()) continue;
+      await store.remove(`originals/${r.id}`);
+      delete rs.purgeAfter;
+      db.run('UPDATE images SET restrictions = ? WHERE id = ?', JSON.stringify(rs), r.id);
+      db.audit(null, 'image.purge', 'image', r.id, { reason: 'counter-notice window ended' });
+      n++;
+    }
+    return n;
+  }
+  const purgeTimer = setInterval(() => purgeExpired().catch(e => console.error('[garage] purge failed:', e)), 6 * 60 * 60_000);
+  purgeTimer.unref();
+  purgeExpired().catch(e => console.error('[garage] purge failed:', e));
+
   router.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Photos can be up to 15 MB.' });
     if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Bad request' });
@@ -688,7 +1002,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     res.status(500).json({ error: 'Something went wrong. Try again.' });
   });
 
-  return { router, store, LICENCE_VERSION, creditFor, roundItems, itemState, roundPhoto, counts, invalidate };
+  return { router, store, LICENCE_VERSION, creditFor, roundItems, itemState, roundPhoto, counts, invalidate, purgeExpired, close: () => clearInterval(purgeTimer) };
 }
 
-module.exports = { createGarage, LICENCE_VERSION, DECLARATIONS, STATUS_LABEL, ANON_CREDIT };
+module.exports = { createGarage, LICENCE_VERSION, DECLARATIONS, STATUS_LABEL, ANON_CREDIT, BADGES, STRIKE_LIMIT, COUNTER_WINDOW_MS };

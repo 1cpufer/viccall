@@ -107,7 +107,8 @@ function attachParty(io, CARS, opts = {}) {
     const car = room.queue[room.curIdx];
     return {
       idx: room.curIdx, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year, yearRange: car.yearRange || null,
-      kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null, carId: car.id, standings: standings(room),
+      kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null,
+      attribution: !car.community && opts.attributionFor ? opts.attributionFor(car) : null, carId: car.id, standings: standings(room),
     };
   }
 

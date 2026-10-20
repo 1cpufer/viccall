@@ -13,6 +13,7 @@ const { openDb } = require('./db');
 const { createMailer } = require('./mailer');
 const { createAuth } = require('./auth');
 const { createGarage } = require('./garage');
+const { createCommonsProvenance } = require('./provenance');
 const VCScore = require('../public/scoring.js');
 
 const MAX_PER_BOARD = 100;
@@ -101,6 +102,15 @@ function createApp(opts = {}) {
     });
     app.use('/api/auth', auth.router);
     garage = createGarage({ db: gdb, auth, dataDir, limit, cars: CARS, index: VEHICLES, VCScore });
+  }
+  // Author and licence of each first-party photo, as stated on Wikimedia Commons.
+  const provenance = createCommonsProvenance({ cars: CARS, dataDir, fetch: opts.fetchCommons, db: gdb, log: opts.log !== false });
+  if (garage) {
+    const admin = auth.requireUser({ role: 'admin' });
+    app.post('/api/garage/admin/provenance/refresh', auth.csrf, admin, limit(6, 60 * 60_000), async (req, res) => {
+      try { res.json(await provenance.refresh({ keyOf: VCScore.identityKey })); } catch (e) { res.status(502).json({ error: e.message }); }
+    });
+    app.get('/api/garage/admin/provenance/review', admin, (req, res) => res.json({ photos: provenance.needsReview() }));
     app.use('/api/garage', garage.router);
   }
 
@@ -248,6 +258,7 @@ function createApp(opts = {}) {
       answer: {
         id: car.id, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year,
         yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null,
+        attribution: car.community ? null : provenance.attributionFor(car),
       },
     });
   });
@@ -334,18 +345,25 @@ function createApp(opts = {}) {
     return u && u.status === 'active' ? u.id : null;
   } : null;
   const community = garage ? { items: () => garage.roundItems(), state: id => garage.itemState(id), photo: (id, ctx) => garage.roundPhoto(id, ctx) } : null;
-  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify });
+  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth, garage,
-    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (gdb && !opts.db) gdb.close(); },
+    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance,
+    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  const { server } = createApp();
+  const { server, provenance } = createApp();
   server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+  // Photo credits: ask Commons for authors and licences when the saved copy is
+  // missing or a week old (a few requests, in the background).
+  if (process.env.COMMONS_META !== '0') {
+    const refresh = () => { if (provenance.stale()) provenance.refresh({ keyOf: VCScore.identityKey }).catch(e => console.warn('[provenance]', e.message)); };
+    setTimeout(refresh, 10_000).unref();
+    setInterval(refresh, 24 * 60 * 60_000).unref();
+  }
 }
 
 module.exports = { createApp };
