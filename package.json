@@ -1,7 +1,7 @@
 {
   "name": "viccall",
   "version": "1.0.0",
-  "description": "",
+  "description": "Name the car from one photo. Solo modes, leaderboards and real-time party play.",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "socket.io-client": "4.8"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

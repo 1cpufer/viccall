@@ -1,0 +1,17 @@
+# Render Blueprint: one free web service running the Node server (Socket.IO included).
+services:
+  - type: web
+    name: viccall
+    runtime: node
+    plan: free
+    branch: overnight-polish
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: ADMIN_TOKEN
+        generateValue: true

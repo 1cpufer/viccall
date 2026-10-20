@@ -23,6 +23,12 @@ npm test       # scoring, API and multiplayer tests (node:test)
 | `ADMIN_TOKEN` | Required to read `/api/reports` (`/api/reports?token=...`). Without it, reports can only be read from the server machine itself. |
 | `TRUST_PROXY` | Set to `1` when running behind a reverse proxy (Render, Railway, nginx) so rate limits see real client IPs. |
 
+## Deploying
+
+`render.yaml` is a Render Blueprint: in Render choose **New → Blueprint**, pick this repo, and it creates a free web service with `TRUST_PROXY` set and a random `ADMIN_TOKEN` (find it under the service's Environment tab).
+
+On Render's free plan the service sleeps after 15 minutes without visitors (the first visit then takes about a minute), and the disk resets on every restart or deploy, so leaderboard scores and reports don't persist. Add a persistent disk mounted at `/opt/render/project/src/data` on a paid plan to keep them.
+
 ## Scoring
 
 | | Points |
