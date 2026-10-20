@@ -92,6 +92,12 @@ function createApp(opts = {}) {
     });
   });
 
+  // Free Play: how many cars a filter combination matches (for the live count in the menu).
+  app.get('/api/pool', (req, res) => {
+    const f = Modes.cleanFilters(req.query);
+    res.json({ size: Modes.live(CARS).filter(Modes.freePlayFilter(f)).length, filters: f });
+  });
+
   app.get('/api/img/:token', limit(400, 60_000), (req, res) => images.handle(req, res));
 
   // ---- Solo sessions: the server holds the answers, runs the clock and keeps score. ----
@@ -117,7 +123,7 @@ function createApp(opts = {}) {
     const player = hashKey(b.player);
     const s = {
       id: crypto.randomUUID(), plan, queue: plan.queue.slice(), idx: 0, player,
-      openIdx: -1, openedAt: 0, servedAt: 0, img: null,
+      openIdx: -1, openedAt: 0, servedAt: 0, photoOk: false, img: null, freeSkips: 0,
       score: 0, cars: 0, streak: 0, bestStreak: 0, strikes: 0, timeMs: 0, over: false,
       results: [], created: Date.now(), saved: false,
       unranked: plan.kind === 'daily' && dailyAlreadyPosted(plan.board, player),
@@ -145,9 +151,10 @@ function createApp(opts = {}) {
       s.openIdx = s.idx;
       s.openedAt = Date.now();
       s.servedAt = 0;
+      s.photoOk = false;
       if (s.plan.board) {
         const idx = s.idx;
-        s.img = images.issue(car.img, () => { if (s.openIdx === idx && !s.servedAt) s.servedAt = Date.now(); });
+        s.img = images.issue(car.img, ok => { if (s.openIdx === idx && !s.servedAt) { s.servedAt = Date.now(); s.photoOk = ok; } });
       } else {
         s.img = car.img;
         s.servedAt = s.openedAt;
@@ -163,7 +170,11 @@ function createApp(opts = {}) {
     if (!s) return res.status(404).json({ error: 'Session expired' });
     if (finished(s) || b.idx !== s.idx || s.openIdx !== s.idx) return res.status(409).json({ error: 'Round already answered' });
     const car = s.queue[s.idx];
-    const guess = { make: clip(b.make, 60), model: clip(b.model, 60), year: clip(b.year, 8), kit: clip(b.kit, 60) };
+    // A photo that never loaded isn't the player's fault. Ranked games get two
+    // free skips, and only when the server couldn't deliver the photo itself.
+    const photoSkip = !!b.photoFailed && (!s.plan.board || (!s.photoOk && s.freeSkips < 2));
+    if (photoSkip && s.plan.board) s.freeSkips += 1;
+    const guess = photoSkip ? {} : { make: clip(b.make, 60), model: clip(b.model, 60), year: clip(b.year, 8), kit: clip(b.kit, 60) };
     let result = VCScore.scoreRound(car, guess, { ruleset: s.plan.ruleset, kind: s.plan.roundKind });
 
     const now = Date.now();
@@ -174,8 +185,8 @@ function createApp(opts = {}) {
 
     s.score += result.pts;
     s.timeMs += s.plan.clockMs > 0 ? Math.min(elapsed, s.plan.clockMs) : elapsed;
-    if (result.identified) { s.cars += 1; s.streak += 1; s.bestStreak = Math.max(s.bestStreak, s.streak); } else { s.streak = 0; }
-    if (s.plan.kind === 'endless' && !result.identified) s.strikes += 1;
+    if (photoSkip) { /* no streak change, no strike */ } else if (result.identified) { s.cars += 1; s.streak += 1; s.bestStreak = Math.max(s.bestStreak, s.streak); } else { s.streak = 0; }
+    if (s.plan.kind === 'endless' && !result.identified && !photoSkip) s.strikes += 1;
     s.results.push({ carId: car.id, pts: result.pts });
     s.idx += 1;
 
@@ -188,7 +199,7 @@ function createApp(opts = {}) {
 
     res.json({
       pts: result.pts, res: result.res, identified: result.identified, perfect: result.perfect,
-      late, timedOut, score: s.score, cars: s.cars, streak: s.streak, bestStreak: s.bestStreak,
+      late, timedOut, skipped: photoSkip, score: s.score, cars: s.cars, timeMs: s.timeMs, streak: s.streak, bestStreak: s.bestStreak,
       strikes: s.strikes, lives: s.plan.lives, idx: s.idx, done,
       answer: {
         id: car.id, make: car.make, model: car.model, variant: car.variant || null, year: car.year,

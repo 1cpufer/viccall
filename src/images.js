@@ -88,7 +88,7 @@ function createImageProxy(opts = {}) {
     while (tokens.size > MAX_TOKENS) tokens.delete(tokens.keys().next().value);
   }
 
-  // Opaque URL for a photo. onServe runs once, when the bytes first go out.
+  // Opaque URL for a photo. onServe(ok) runs once, when the photo (or the fallback redirect) first goes out.
   function issue(url, onServe) {
     if (tokens.size > MAX_TOKENS) sweep();
     const token = crypto.randomBytes(16).toString('base64url');
@@ -96,8 +96,9 @@ function createImageProxy(opts = {}) {
     return `/api/img/${token}`;
   }
 
-  function served(t) {
-    if (t.onServe) { const f = t.onServe; t.onServe = null; try { f(); } catch {} }
+  // ok = the photo itself went out (false = we redirected to Wikimedia instead).
+  function served(t, ok) {
+    if (t.onServe) { const f = t.onServe; t.onServe = null; try { f(ok); } catch {} }
   }
 
   async function handle(req, res) {
@@ -105,13 +106,13 @@ function createImageProxy(opts = {}) {
     if (!t || t.exp < Date.now()) return res.status(404).json({ error: 'not found' });
     try {
       const { buf, type } = await load(t.url);
-      served(t);
+      served(t, true);
       res.set('Cache-Control', 'private, max-age=10800, immutable');
       res.set('Content-Type', type);
       res.send(buf);
     } catch (e) {
       // Upstream unreachable: keep the game playable.
-      served(t);
+      served(t, false);
       res.set('Cache-Control', 'no-store');
       res.redirect(302, req.query.orig === '1' ? originalOf(t.url) || t.url : t.url);
     }

@@ -10,7 +10,11 @@ const out = [];
 const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
 
 (async () => {
-  const app = createApp({ dataDir: path.join(require('os').tmpdir(), 'viccall-e2e-data'), party: { roundMs: 4000, timeAttackMs: 3000, awayMs: 1000, graceMs: 3000 } });
+  const app = createApp({
+    dataDir: path.join(require('os').tmpdir(), 'viccall-e2e-data'),
+    party: { roundMs: 4000, competitiveMs: 3000, awayMs: 1000, graceMs: 3000 },
+    fetchImage: async () => new Response(PH, { status: 200, headers: { 'content-type': 'image/jpeg' } }),
+  });
   await new Promise(r => app.server.listen(3200, r));
   const base = 'http://localhost:3200';
   const browser = await chromium.launch();
@@ -24,14 +28,14 @@ const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
   };
   try {
     const A = await mk(), B = await mk(), C = await mk();
-    await A.page.click('[data-to="party"]');
+    await A.page.click('.side-mode [data-action="party-open"][data-focus="pcName"]');
     await A.page.fill('#pcName', 'Host');
-    await A.page.selectOption('#pcMode', 'kit');
+    await A.page.selectOption('#pcPlaylist', 'kits');
     await A.page.click('#pCreate button[type=submit]');
     await A.page.waitForSelector('#s-lobby:not([hidden])');
     const code = (await A.page.textContent('#lobbyCode')).trim();
     for (const [P, n] of [[B, 'Bea'], [C, 'Cal']]) {
-      await P.page.click('[data-to="party"]');
+      await P.page.click('.side-mode [data-action="party-open"][data-focus="pjCode"]');
       await P.page.fill('#pjName', n);
       await P.page.fill('#pjCode', code.toLowerCase());
       await P.page.click('#pJoin button[type=submit]');
@@ -40,14 +44,14 @@ const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
     check((await A.page.textContent('#lobbyStart')).includes('3 drivers'), 'lobby counts 3 drivers');
     await A.page.click('#lobbyStart');
     await B.page.waitForSelector('#pgKit:visible');
-    check(true, 'kit party shows tuner field');
+    check(await B.page.locator('#pgKitModel').isVisible(), 'kit party shows tuner, make and model fields');
 
     // Nobody answers -> server timer reveals (round 3 s? roundMs 4 s for kit)
     const t0 = Date.now();
     await B.page.waitForSelector('#pgReveal:not([hidden])', { timeout: 8000 });
     check(Date.now() - t0 > 2500, `timer reveal after ${Date.now() - t0} ms`);
     check((await B.page.textContent('#pgVerdict')).includes('No answer'), 'unanswered player sees "No answer"');
-    check(await B.page.locator('#pgClock').isHidden(), 'clock hidden at reveal');
+    check(await B.page.locator('#pgClockNum').isHidden(), 'clock hidden at reveal');
 
     // Host closes tab during reveal -> someone else gets Next
     await A.ctx.close();
@@ -64,14 +68,16 @@ const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
     await G.page.fill('#pgKit', 'Liberty Walk');
     await G.page.waitForSelector('#pgReveal:not([hidden])', { timeout: 8000 });
     const chips = await G.page.textContent('#pgChips');
-    check(/Kit/.test(chips), `typed-but-unsent answer was auto-submitted (${chips.trim()})`);
+    check(/Tuner/.test(chips), `typed-but-unsent answer was auto-submitted (${chips.replace(/\s+/g, ' ').trim()})`);
 
     // Play through to final quickly
     for (let i = 2; i < 10; i++) {
       await H.page.click('#pgNext');
       await H.page.waitForSelector('#pgForm:not([hidden])');
       await H.page.fill('#pgKit', 'x'); await H.page.keyboard.press('Enter');
-      await G.page.fill('#pgKit', 'y'); await G.page.keyboard.press('Enter');
+      // Guest gets one right, so the rematch has a score to reset.
+      const room = app.party.rooms.get(code);
+      await G.page.fill('#pgKit', i === 2 ? room.queue[room.curIdx].kit : 'y'); await G.page.keyboard.press('Enter');
       await H.page.waitForSelector('#pgReveal:not([hidden])');
     }
     await H.page.click('#pgNext');
@@ -84,7 +90,15 @@ const check = (c, m) => out.push(`${c ? 'PASS' : 'FAIL'} ${m}`);
     await H.page.click('#pfAgain');
     await G.page.waitForSelector('#s-pgame:not([hidden])');
     check((await G.page.textContent('#pgCount')).includes('Car 1 of 10'), 'play again restarts at car 1');
-    check((await G.page.textContent('#pgScore')).trim() === '0', 'scores reset for the new game');
+    await G.page.waitForTimeout(700); // let any score count-up animation finish before reading
+    const gScore = (await G.page.textContent('#pgScore')).trim();
+    const gState = await G.page.evaluate(() => { const s = window.VicCall.state().party; return { idx: s.round && s.round.idx, state: s.state, me: (s.players.find(p => p.id === s.youId) || {}).score }; });
+    check(gScore === '0', `scores reset for the new game (shown ${gScore}, state ${JSON.stringify(gState)})`);
+    // Leave button mid-game asks first.
+    await G.page.click('#s-pgame .back');
+    await G.page.waitForSelector('#dlgQuit[open]');
+    await G.page.click('#dlgQuit button[value="stay"]');
+    check(await G.page.locator('#s-pgame').isVisible(), 'leave button asks before leaving a party game');
     // Guest uses browser back -> leaves party; host sees 1 player
     await G.page.goBack();
     await G.page.waitForSelector('#s-party:not([hidden]), #s-home:not([hidden])');

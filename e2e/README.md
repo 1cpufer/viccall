@@ -1,15 +1,17 @@
 # Browser end-to-end checks
 
-These scripts drive real Chromium through the game. They're kept out of `npm test` so the normal test run needs no browser.
+These scripts drive real Chromium through the game. They're kept out of `npm test` so the normal test run needs no browser. Each starts its own server in-process (ports 3300 and 3200), gives the photo proxy a stub upstream that returns `fixtures/stand-in-car.jpg`, and answers direct Wikimedia requests from the browser with the same image, so no network is needed.
 
 ```
 npm i --no-save playwright && npx playwright install chromium
-npm start                                   # terminal 1
-node e2e/ui.e2e.js http://localhost:3000 e2e/shots run   # terminal 2
-node e2e/party.e2e.js                       # starts its own fast-timer server
+node e2e/ui.e2e.js [screenshotDir]   # defaults to e2e/shots
+node e2e/party.e2e.js
 ```
 
-- `ui.e2e.js`: mode carousel drag, regional, a full 10-car solo game, results, save, share, leaderboard, back button, Time Attack clock, Kit Check, the empty-guess message, the photo-size fallback, and a 2-player party (invite link, refresh-resume, reveal, final, host handoff). Screenshots are saved to `e2e/shots/`.
-- `party.e2e.js`: a 3-player Kit Check party, the server timer reveal, the host closing the tab mid-reveal, auto-submitting a typed answer at the buzzer, refreshing on the final screen, play again, and leaving with the back button.
+- `ui.e2e.js`:
+  - **Desktop:** nav menus (hover, arrow keys, Esc), Free Play filters and live count, direct photos, the empty-guess message, perfect and partial answers, blank-field feedback, Commons credit, the leave-game dialog, a 15 s clock auto-submitting a typed answer, a full ranked JDM game with opaque photo URLs, posting a score and personal best, leaderboard tabs, a kit round with three boxes, the Daily Challenge (post, home summary, practice rerun), Endless lives, sound settings persisting and `M` to mute, the scoring page, the back button and a car report.
+  - **Phone:** the hamburger menu, the thumbnail-to-original photo fallback, progress pips and a full round.
+  - **Party:** host settings, an invite link, a playlist change reaching the guest, opaque photos, the reveal, refresh-resume and final standings.
+- `party.e2e.js`: a three-player Body Kit party, the server timer reveal, the host closing the tab mid-reveal, auto-submitting a typed answer at the buzzer, refreshing on the final screen, play again with scores reset, the leave confirmation, and leaving with the back button.
 
-Each line prints `PASS` or `FAIL`, and the run ends with `no page errors` when the console stayed clean.
+Each line prints `PASS` or `FAIL`; `ui.e2e.js` ends with a page-error count and exits non-zero on any failure.

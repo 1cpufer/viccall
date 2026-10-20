@@ -100,7 +100,7 @@
   // Words too generic to earn credit on their own.
   const GENERIC = new Set(['series', 'class', 'type', 'coupe', 'spider', 'spyder', 'sport', 'sports', 'gt', 's', 'r', 'the', 'model', 'turbo', 'ss', 'v8', 'convertible', 'roadster', 'sedan', 'car', 'new', 'old']);
   // Trim / body words that may follow a correct model without making it wrong.
-  const TRIM = new Set(['rs', 'gts', 'gti', 'hf', 'srt', 'amg', 'base', 'si', 'vr', 'v6', 'v10', 'v12', 'awd', 'quattro', 'twin', 'gen', 'generation', 'mark', 'mk', 'facelift', 'edition', 'special', 'limited', 'hatch', 'hatchback', 'wagon', 'estate', 'avant', 'targa', 'cabriolet', 'cabrio', 'hardtop', 'fastback', 'nismo', 'spec', 'evo', 'competition', 'performance', 'plus']);
+  const TRIM = new Set(['rs', 'gts', 'gti', 'hf', 'srt', 'amg', 'base', 'si', 'vr', 'v6', 'v10', 'v12', 'awd', 'quattro', 'twin', 'gen', 'generation', 'mark', 'mk', 'facelift', 'edition', 'special', 'limited', 'hatch', 'hatchback', 'wagon', 'estate', 'avant', 'targa', 'cabriolet', 'cabrio', 'hardtop', 'fastback', 'nismo', 'spec', 'specr', 'specv', 'specc', 'typer', 'typers', 'evo', 'competition', 'performance', 'plus']);
   const isTrimLike = t => GENERIC.has(t) || TRIM.has(t) || isCode(t) || /^(mk|mark)?[ivx]{1,4}$/.test(t) || /^\d{1,2}$/.test(t);
   // A token specific enough that sharing it shows real recognition.
   const isSignificant = t => !GENERIC.has(t) && !TRIM.has(t) && (t.length >= 3 || isCode(t) || /^\d{2,}$/.test(t));

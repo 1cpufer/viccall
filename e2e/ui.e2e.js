@@ -1,210 +1,391 @@
-// End-to-end UI run with screenshots.
-// Usage: npm start (in another terminal), then: node e2e/ui.e2e.js http://localhost:3000 e2e/shots run
+// Browser end-to-end run with screenshots. Starts its own server on port 3300.
+// Usage: node e2e/ui.e2e.js [screenshotDir]
+//
+// Photos: the server's photo proxy gets a stub upstream (a local stand-in image),
+// and direct Wikimedia requests from the browser are answered with the same image,
+// so the run works offline. Correct answers are read from the server's session state.
 const { chromium } = require('playwright');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const [, , base = 'http://localhost:3100', outDir = './shots', tag = 'run', repo = path.join(__dirname, '..')] = process.argv;
-// Car photos come from Wikimedia; tests swap in a local image so they run offline.
-const PH = fs.readFileSync(path.join(__dirname, 'fixtures', 'stand-in-car.jpg'));
-const CARS = JSON.parse(fs.readFileSync(path.join(repo, 'src/cars.json'), 'utf8'));
-const carFor = (raw, kit) => {
-  for (const img of [String(raw), String(raw).replace('/960px-', '/1280px-')]) {
-    const c = CARS.find(x => x.img === img && (!kit || x.kit)) || CARS.find(x => x.img === img);
-    if (c) return c;
-  }
-};
-const HAS_1280 = new Set(CARS.filter(c => c.img.includes('/1280px-')).map(c => c.img.replace('/1280px-', '/960px-')));
+const { createApp } = require('../src/server.js');
+const { fullModel } = require('../public/scoring.js');
 
-const S = require(path.join(repo, 'public/scoring.js'));
+const outDir = process.argv[2] || path.join(__dirname, 'shots');
+fs.mkdirSync(outDir, { recursive: true });
+const PH = fs.readFileSync(path.join(__dirname, 'fixtures', 'stand-in-car.jpg'));
+const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'viccall-ui-'));
+const upstream = [];
+const app = createApp({
+  dataDir,
+  fetchImage: async url => { upstream.push(url); return new Response(PH, { status: 200, headers: { 'content-type': 'image/jpeg' } }); },
+});
+const base = 'http://localhost:3300';
+
 const errors = [];
-const imgReqs = [];
 const checks = [];
 const check = (cond, msg) => { checks.push(`${cond ? 'PASS' : 'FAIL'} ${msg}`); };
+const browserImgs = [];
 
-async function newPage(browser, vp) {
-  const size = vp === 'mob' ? { width: 390, height: 844 } : { width: 1280, height: 860 };
-  const ctx = await browser.newContext({ viewport: size, deviceScaleFactor: vp === 'mob' ? 2 : 1, hasTouch: vp === 'mob', isMobile: vp === 'mob' });
-  // Half the 960px thumbnails "don't exist" so the client must fall back to the 1280px original.
+async function newPage(browser, vp, { thumb404 = false } = {}) {
+  const ctx = await browser.newContext(vp === 'mob'
+    ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }
+    : { viewport: { width: 1440, height: 900 } });
   await ctx.route(/upload\.wikimedia\.org/, r => {
     const u = r.request().url();
-    imgReqs.push(u);
-    if (HAS_1280.has(u)) return r.fulfill({ status: 404, body: 'nope' });
+    browserImgs.push(u);
+    // Optionally pretend thumbnails don't exist, so the client must fall back to the original file.
+    if (thumb404 && u.includes('/thumb/')) return r.fulfill({ status: 404, body: 'nope' });
     r.fulfill({ status: 200, contentType: 'image/jpeg', body: PH });
   });
   const page = await ctx.newPage();
   page.on('pageerror', e => errors.push(`[${vp}] pageerror: ${e.message}`));
   page.on('console', m => { if (m.type() === 'error' && !/status of 404/.test(m.text())) errors.push(`[${vp}] console: ${m.text()}`); });
+  await page.goto(base, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.tower-row');
   return { ctx, page };
 }
-const shot = (page, vp, name, full = true) => page.screenshot({ path: path.join(outDir, `${tag}-${vp}-${name}.png`), fullPage: full });
-const visible = (page, sel) => page.locator(sel).isVisible();
+const shot = (page, vp, name, full = false) => page.screenshot({ path: path.join(outDir, `${vp}-${name}.png`), fullPage: full });
+const loaded = page => page.waitForSelector('#gImg.is-loaded', { timeout: 6000 });
+const revealed = page => page.waitForSelector('#gReveal:not([hidden])', { timeout: 6000 });
 
-async function currentImg(page, id) {
-  await page.waitForFunction(i => { const el = document.getElementById(i); return el && el.classList.contains('is-loaded'); }, id, { timeout: 5000 });
-  return page.$eval('#' + id, el => el.getAttribute('src'));
+async function currentCar(page) {
+  const sid = await page.evaluate(() => window.VicCall.state().solo.sessionId);
+  const s = app.sessions.get(sid);
+  return s.queue[s.idx];
+}
+async function answer(page, car, { kit = false, wrong = false, enter = true } = {}) {
+  if (kit) {
+    await page.fill('#gKit', wrong ? 'Nope' : car.kit);
+    await page.fill('#gKitMake', wrong ? '' : car.make);
+    await page.fill('#gKitModel', wrong ? '' : fullModel(car));
+  } else {
+    await page.fill('#gMake', wrong ? 'Nope' : car.make);
+    await page.fill('#gModel', wrong ? '' : fullModel(car));
+    await page.fill('#gYear', wrong ? '' : String(car.year));
+  }
+  if (enter) await page.keyboard.press('Enter'); else await page.click('#gSubmit');
+  await revealed(page);
 }
 
-async function solo(browser, vp) {
+async function home(page) {
+  await page.click('.brand').catch(() => {});
+  if (!(await page.locator('#s-home').isVisible())) await page.evaluate(() => window.VicCall.show('home'));
+  await page.waitForSelector('#s-home:not([hidden])');
+}
+
+async function desktop(browser) {
+  const vp = 'desk';
   const { ctx, page } = await newPage(browser, vp);
-  await page.goto(base, { waitUntil: 'networkidle' });
+  await shot(page, vp, '01-home', true);
+  check((await page.locator('.tower-row').count()) === 7, `${vp}: seven ranked playlists listed`);
+  check(/^\d{1,2}[A-Z]{3}$/.test((await page.textContent('#dailyPlate')).replace(/\s+/g, '')), `${vp}: daily plate shows the date`);
+  await page.waitForFunction(() => /cars match/.test(document.getElementById('builderCount').textContent));
+  check(true, `${vp}: free play shows a live car count`);
+  check(await page.locator('#navToggle').isHidden(), `${vp}: no hamburger on desktop`);
+
+  // Nav dropdowns: hover and keyboard.
+  await page.hover('#mb-solo');
+  await page.waitForSelector('#m-solo:not([hidden])');
+  check(true, `${vp}: Singleplayer menu opens on hover`);
+  await shot(page, vp, '02-menu');
+  await page.mouse.move(700, 800);
+  await page.waitForSelector('#m-solo', { state: 'hidden' });
+  await page.focus('#mb-party');
+  await page.keyboard.press('ArrowDown');
+  check(await page.evaluate(() => document.activeElement.closest('#m-party') !== null), `${vp}: ArrowDown opens Party menu and focuses first item`);
+  await page.keyboard.press('Escape');
+  check(await page.locator('#m-party').isHidden(), `${vp}: Escape closes the menu`);
+
+  // ---- Free Play: Japan + since 2010, count updates, direct photos, casual typo forgiveness.
+  await page.click('label:has(input[name="f-region"][value="japan"])');
+  await page.click('label:has(input[name="f-era"][value="modern"])');
   await page.waitForTimeout(400);
-  await shot(page, vp, '01-home', false);
-  // swipe/drag the deck to the next card
-  const box = await page.locator('#deckViewport').boundingBox();
-  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2);
-  await page.mouse.down();
-  for (let i = 1; i <= 8; i++) await page.mouse.move(box.x + box.width * (0.7 - i * 0.05), box.y + box.height / 2);
-  await page.mouse.up();
-  await page.waitForTimeout(500);
-  check((await page.textContent('#playBtn')).includes('Pick a region'), `${vp}: drag moves deck to Regional`);
-  await shot(page, vp, '02-home-dragged', false);
-  await page.click('#playBtn');
-  await page.waitForTimeout(300);
-  await shot(page, vp, '03-regional');
-  await page.click('[data-mode="japan"]');
-  let expected = 0;
+  const countText = await page.textContent('#builderCount');
+  check(/\d+/.test(countText) && !/^277/.test(countText.trim()), `${vp}: filter changes the count (${countText.trim()})`);
+  await page.click('#builderStart');
+  await loaded(page);
+  const freeSrc = await page.getAttribute('#gImg', 'src');
+  check(freeSrc.startsWith('https://upload.wikimedia.org/'), `${vp}: free play uses direct photo URLs`);
+  check((await page.textContent('#gRules')).includes('Typos forgiven'), `${vp}: free play rules line`);
+  let car = await currentCar(page);
+  check(car.region === 'japan' && car.year >= 2010, `${vp}: free play respects filters (${car.make} ${car.model} ${car.year})`);
+  // Empty guess -> message, no submit.
+  await page.click('#gSubmit');
+  check((await page.textContent('#gMsg')).includes('at least one box'), `${vp}: empty guess asks for an answer`);
+  await shot(page, vp, '03-round');
+  await answer(page, car);
+  check((await page.textContent('#gVerdict')).includes('Spot on'), `${vp}: perfect answer says Spot on`);
+  check((await page.textContent('#gScore')).trim() === '10' || (await page.waitForFunction(() => document.getElementById('gScore').textContent.trim() === '10').then(() => true)), `${vp}: score shows 10`);
+  check(await page.locator('#gCredit a').isVisible(), `${vp}: photo credit links to Commons after the reveal`);
+  check(await page.locator('#gClockNum').isHidden(), `${vp}: no clock in free play without a timer`);
+  await shot(page, vp, '04-reveal');
+  // Enter moves on.
+  await page.keyboard.press('Enter');
+  await loaded(page);
+  car = await currentCar(page);
+  await answer(page, { ...car, make: car.make }, { enter: false });
+  await page.keyboard.press('Enter');
+  await loaded(page);
+  // Make only -> partial verdict.
+  car = await currentCar(page);
+  await page.fill('#gMake', car.make);
+  await page.keyboard.press('Enter');
+  await revealed(page);
+  check(/Partly right|Not this time|Close/.test(await page.textContent('#gVerdict')), `${vp}: make-only answer is partial (${(await page.textContent('#gVerdict')).trim()})`);
+  check((await page.textContent('#gChips')).includes('Left blank'), `${vp}: blank fields are called out`);
+
+  // ---- Leave mid-game with Escape -> confirm dialog.
+  await page.keyboard.press('Enter');
+  await loaded(page);
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#dlgQuit[open]');
+  check(true, `${vp}: Escape mid-game asks before leaving`);
+  await page.click('#dlgQuit button[value="stay"]');
+  check(await page.locator('#s-game').isVisible(), `${vp}: Keep playing stays in the game`);
+  await page.click('#s-game .back');
+  await page.click('#dlgQuit button[value="leave"]');
+  await page.waitForSelector('#s-home:not([hidden])');
+  check(true, `${vp}: Leave returns to the menu`);
+
+  // ---- Free play clock: 15 s, let it run out.
+  await page.click('label:has(input[name="f-timer"][value="15"])');
+  await page.waitForTimeout(200);
+  await page.click('#builderStart');
+  await loaded(page);
+  check(await page.locator('#gClockNum').isVisible(), `${vp}: timer shows when chosen`);
+  await page.fill('#gMake', 'Toyota');
+  await page.waitForSelector('#gReveal:not([hidden])', { timeout: 20000 });
+  const v = (await page.textContent('#gVerdict')).trim();
+  check(!/Too late/.test(v), `${vp}: typed answer is sent when the clock runs out (${v})`);
+  await page.evaluate(() => window.VicCall.show('home'));
+  await page.click('label:has(input[name="f-timer"][value="0"])');
+  await page.click('label:has(input[name="f-region"][value="any"])');
+  await page.click('label:has(input[name="f-era"][value="any"])');
+
+  // ---- Ranked JDM: opaque photo URLs, perfect game, post score, leaderboard, personal best.
+  await home(page);
+  await page.click('[data-playlist="jdm"]');
+  await loaded(page);
+  const rankedSrc = await page.getAttribute('#gImg', 'src');
+  check(/^\/api\/img\/[\w-]+$/.test(rankedSrc), `${vp}: ranked photo URL is opaque (${rankedSrc.slice(0, 20)}…)`);
+  check(await page.locator('#gClockNum').isVisible() && Number(await page.textContent('#gClockNum')) <= 45, `${vp}: ranked shows the 45 s clock`);
   for (let i = 0; i < 10; i++) {
-    const src = await currentImg(page, 'gImg');
-    const car = carFor(src);
-    if (i === 0) await shot(page, vp, '04-game', false);
-    if (i % 3 === 0) { await page.fill('#gMake', car.make); await page.fill('#gModel', car.model); await page.fill('#gYear', String(car.year)); expected += 5; }
-    else if (i % 3 === 1) { await page.fill('#gMake', car.make); await page.fill('#gYear', String(car.year - 3)); expected += S.scoreGuess(car, car.make, '', String(car.year - 3)).pts; }
-    else { await page.fill('#gModel', 'Definitely Wrong'); }
-    await page.keyboard.press('Enter');
-    await page.waitForSelector('#gReveal:not([hidden])');
-    if (i === 0) { await page.waitForTimeout(700); await shot(page, vp, '05-reveal-hit', false); }
-    if (i === 1) { await page.waitForTimeout(700); await shot(page, vp, '06-reveal-partial', false); }
-    if (i === 2) { await page.waitForTimeout(700); await shot(page, vp, '07-reveal-miss', false); }
-    await page.click('#gNext');
+    if (i) { await page.keyboard.press('Enter'); await loaded(page); }
+    car = await currentCar(page);
+    check(car.region === 'japan', `${vp}: JDM car ${i + 1} is Japanese`);
+    await answer(page, car);
   }
+  check((await page.textContent('#gStreak')).trim() === '10', `${vp}: streak counts to 10`);
+  await page.keyboard.press('Enter');
   await page.waitForSelector('#gResults:not([hidden])');
-  await page.waitForTimeout(600);
-  const score = +(await page.textContent('#rScore'));
-  check(score === expected, `${vp}: solo score adds up (${score} = ${expected})`);
-  await page.fill('#rName', 'E2E ' + vp);
+  await page.waitForFunction(() => document.getElementById('rScore').textContent.trim() === '100', null, { timeout: 4000 });
+  check(true, `${vp}: perfect ranked game = 100`);
+  await shot(page, vp, '05-results', true);
+  await page.fill('#rName', 'Ferd');
   await page.click('#rSaveBtn');
   await page.waitForSelector('#rSaved:not([hidden])');
-  check(/Saved/.test(await page.textContent('#rSaved')), `${vp}: score saved`);
-  await shot(page, vp, '08-results');
-  if (vp === 'desk') {
-    await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: base });
-    await page.click('[data-action="share"]');
-    await page.waitForTimeout(200);
-    const clip = await page.evaluate(() => navigator.clipboard.readText());
-    check(/^VicCall Japan: \d+\/50\n[🟨⬜🟥]{10}/u.test(clip), `share text copied (${JSON.stringify(clip.slice(0, 40))})`);
+  check((await page.textContent('#rSaved')).includes('#1'), `${vp}: posted at #1 (${(await page.textContent('#rSaved')).trim()})`);
+  await page.click('.bar-tools ~ *, [data-action="home"]').catch(() => {});
+  await home(page);
+  check((await page.textContent('[data-playlist="jdm"] .tower-num--best')).trim() === '100', `${vp}: home shows the personal best`);
+  await page.click('.nav-btn[data-to="leaderboard"]');
+  await page.click('.tab[data-board="ranked:jdm"]');
+  await page.waitForSelector('#lbList li:not(.board-empty)');
+  check((await page.textContent('#lbList')).includes('Ferd'), `${vp}: leaderboard lists the score`);
+  await shot(page, vp, '06-leaderboard');
+
+  // ---- Kit playlist: three answer boxes, full answer = 10.
+  await home(page);
+  await page.click('[data-playlist="kits"]');
+  await loaded(page);
+  check(await page.locator('#gKit').isVisible() && await page.locator('#gKitModel').isVisible(), `${vp}: kit rounds ask for tuner, make and model`);
+  car = await currentCar(page);
+  await answer(page, car, { kit: true });
+  check((await page.textContent('#gChips')).includes('Tuner'), `${vp}: kit reveal scores the tuner`);
+  await page.waitForFunction(() => document.getElementById('gScore').textContent.trim() === '10', null, { timeout: 3000 }).then(() => check(true, `${vp}: full kit answer = 10`), () => check(false, `${vp}: full kit answer = 10`));
+
+  // ---- Daily: play (wrong answers), post, home shows result, second run is practice.
+  await page.keyboard.press('Escape');
+  await page.click('#dlgQuit button[value="leave"]');
+  await page.waitForSelector('#s-home:not([hidden])');
+  await page.click('#dailyActions [data-action="daily"]');
+  await loaded(page);
+  check((await page.textContent('#gTitle')).startsWith('Daily Challenge'), `${vp}: daily title`);
+  for (let i = 0; i < 10; i++) {
+    if (i) { await page.keyboard.press('Enter'); await loaded(page); }
+    car = await currentCar(page);
+    await answer(page, car, { wrong: i % 2 === 1 });
   }
-  await page.click('[data-action="home"]');
-  await page.click('[data-to="leaderboard"]');
-  await page.click('.tab[data-mode="japan"]');
-  await page.waitForSelector('#lbList li .who');
-  check(await page.locator('#lbList li.is-you').count() === 1, `${vp}: own leaderboard row highlighted`);
-  await shot(page, vp, '09-leaderboard');
-  // browser back returns home
-  await page.goBack();
-  await page.waitForTimeout(300);
-  check(await visible(page, '#s-home'), `${vp}: back button returns home`);
-  // time attack shows a clock; kit shows kit field
-  await page.evaluate(() => window.VicCall.startSolo('timeattack'));
-  await currentImg(page, 'gImg');
-  check(await visible(page, '#gClock'), `${vp}: time attack clock visible`);
-  await page.waitForTimeout(1200);
-  await shot(page, vp, '10-timeattack', false);
-  await page.evaluate(() => window.VicCall.startSolo('kit'));
-  const ksrc = await currentImg(page, 'gImg');
-  check(await visible(page, '#gKit') && !(await visible(page, '#gMake')), `${vp}: kit mode shows tuner field only`);
-  await page.fill('#gKit', carFor(ksrc, true).kit);
   await page.keyboard.press('Enter');
-  await page.waitForSelector('#gReveal:not([hidden])');
-  await page.waitForTimeout(600);
-  check((await page.textContent('#gChips')).includes('+5'), `${vp}: kit answer scores 5`);
-  await shot(page, vp, '11-kit-reveal', false);
-  // empty submit shows inline message
-  await page.click('#gNext');
-  await currentImg(page, 'gImg');
-  await page.click('#gSubmit');
-  check((await page.textContent('#gMsg')).length > 0, `${vp}: empty guess shows a message`);
+  await page.waitForSelector('#gResults:not([hidden])');
+  await page.fill('#rName', 'Ferd');
+  await page.click('#rSaveBtn');
+  await page.waitForSelector('#rSaved:not([hidden])');
+  await home(page);
+  check(await page.locator('.daily-done').isVisible(), `${vp}: home shows today's result after the daily`);
+  check(/#1 on the board/.test(await page.textContent('#dailyMeta')), `${vp}: home shows today's rank`);
+  await shot(page, vp, '07-home-daily-done');
+  await page.click('#dailyActions [data-action="daily"]');
+  await loaded(page);
+  check((await page.textContent('#gTitle')).includes('practice'), `${vp}: second daily run is practice`);
+
+  // ---- Endless: lives, three misses ends the run.
+  await page.keyboard.press('Escape');
+  await page.click('#dlgQuit button[value="leave"]');
+  await page.click('.side-mode [data-action="endless"]');
+  await loaded(page);
+  check((await page.locator('.life').count()) === 3, `${vp}: endless shows three lives`);
+  for (let i = 0; i < 3; i++) {
+    if (i) { await page.keyboard.press('Enter'); await loaded(page); }
+    car = await currentCar(page);
+    await answer(page, car, { wrong: true });
+  }
+  check((await page.locator('.life.is-lost').count()) === 3, `${vp}: three misses empties the lives`);
+  check((await page.textContent('#gNext')).includes('See results'), `${vp}: run ends after three misses`);
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('#gResults:not([hidden])');
+  check((await page.textContent('#rLabel')).includes('3 cars'), `${vp}: endless results count cars`);
+
+  // ---- Sound settings persist; M toggles mute.
+  await home(page);
+  await page.click('.bar-tools [data-action="sound-settings"]');
+  await page.waitForSelector('#dlgSound[open]');
+  await page.click('label:has(input[name="sndTheme"][value="nightrun"])');
+  await page.fill('#sndMusic', '30');
+  await page.dispatchEvent('#sndMusic', 'input');
+  await shot(page, vp, '08-sound');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('m');
+  check((await page.getAttribute('.bar-tools [data-action="mute"]', 'aria-pressed')) === 'true', `${vp}: M mutes`);
+  await page.reload({ waitUntil: 'networkidle' });
+  const snd = await page.evaluate(() => window.VCAudio.get());
+  check(snd.theme === 'nightrun' && snd.music === 30 && snd.muted === true, `${vp}: sound settings persist (${JSON.stringify(snd)})`);
+  await page.keyboard.press('m');
+
+  // ---- Scoring page.
+  await page.click('.nav-btn[data-to="scoring"]');
+  check((await page.textContent('#s-scoring')).includes('Every car is worth 10 points'), `${vp}: scoring page`);
+  await shot(page, vp, '09-scoring', true);
+
+  // ---- Back button from a game returns to the menu.
+  await home(page);
+  await page.click('[data-playlist="world"]');
+  await loaded(page);
+  await page.goBack();
+  await page.waitForSelector('#s-home:not([hidden])');
+  check(true, `${vp}: browser back leaves the game`);
+
+  // ---- Report a car.
+  await page.click('[data-playlist="world"]');
+  await loaded(page);
+  await page.fill('#gMake', 'x');
+  await page.keyboard.press('Enter');
+  await revealed(page);
+  await page.click('#gReport summary');
+  await page.fill('#gReportNote', 'test report');
+  await page.click('[data-action="report"]');
+  await page.waitForFunction(() => document.getElementById('toast').textContent.includes('Report sent'));
+  check(true, `${vp}: report sends`);
+  await ctx.close();
+}
+
+async function mobile(browser) {
+  const vp = 'mob';
+  const { ctx, page } = await newPage(browser, vp, { thumb404: true });
+  await shot(page, vp, '01-home', true);
+  check(await page.locator('#navToggle').isVisible(), `${vp}: hamburger menu on phones`);
+  await page.click('#navToggle');
+  await page.waitForSelector('#nav.is-open');
+  await page.click('#mb-solo');
+  await shot(page, vp, '02-menu');
+  await page.click('#m-solo [data-anchor="free"]');
+  await page.waitForTimeout(500);
+  check(!(await page.locator('#nav').evaluate(n => n.classList.contains('is-open'))), `${vp}: menu closes after choosing`);
+  await page.click('#builderStart');
+  await loaded(page);
+  const src = await page.getAttribute('#gImg', 'src');
+  check(!src.includes('/thumb/'), `${vp}: missing thumbnail falls back to the original file`);
+  check(await page.locator('#gPips').isVisible(), `${vp}: progress pips visible on phones`);
+  await shot(page, vp, '03-round');
+  const car = await currentCar(page);
+  await answer(page, car, { enter: false });
+  await shot(page, vp, '04-reveal', true);
+  check((await page.textContent('#gVerdict')).includes('Spot on'), `${vp}: perfect answer on mobile`);
   await ctx.close();
 }
 
 async function partyFlow(browser) {
-  const a = await newPage(browser, 'desk');
-  const b = await newPage(browser, 'mob');
-  await a.page.goto(base, { waitUntil: 'networkidle' });
-  await a.page.click('[data-to="party"]');
-  await a.page.waitForTimeout(250);
-  await shot(a.page, 'desk', '20-party');
-  await a.page.fill('#pcName', 'Ferd');
-  await a.page.selectOption('#pcMode', 'germany');
-  await a.page.click('#pCreate button[type=submit]');
-  await a.page.waitForSelector('#s-lobby:not([hidden])');
-  const code = (await a.page.textContent('#lobbyCode')).trim();
-  check(/^[A-Z0-9]{5}$/.test(code), `party code shown (${code})`);
-  // guest joins via invite link
-  await b.page.goto(`${base}/?join=${code}`, { waitUntil: 'networkidle' });
-  check((await b.page.inputValue('#pjCode')) === code, 'invite link prefills code');
-  await b.page.fill('#pjName', 'Ayo');
-  await b.page.click('#pJoin button[type=submit]');
-  await b.page.waitForSelector('#s-lobby:not([hidden])');
-  await a.page.waitForFunction(() => document.querySelectorAll('#lobbyPlayers li').length === 2);
-  await shot(a.page, 'desk', '21-lobby-host');
-  await shot(b.page, 'mob', '22-lobby-guest');
-  await a.page.click('#lobbyStart');
-  await a.page.waitForSelector('#s-pgame:not([hidden])');
-  await b.page.waitForSelector('#s-pgame:not([hidden])');
-  const src = await currentImg(a.page, 'pgImg');
-  const car = carFor(src);
-  await a.page.fill('#pgMake', car.make); await a.page.fill('#pgModel', car.model); await a.page.fill('#pgYear', String(car.year));
-  await a.page.keyboard.press('Enter');
-  await a.page.waitForSelector('#pgLocked:not([hidden])');
-  await shot(a.page, 'desk', '23-party-locked', false);
-  // guest refreshes mid-round and resumes
-  await b.page.reload({ waitUntil: 'networkidle' });
-  await b.page.waitForSelector('#s-pgame:not([hidden])', { timeout: 5000 });
-  check(true, 'guest resumes after refresh');
-  await b.page.fill('#pgMake', 'Nope');
-  await b.page.keyboard.press('Enter');
-  await a.page.waitForSelector('#pgReveal:not([hidden])');
-  await b.page.waitForSelector('#pgReveal:not([hidden])');
-  await a.page.waitForTimeout(700);
-  check((await a.page.textContent('#pgChips')).includes('+2'), 'host sees own breakdown');
-  check(await visible(a.page, '#pgNext') && !(await visible(b.page, '#pgNext')), 'only host has Next');
-  await shot(a.page, 'desk', '24-party-reveal-host');
-  await shot(b.page, 'mob', '25-party-reveal-guest');
+  const A = await newPage(browser, 'desk');
+  const B = await newPage(browser, 'mob');
+  await A.page.click('.side-mode [data-action="party-open"][data-focus="pcName"]');
+  await A.page.fill('#pcName', 'Host');
+  await A.page.selectOption('#pcPlaylist', 'super');
+  await A.page.click('label:has(input[name="pcRules"][value="competitive"])');
+  await A.page.click('#pCreate button[type=submit]');
+  await A.page.waitForSelector('#s-lobby:not([hidden])');
+  const code = (await A.page.textContent('#lobbyCode')).trim();
+  check(await A.page.locator('#lobbySettings').isVisible(), 'party: host sees lobby settings');
+  // Guest joins with an invite link.
+  await B.page.goto(`${base}/?join=${code}`, { waitUntil: 'networkidle' });
+  await B.page.fill('#pjName', 'Guest');
+  await B.page.click('#pJoin button[type=submit]');
+  await B.page.waitForSelector('#s-lobby:not([hidden])');
+  check(await B.page.locator('#lobbySettings').isHidden(), 'party: guest cannot change settings');
+  check((await B.page.textContent('#lobbyMode')).includes('Supercar Challenge, competitive'), `party: guest sees the playlist and rules (${(await B.page.textContent('#lobbyMode')).trim()})`);
+  await A.page.selectOption('#lsPlaylist', 'jdm');
+  await B.page.waitForFunction(() => document.getElementById('lobbyMode').textContent.includes('JDM'));
+  check(true, 'party: playlist change reaches the guest');
+  await A.page.click('#lobbyStart');
+  await B.page.waitForSelector('#pgImg.is-loaded');
+  const img = await B.page.getAttribute('#pgImg', 'src');
+  check(/^\/api\/img\//.test(img), 'party: photo URL is opaque');
+  const room = app.party.rooms.get(code);
+  const car = room.queue[room.curIdx];
+  check(car.region === 'japan', 'party: JDM playlist used');
+  await A.page.fill('#pgMake', car.make);
+  await A.page.fill('#pgModel', fullModel(car));
+  await A.page.fill('#pgYear', String(car.year));
+  await A.page.keyboard.press('Enter');
+  await B.page.fill('#pgMake', 'Nope');
+  await B.page.keyboard.press('Enter');
+  await A.page.waitForSelector('#pgReveal:not([hidden])');
+  await B.page.waitForSelector('#pgReveal:not([hidden])');
+  check((await A.page.textContent('#pgVerdict')).includes('Spot on'), 'party: host verdict');
+  check(await B.page.locator('#pgCredit a').isVisible(), 'party: photo credit after reveal');
+  await A.page.screenshot({ path: path.join(outDir, 'party-desk-reveal.png') });
+  await B.page.screenshot({ path: path.join(outDir, 'party-mob-reveal.png'), fullPage: true });
+  // Refresh mid-game resumes.
+  await B.page.reload({ waitUntil: 'networkidle' });
+  await B.page.waitForSelector('#s-pgame:not([hidden])', { timeout: 5000 });
+  check(true, 'party: guest refresh resumes the game');
   for (let i = 1; i < 10; i++) {
-    await a.page.click('#pgNext');
-    await a.page.waitForSelector('#pgForm:not([hidden])');
-    await a.page.fill('#pgMake', 'x');
-    await a.page.keyboard.press('Enter');
-    await b.page.waitForSelector('#pgForm:not([hidden])');
-    await b.page.fill('#pgMake', 'y');
-    await b.page.keyboard.press('Enter');
-    await a.page.waitForSelector('#pgReveal:not([hidden])');
+    await A.page.keyboard.press('Enter');
+    await A.page.waitForSelector('#pgForm:not([hidden])');
+    await A.page.fill('#pgMake', 'x'); await A.page.keyboard.press('Enter');
+    await B.page.waitForSelector('#pgForm:not([hidden])');
+    await B.page.fill('#pgMake', 'y'); await B.page.keyboard.press('Enter');
+    await A.page.waitForSelector('#pgReveal:not([hidden])');
   }
-  await a.page.click('#pgNext');
-  await a.page.waitForSelector('#s-pfinal:not([hidden])');
-  await b.page.waitForSelector('#s-pfinal:not([hidden])');
-  check(/Ferd wins with 5 points/.test(await a.page.textContent('#pfWinner')), 'final winner line');
-  await shot(a.page, 'desk', '26-party-final');
-  await shot(b.page, 'mob', '27-party-final-guest');
-  // host leaves → guest becomes host
-  await a.page.click('#s-pfinal [data-action="party-leave"]');
-  await b.page.waitForSelector('#pfAgain:not([hidden])');
-  check(true, 'host handoff to guest after leave');
-  await a.ctx.close(); await b.ctx.close();
+  await A.page.keyboard.press('Enter');
+  await B.page.waitForSelector('#s-pfinal:not([hidden])');
+  check((await B.page.textContent('#pfWinner')).includes('Host wins'), `party: final standings (${(await B.page.textContent('#pfWinner')).trim()})`);
+  await A.page.screenshot({ path: path.join(outDir, 'party-desk-final.png') });
+  await A.ctx.close(); await B.ctx.close();
 }
 
 (async () => {
-  fs.mkdirSync(outDir, { recursive: true });
+  await new Promise(r => app.server.listen(3300, r));
   const browser = await chromium.launch();
-  try {
-    await solo(browser, 'desk');
-    await solo(browser, 'mob');
-    await partyFlow(browser);
-  } catch (e) {
-    errors.push('SCRIPT: ' + e.message.split('\n')[0]);
+  for (const [name, fn] of [['desktop', desktop], ['mobile', mobile], ['party', partyFlow]]) {
+    try { await fn(browser); } catch (e) { checks.push(`FAIL ${name} script: ${e.message.split('\n')[0]}`); }
   }
   await browser.close();
-  check(imgReqs.some(u => u.includes('/960px-')) && imgReqs.some(u => u.includes('/1280px-')), `photos use 960px with 1280px fallback (${imgReqs.length} requests)`);
+  app.close();
+  fs.rmSync(dataDir, { recursive: true, force: true });
+  check(upstream.length > 0 && upstream.every(u => u.startsWith('https://upload.wikimedia.org/')), `server fetched ${upstream.length} proxied photos from Wikimedia URLs`);
   console.log(checks.join('\n'));
-  console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
+  console.log(errors.length ? `\n${errors.length} page errors:\n${errors.join('\n')}` : '\nno page errors');
+  console.log(`\n${checks.filter(c => c.startsWith('PASS')).length} passed, ${checks.filter(c => c.startsWith('FAIL')).length} failed`);
+  process.exit(checks.some(c => c.startsWith('FAIL')) || errors.length ? 1 : 0);
 })();

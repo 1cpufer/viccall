@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f2019">
-  <meta name="description" content="Name the car from a photo. Make, model and year, solo or with friends.">
+  <meta name="description" content="Name the car from a photo. Daily challenge, ranked playlists, free play and party games with friends. No account needed.">
   <title>VicCall</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -24,155 +24,280 @@
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6" /></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6l6 -6" /></symbol>
       <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6l-6 6" /></symbol>
       <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M5 12l14 0" /> <path d="M5 12l6 6" /> <path d="M5 12l6 -6" /></symbol>
       <symbol id="i-users" viewBox="0 0 24 24"><path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /> <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /> <path d="M16 3.13a4 4 0 0 1 0 7.75" /> <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></symbol>
-      <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21l8 0" /> <path d="M12 17l0 4" /> <path d="M7 4l10 0" /> <path d="M17 4v8a5 5 0 0 1 -10 0v-8" /> <path d="M5 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M19 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /></symbol>
-      <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 5a5 5 0 0 1 7 0a5 5 0 0 0 7 0v9a5 5 0 0 1 -7 0a5 5 0 0 0 -7 0v-9z" /> <path d="M5 21v-7" /></symbol>
-      <symbol id="i-copy" viewBox="0 0 24 24"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z" /> <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" /></symbol>
       <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5l10 -10" /></symbol>
-      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6l-12 12" /> <path d="M6 6l12 12" /></symbol>
-      <symbol id="i-clock" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /> <path d="M12 7v5l3 3" /></symbol>
-      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" /> <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></symbol>
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 15l6 -6" /> <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" /> <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" /></symbol>
-      <symbol id="i-crown" viewBox="0 0 24 24"><path d="M12 6l4 6l5 -4l-2 10h-14l-2 -10l5 4z" /></symbol>
       <symbol id="i-share" viewBox="0 0 24 24"><path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M8.7 10.7l6.6 -3.4" /> <path d="M8.7 13.3l6.6 3.4" /></symbol>
-      <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 18l.01 0" /> <path d="M9.172 15.172a4 4 0 0 1 5.656 0" /> <path d="M6.343 12.343a7.963 7.963 0 0 1 3.864 -2.14m4.163 .155a7.965 7.965 0 0 1 3.287 2" /> <path d="M3.515 9.515a12 12 0 0 1 3.544 -2.455m3.101 -.92a12 12 0 0 1 10.325 3.374" /> <path d="M3 3l18 18" /></symbol>
-      <symbol id="i-home" viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0" /> <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" /> <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" /></symbol>
-      <symbol id="i-arrow-back-up" viewBox="0 0 24 24"><path d="M9 14l-4 -4l4 -4" /> <path d="M5 10h11a4 4 0 1 1 0 8h-1" /></symbol>
-      <symbol id="i-cards" viewBox="0 0 24 24"><path d="M3.604 7.197l7.138 -3.109a.96 .96 0 0 1 1.27 .527l4.924 11.902a1 1 0 0 1 -.514 1.304l-7.137 3.109a.96 .96 0 0 1 -1.271 -.527l-4.924 -11.903a1 1 0 0 1 .514 -1.304z" /> <path d="M15 4h1a1 1 0 0 1 1 1v3.5" /> <path d="M20 6c.264 .112 .52 .217 .768 .315a1 1 0 0 1 .53 1.311l-2.298 5.374" /></symbol>
-      <symbol id="i-steering-wheel" viewBox="0 0 24 24"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /> <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M12 14l0 7" /> <path d="M10 12l-6.75 -2" /> <path d="M14 12l6.75 -2" /></symbol>
+      <symbol id="i-volume" viewBox="0 0 24 24"><path d="M15 8a5 5 0 0 1 0 8" /> <path d="M17.7 5a9 9 0 0 1 0 14" /> <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5" /></symbol>
+      <symbol id="i-volume-off" viewBox="0 0 24 24"><path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5" /> <path d="M16 10l4 4m0 -4l-4 4" /></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M14 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M4 6l8 0" /> <path d="M16 6l4 0" /> <path d="M8 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M4 12l2 0" /> <path d="M10 12l10 0" /> <path d="M17 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /> <path d="M4 18l11 0" /> <path d="M19 18l1 0" /></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6l16 0" /> <path d="M4 12l16 0" /> <path d="M4 18l16 0" /></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6l-12 12" /> <path d="M6 6l12 12" /></symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 10.941c2.333 -3.308 .167 -7.823 -1 -8.941c0 3.395 -2.235 5.299 -3.667 6.706c-1.43 1.408 -2.333 3.621 -2.333 5.588c0 3.704 3.134 6.706 7 6.706s7 -3.002 7 -6.706c0 -1.712 -1.232 -4.403 -2.333 -5.588c-2.084 3.353 -3.257 3.353 -4.667 2.235" /></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" /> <path d="M11 13l9 -9" /> <path d="M15 4h5v5" /></symbol>
     </defs>
   </svg>
 
   <div class="conn" id="conn" role="status" hidden>Connection lost. Reconnecting…</div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <!-- TOP BAR -->
+  <header class="bar" id="bar">
+    <div class="bar-inner">
+      <button class="brand" data-action="home" aria-label="VicCall home">
+        <span class="plate plate--brand" aria-hidden="true"><span>VIC</span><span>CALL</span></span>
+      </button>
+
+      <nav class="nav" id="nav" aria-label="Main">
+        <div class="menu">
+          <button class="nav-btn" id="mb-solo" aria-expanded="false" aria-controls="m-solo" data-menu="solo">Singleplayer<svg class="ic ic--sm"><use href="#i-chevron-down"/></svg></button>
+          <div class="menu-pop" id="m-solo" role="menu" aria-labelledby="mb-solo" hidden>
+            <button role="menuitem" data-action="daily"><b>Daily Challenge</b><span>Ten cars, the same for everyone today</span></button>
+            <button role="menuitem" data-action="goto" data-to="home" data-anchor="ranked"><b>Ranked</b><span>Seven playlists with their own leaderboards</span></button>
+            <button role="menuitem" data-action="goto" data-to="home" data-anchor="free"><b>Free Play</b><span>Pick the cars, forgiving spelling, no clock</span></button>
+            <button role="menuitem" data-action="endless"><b>Endless</b><span>Keep going until you miss three</span></button>
+          </div>
+        </div>
+        <div class="menu">
+          <button class="nav-btn" id="mb-party" aria-expanded="false" aria-controls="m-party" data-menu="party">Party<svg class="ic ic--sm"><use href="#i-chevron-down"/></svg></button>
+          <div class="menu-pop" id="m-party" role="menu" aria-labelledby="mb-party" hidden>
+            <button role="menuitem" data-action="party-open" data-focus="pcName"><b>Start a party</b><span>Get a code and send it to friends</span></button>
+            <button role="menuitem" data-action="party-open" data-focus="pjCode"><b>Join a party</b><span>Type the five-character code</span></button>
+          </div>
+        </div>
+        <button class="nav-btn" data-action="goto" data-to="leaderboard">Leaderboards</button>
+        <button class="nav-btn" data-action="goto" data-to="scoring">How scoring works</button>
+      </nav>
+
+      <div class="bar-tools">
+        <button class="icon-btn" data-action="mute" aria-pressed="false" title="Mute (M)">
+          <svg class="ic"><use href="#i-volume"/></svg><span class="sr-only">Mute sound</span>
+        </button>
+        <button class="icon-btn" data-action="sound-settings" title="Sound settings">
+          <svg class="ic"><use href="#i-sliders"/></svg><span class="sr-only">Sound settings</span>
+        </button>
+        <button class="icon-btn nav-toggle" id="navToggle" data-action="nav-toggle" aria-expanded="false" aria-controls="nav">
+          <svg class="ic"><use href="#i-menu"/></svg><span class="sr-only">Menu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
   <main class="app" id="app">
+    <h1 class="sr-only">VicCall</h1>
 
     <!-- HOME -->
-    <h1 class="sr-only">VicCall</h1>
-    <section class="screen" id="s-home" data-screen="home" aria-label="Choose a mode">
-      <header class="home-top">
-        <div class="plate plate--brand" role="img" aria-label="VicCall"><span aria-hidden="true">VIC</span><span aria-hidden="true">CALL</span></div>
-        <button class="link-btn" data-action="nav" data-to="leaderboard"><svg class="ic"><use href="#i-trophy"/></svg>Leaderboard</button>
-      </header>
-      <p class="lede">Name the car from one photo. Make, model and year, or the tuner behind the body kit.</p>
+    <section class="screen screen--home" id="s-home" data-screen="home" aria-label="Choose a game">
+      <div class="home-top">
+        <article class="daily" id="daily" aria-labelledby="daily-h">
+          <div class="daily-plate plate" id="dailyPlate" aria-hidden="true"></div>
+          <div class="daily-body">
+            <h2 class="display" id="daily-h">Daily Challenge</h2>
+            <p class="daily-sub">Ten cars, easy to hard, the same for everyone. One ranked attempt a day, strict spelling, 45 seconds a car.</p>
+            <div class="daily-actions" id="dailyActions">
+              <button class="btn btn--primary btn--lg" data-action="daily">Play today’s ten</button>
+            </div>
+            <p class="daily-meta" id="dailyMeta"></p>
+          </div>
+        </article>
 
-      <div class="deck" id="deck">
-        <div class="deck-viewport" id="deckViewport">
-          <div class="deck-track" id="deckTrack" role="listbox" aria-label="Game modes" aria-orientation="horizontal"></div>
-        </div>
-        <div class="deck-nav">
-          <button class="icon-btn" data-action="deck-prev" aria-label="Previous mode"><svg class="ic"><use href="#i-chevron-left"/></svg></button>
-          <div class="deck-dots" id="deckDots"></div>
-          <button class="icon-btn" data-action="deck-next" aria-label="Next mode"><svg class="ic"><use href="#i-chevron-right"/></svg></button>
+        <div class="side-modes">
+          <article class="side-mode" aria-labelledby="endless-h">
+            <h2 class="h3" id="endless-h">Endless</h2>
+            <p>Keep naming cars until you miss three. They get harder as your streak grows.</p>
+            <p class="side-best" id="endlessBest"></p>
+            <button class="btn btn--ghost" data-action="endless">Start a run</button>
+          </article>
+          <article class="side-mode" aria-labelledby="party-h">
+            <h2 class="h3" id="party-h">Play with friends</h2>
+            <p>Everyone gets the same car at the same time. Up to 16 players, no sign-up.</p>
+            <div class="side-row">
+              <button class="btn btn--ghost" data-action="party-open" data-focus="pcName">Start a party</button>
+              <button class="btn btn--quiet" data-action="party-open" data-focus="pjCode">Join with a code</button>
+            </div>
+          </article>
         </div>
       </div>
 
-      <dl class="rules" aria-label="Scoring">
-        <div><dt>Make</dt><dd><b>+1</b></dd></div>
-        <div><dt>Model</dt><dd><b>+2</b> or +1 if close</dd></div>
-        <div><dt>Year</dt><dd><b>+2</b> or +1 within 5</dd></div>
-      </dl>
+      <section class="block" id="ranked" aria-labelledby="ranked-h">
+        <header class="block-head">
+          <h2 class="h2" id="ranked-h">Ranked</h2>
+          <p class="block-sub">Strict spelling, 45 seconds a car, cars get harder as you go. Each playlist has its own leaderboard.</p>
+        </header>
+        <ol class="tower" id="tower" aria-label="Ranked playlists"></ol>
+      </section>
 
-      <div class="home-actions">
-        <button class="btn btn--primary btn--lg" id="playBtn" data-action="deck-play">Play Worldwide</button>
-        <button class="btn btn--ghost btn--lg" data-action="nav" data-to="party"><svg class="ic"><use href="#i-users"/></svg>Play with friends</button>
-      </div>
-    </section>
+      <section class="block" id="free" aria-labelledby="free-h">
+        <header class="block-head">
+          <h2 class="h2" id="free-h">Free Play</h2>
+          <p class="block-sub">Choose what you want to see. Small typos are forgiven and nothing goes on a leaderboard.</p>
+        </header>
+        <form class="builder" id="builder" autocomplete="off">
+          <div class="builder-groups" id="builderGroups"></div>
+          <div class="builder-go">
+            <p class="builder-count" id="builderCount" aria-live="polite"></p>
+            <button class="btn btn--primary btn--lg" type="submit" id="builderStart">Start Free Play</button>
+          </div>
+        </form>
+      </section>
 
-    <!-- REGIONAL -->
-    <section class="screen" id="s-regional" data-screen="regional" aria-labelledby="regional-title" hidden>
-      <button class="back" data-action="back"><svg class="ic"><use href="#i-arrow-left"/></svg>Modes</button>
-      <h2 class="h2" id="regional-title">Pick a region</h2>
-      <div class="regions" id="regionList"></div>
+      <footer class="foot">
+        <p>Photos come from Wikimedia Commons and are credited after each car. Spotted a wrong answer? Use “Report this car” after the reveal.</p>
+        <p>Keyboard: <kbd>Enter</kbd> locks in and moves on, <kbd>Esc</kbd> leaves a game, <kbd>M</kbd> mutes.</p>
+      </footer>
     </section>
 
     <!-- SOLO GAME -->
     <section class="screen screen--game" id="s-game" data-screen="game" aria-label="Game" hidden>
-      <header class="g-head">
-        <button class="back back--inline" data-action="quit-solo"><svg class="ic"><use href="#i-arrow-left"/></svg><span id="gMode">Worldwide</span></button>
-        <div class="g-meta">
-          <span class="g-count" id="gCount">Car 1 of 10</span>
-          <span class="g-score"><span class="g-score-num" id="gScore">0</span> pts</span>
+      <div class="g-top">
+        <button class="back" data-action="quit"><svg class="ic"><use href="#i-arrow-left"/></svg><span id="gTitle">Game</span></button>
+        <ol class="pips" id="gPips" aria-label="Round results"></ol>
+        <div class="g-stats">
+          <span class="stat stat--streak" id="gStreakWrap" title="Cars named in a row"><svg class="ic"><use href="#i-flame"/></svg><b id="gStreak">0</b><span class="sr-only"> in a row</span></span>
+          <span class="stat"><b class="score-num" id="gScore">0</b> <span class="stat-k">pts</span></span>
         </div>
-      </header>
-      <ol class="pips" id="gPips" aria-label="Round results"></ol>
+        <div class="g-tools">
+          <button class="icon-btn" data-action="mute" aria-pressed="false" title="Mute (M)"><svg class="ic"><use href="#i-volume"/></svg><span class="sr-only">Mute sound</span></button>
+          <button class="icon-btn" data-action="sound-settings" title="Sound settings"><svg class="ic"><use href="#i-sliders"/></svg><span class="sr-only">Sound settings</span></button>
+        </div>
+      </div>
 
-      <figure class="photo" id="gPhoto">
-        <div class="photo-frame"><img id="gImg" alt="" decoding="async"></div>
-        <div class="photo-state" id="gPhotoState"></div>
-        <div class="clock" id="gClock" hidden><div class="clock-bar" id="gClockBar"></div><span class="clock-num" id="gClockNum">30</span></div>
-      </figure>
+      <div class="stage" id="gStage">
+        <figure class="photo" id="gPhoto">
+          <div class="photo-frame"><img id="gImg" alt="The car to identify" decoding="async"></div>
+          <div class="photo-state" id="gPhotoState"></div>
+          <div class="clock" id="gClock" hidden><div class="clock-bar" id="gClockBar"></div><span class="clock-num" id="gClockNum">45</span></div>
+          <figcaption class="credit" id="gCredit" hidden></figcaption>
+        </figure>
 
-      <form class="guess" id="gForm" autocomplete="off" novalidate>
-        <div class="fields" id="gFields">
-          <label class="field"><span>Make</span><input id="gMake" name="make" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-          <label class="field"><span>Model</span><input id="gModel" name="model" type="text" placeholder="Supra" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-          <label class="field field--year"><span>Year</span><input id="gYear" name="year" type="text" inputmode="numeric" placeholder="1994" maxlength="4" enterkeyhint="go"></label>
-        </div>
-        <div class="fields fields--kit" id="gKitFields" hidden>
-          <label class="field"><span>Tuner or body kit</span><input id="gKit" name="kit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
-        </div>
-        <p class="form-msg" id="gMsg" role="alert"></p>
-        <button class="btn btn--primary btn--lg btn--block" id="gSubmit" type="submit">Lock it in</button>
-      </form>
+        <section class="side" aria-label="Your answer">
+          <p class="side-count" id="gCount">Car 1 of 10</p>
+          <form class="guess" id="gForm" autocomplete="off" novalidate>
+            <div class="fields" id="gFields">
+              <label class="field"><span>Make</span><input id="gMake" name="make" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field"><span>Model and trim</span><input id="gModel" name="model" type="text" placeholder="Supra GR" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field field--year"><span>Year</span><input id="gYear" name="year" type="text" inputmode="numeric" placeholder="2020" maxlength="4" enterkeyhint="go"></label>
+            </div>
+            <div class="fields fields--kit" id="gKitFields" hidden>
+              <label class="field"><span>Tuner or body kit</span><input id="gKit" name="kit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field"><span>Make</span><input id="gKitMake" name="kitmake" type="text" list="makeList" placeholder="Nissan" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field"><span>Model</span><input id="gKitModel" name="kitmodel" type="text" placeholder="GT-R" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
+            </div>
+            <p class="form-msg" id="gMsg" role="alert"></p>
+            <button class="btn btn--primary btn--lg btn--block" id="gSubmit" type="submit">Lock it in <kbd class="kbd-hint">Enter</kbd></button>
+            <p class="rules-line" id="gRules"></p>
+          </form>
 
-      <div class="reveal" id="gReveal" hidden aria-live="polite">
-        <p class="reveal-verdict" id="gVerdict"></p>
-        <h2 class="reveal-car" id="gAnswer"></h2>
-        <p class="reveal-hint" id="gHint"></p>
-        <ul class="chips" id="gChips"></ul>
-        <div class="reveal-actions">
-          <button class="btn btn--primary btn--lg btn--block" id="gNext" data-action="next">Next car</button>
-        </div>
-        <details class="report" id="gReport">
-          <summary>Wrong answer or photo?</summary>
-          <div class="report-body">
-            <textarea id="gReportNote" maxlength="300" placeholder="What's wrong with this one? (optional)"></textarea>
-            <button class="btn btn--ghost" data-action="report">Send report</button>
+          <div class="reveal" id="gReveal" hidden aria-live="polite">
+            <p class="reveal-verdict" id="gVerdict"></p>
+            <h2 class="reveal-car" id="gAnswer"></h2>
+            <ul class="chips" id="gChips"></ul>
+            <p class="reveal-hint" id="gHint"></p>
+            <button class="btn btn--primary btn--lg btn--block" id="gNext" data-action="next">Next car <kbd class="kbd-hint">Enter</kbd></button>
+            <details class="report" id="gReport">
+              <summary>Report this car</summary>
+              <div class="report-body">
+                <textarea id="gReportNote" maxlength="300" placeholder="What’s wrong: the answer, the photo, or the scoring?"></textarea>
+                <button class="btn btn--ghost" data-action="report">Send report</button>
+              </div>
+            </details>
           </div>
-        </details>
+        </section>
       </div>
 
       <div class="results" id="gResults" hidden>
-        <p class="results-label">Final score</p>
-        <p class="results-score"><span id="rScore">0</span><span class="results-max">/ <span id="rMax">50</span></span></p>
-        <p class="results-line" id="rLine"></p>
-        <form class="save" id="rSave" autocomplete="off">
-          <label class="field"><span>Name for the leaderboard</span><input id="rName" type="text" maxlength="20" placeholder="Your name" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="done"></label>
-          <button class="btn btn--primary" type="submit" id="rSaveBtn">Save score</button>
-        </form>
-        <p class="saved" id="rSaved" hidden></p>
-        <button class="btn btn--ghost share-btn" data-action="share"><svg class="ic"><use href="#i-share"/></svg>Share result</button>
-        <ol class="logbook" id="rLog"></ol>
-        <div class="results-actions">
-          <button class="btn btn--primary btn--lg" data-action="replay">Play again</button>
-          <button class="btn btn--ghost btn--lg" data-action="home">Change mode</button>
+        <div class="results-main">
+          <p class="results-label" id="rLabel">Final score</p>
+          <p class="results-score"><span id="rScore">0</span><span class="results-max">/ <span id="rMax">100</span></span></p>
+          <p class="results-line" id="rLine"></p>
+          <dl class="results-stats" id="rStats"></dl>
+          <form class="save" id="rSave" autocomplete="off">
+            <label class="field"><span>Name for the leaderboard</span><input id="rName" type="text" maxlength="20" placeholder="Your name" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="done"></label>
+            <button class="btn btn--primary" type="submit" id="rSaveBtn">Post score</button>
+          </form>
+          <p class="saved" id="rSaved" hidden></p>
+          <div class="results-actions">
+            <button class="btn btn--primary btn--lg" id="rAgain" data-action="replay">Play again</button>
+            <button class="btn btn--ghost btn--lg" data-action="share"><svg class="ic"><use href="#i-share"/></svg>Share result</button>
+            <button class="btn btn--quiet btn--lg" data-action="home">Back to menu</button>
+          </div>
+        </div>
+        <ol class="logbook" id="rLog" aria-label="Every car this game"></ol>
+      </div>
+    </section>
+
+    <!-- LEADERBOARDS -->
+    <section class="screen" id="s-leaderboard" data-screen="leaderboard" aria-labelledby="lb-title" hidden>
+      <h2 class="h2" id="lb-title">Leaderboards</h2>
+      <p class="block-sub">Ranked games only. Ties go to whoever answered faster.</p>
+      <div class="lb">
+        <div class="tabs" id="lbTabs" role="tablist" aria-label="Leaderboard"></div>
+        <div class="lb-body">
+          <div class="board-head" aria-hidden="true"><span>#</span><span>Driver</span><span>Cars</span><span>Streak</span><span>Time</span><span>Score</span></div>
+          <ol class="board" id="lbList" aria-live="polite"></ol>
+          <button class="btn btn--primary" id="lbPlay" data-action="lb-play">Play this</button>
         </div>
       </div>
     </section>
 
-    <!-- LEADERBOARD -->
-    <section class="screen" id="s-leaderboard" data-screen="leaderboard" aria-labelledby="lb-title" hidden>
-      <button class="back" data-action="back"><svg class="ic"><use href="#i-arrow-left"/></svg>Back</button>
-      <h2 class="h2" id="lb-title">Leaderboard</h2>
-      <div class="tabs" id="lbTabs" role="tablist" aria-label="Mode"></div>
-      <ol class="board" id="lbList" aria-live="polite"></ol>
+    <!-- SCORING -->
+    <section class="screen" id="s-scoring" data-screen="scoring" aria-labelledby="sc-title" hidden>
+      <h2 class="h2" id="sc-title">How scoring works</h2>
+      <p class="block-sub">Every car is worth 10 points. The server checks every answer, so the score you see is the score that counts.</p>
+      <div class="sc-grid">
+        <section class="sc-card">
+          <h3 class="h3">Cars</h3>
+          <dl class="sc-points">
+            <div><dt>Make</dt><dd><b>2</b></dd></div>
+            <div><dt>Model</dt><dd><b>5</b> for the exact car. <b>3</b> if you name the right model but miss the trim (M4 for an M4 Competition) or the generation.</dd></div>
+            <div><dt>Year</dt><dd><b>3</b> for any year the car was built. Close years earn part of it, depending on the rules below.</dd></div>
+          </dl>
+        </section>
+        <section class="sc-card">
+          <h3 class="h3">Body kits</h3>
+          <dl class="sc-points">
+            <div><dt>Tuner</dt><dd><b>6</b> for Liberty Walk, RWB, Rocket Bunny and the rest</dd></div>
+            <div><dt>Make</dt><dd><b>2</b></dd></div>
+            <div><dt>Model</dt><dd><b>2</b>, or <b>1</b> for the right model with the wrong trim</dd></div>
+          </dl>
+        </section>
+      </div>
+      <table class="sc-table">
+        <caption class="sr-only">Casual and competitive rules compared</caption>
+        <thead><tr><th scope="col"><span class="sr-only">Rule</span></th><th scope="col">Free Play and casual parties</th><th scope="col">Ranked, Daily, Endless, competitive parties</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Spelling</th><td>One slip forgiven in long words (Lamborgini)</td><td>Must be spelled right. Nicknames and chassis codes still count (Beemer, R34)</td></tr>
+          <tr><th scope="row">Year off by 1–2</th><td>2 of 3</td><td>1 of 3</td></tr>
+          <tr><th scope="row">Year off by 3–5</th><td>1 of 3</td><td>0</td></tr>
+          <tr><th scope="row">Clock</th><td>Off unless you choose one</td><td>45 seconds, starts when the photo appears</td></tr>
+        </tbody>
+      </table>
+      <h3 class="h3 sc-h">What doesn’t count</h3>
+      <ul class="sc-list">
+        <li>Partial words. “Lam” is not Lamborghini, and sharing a letter or two with the answer is worth nothing.</li>
+        <li>Hedging. “Silvia Skyline 350Z” scores nothing for the model: extra words have to be trims (Spec-R, Type R), not other cars.</li>
+        <li>The wrong generation’s code. Typing “Evo VIII” for an Evo X earns the partial model points at most.</li>
+        <li>Answers after the clock. In ranked games the server times every car.</li>
+      </ul>
     </section>
 
     <!-- PARTY: CREATE / JOIN -->
     <section class="screen" id="s-party" data-screen="party" aria-labelledby="party-title" hidden>
-      <button class="back" data-action="back"><svg class="ic"><use href="#i-arrow-left"/></svg>Back</button>
       <h2 class="h2" id="party-title">Play with friends</h2>
-      <p class="sub">Everyone sees the same ten cars at the same time. Share the code, then call each one before the clock runs out.</p>
+      <p class="block-sub">Everyone sees the same ten cars at the same time. Share the code, then call each one before the clock runs out.</p>
       <div class="party-forms">
         <form class="panel" id="pCreate" autocomplete="off">
           <h3 class="h3">Start a party</h3>
           <label class="field"><span>Your name</span><input id="pcName" type="text" maxlength="20" placeholder="Name" autocapitalize="words" autocorrect="off" spellcheck="false"></label>
-          <label class="field"><span>Mode</span><select id="pcMode"></select></label>
+          <label class="field"><span>Playlist</span><select id="pcPlaylist"></select></label>
+          <fieldset class="seg" id="pcRules">
+            <legend>Rules</legend>
+            <label><input type="radio" name="pcRules" value="casual" checked><span>Casual<small>60 s, typos forgiven</small></span></label>
+            <label><input type="radio" name="pcRules" value="competitive"><span>Competitive<small>45 s, strict spelling</small></span></label>
+          </fieldset>
           <button class="btn btn--primary btn--block" type="submit">Create party</button>
         </form>
         <form class="panel" id="pJoin" autocomplete="off">
@@ -187,66 +312,92 @@
 
     <!-- PARTY: LOBBY -->
     <section class="screen" id="s-lobby" data-screen="lobby" aria-labelledby="lobby-title" hidden>
-      <button class="back" data-action="party-leave"><svg class="ic"><use href="#i-arrow-left"/></svg>Leave</button>
-      <p class="sub" id="lobby-title">Party code</p>
-      <div class="plate plate--code" id="lobbyCode" aria-live="polite"></div>
-      <div class="lobby-share">
-        <button class="btn btn--ghost" data-action="copy-invite"><svg class="ic"><use href="#i-link"/></svg>Copy invite link</button>
-        <span class="lobby-mode" id="lobbyMode"></span>
+      <button class="back" data-action="party-leave"><svg class="ic"><use href="#i-arrow-left"/></svg>Leave party</button>
+      <div class="lobby">
+        <div class="lobby-main">
+          <p class="lobby-label" id="lobby-title">Party code</p>
+          <div class="plate plate--code" id="lobbyCode" aria-live="polite"></div>
+          <div class="lobby-share">
+            <button class="btn btn--ghost" data-action="copy-invite"><svg class="ic"><use href="#i-link"/></svg>Copy invite link</button>
+          </div>
+          <div class="lobby-settings" id="lobbySettings">
+            <label class="field"><span>Playlist</span><select id="lsPlaylist"></select></label>
+            <fieldset class="seg" id="lsRules">
+              <legend>Rules</legend>
+              <label><input type="radio" name="lsRules" value="casual"><span>Casual<small>60 s, typos forgiven</small></span></label>
+              <label><input type="radio" name="lsRules" value="competitive"><span>Competitive<small>45 s, strict spelling</small></span></label>
+            </fieldset>
+          </div>
+          <p class="lobby-mode" id="lobbyMode"></p>
+          <button class="btn btn--primary btn--lg" id="lobbyStart" data-action="party-start" hidden>Start game</button>
+          <p class="wait" id="lobbyWait">Waiting for the host to start.</p>
+        </div>
+        <div class="lobby-roster">
+          <h2 class="h3">Drivers <span class="count" id="lobbyCount"></span></h2>
+          <ul class="roster" id="lobbyPlayers"></ul>
+        </div>
       </div>
-      <h2 class="h3 lobby-h">Drivers <span class="count" id="lobbyCount"></span></h2>
-      <ul class="roster" id="lobbyPlayers"></ul>
-      <button class="btn btn--primary btn--lg btn--block" id="lobbyStart" data-action="party-start" hidden>Start game</button>
-      <p class="wait" id="lobbyWait">Waiting for the host to start.</p>
     </section>
 
     <!-- PARTY: GAME -->
     <section class="screen screen--game" id="s-pgame" data-screen="pgame" aria-label="Party game" hidden>
-      <header class="g-head">
-        <button class="back back--inline" data-action="party-leave"><svg class="ic"><use href="#i-arrow-left"/></svg><span id="pgMode">Party</span></button>
-        <div class="g-meta">
-          <span class="g-count" id="pgCount">Car 1 of 10</span>
-          <span class="g-score"><span class="g-score-num" id="pgScore">0</span> pts</span>
+      <div class="g-top">
+        <button class="back" data-action="party-leave"><svg class="ic"><use href="#i-arrow-left"/></svg><span id="pgTitle">Party</span></button>
+        <ol class="pips" id="pgPips" aria-hidden="true"></ol>
+        <div class="g-stats">
+          <span class="stat"><b class="score-num" id="pgScore">0</b> <span class="stat-k">pts</span></span>
         </div>
-      </header>
-
-      <figure class="photo" id="pgPhoto">
-        <div class="photo-frame"><img id="pgImg" alt="" decoding="async"></div>
-        <div class="photo-state" id="pgPhotoState"></div>
-        <div class="clock" id="pgClock"><div class="clock-bar" id="pgClockBar"></div><span class="clock-num" id="pgClockNum">60</span></div>
-      </figure>
-
-      <form class="guess" id="pgForm" autocomplete="off" novalidate>
-        <div class="fields" id="pgFields">
-          <label class="field"><span>Make</span><input id="pgMake" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-          <label class="field"><span>Model</span><input id="pgModel" type="text" placeholder="Supra" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
-          <label class="field field--year"><span>Year</span><input id="pgYear" type="text" inputmode="numeric" placeholder="1994" maxlength="4" enterkeyhint="go"></label>
+        <div class="g-tools">
+          <button class="icon-btn" data-action="mute" aria-pressed="false" title="Mute (M)"><svg class="ic"><use href="#i-volume"/></svg><span class="sr-only">Mute sound</span></button>
+          <button class="icon-btn" data-action="sound-settings" title="Sound settings"><svg class="ic"><use href="#i-sliders"/></svg><span class="sr-only">Sound settings</span></button>
         </div>
-        <div class="fields fields--kit" id="pgKitFields" hidden>
-          <label class="field"><span>Tuner or body kit</span><input id="pgKit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
-        </div>
-        <p class="form-msg" id="pgMsg" role="alert"></p>
-        <button class="btn btn--primary btn--lg btn--block" id="pgSubmit" type="submit">Lock it in</button>
-      </form>
-      <p class="locked" id="pgLocked" hidden><svg class="ic"><use href="#i-check"/></svg>Locked in. <span id="pgWaiting"></span></p>
-
-      <div class="reveal" id="pgReveal" hidden aria-live="polite">
-        <p class="reveal-verdict" id="pgVerdict"></p>
-        <h2 class="reveal-car" id="pgAnswer"></h2>
-        <p class="reveal-hint" id="pgHint"></p>
-        <ul class="chips" id="pgChips"></ul>
-        <button class="btn btn--primary btn--lg btn--block" id="pgNext" data-action="party-next" hidden>Next car</button>
-        <p class="wait" id="pgWaitHost" hidden></p>
       </div>
 
-      <h2 class="h3 standings-h">Standings</h2>
-      <ol class="board board--live" id="pgStandings"></ol>
+      <div class="stage">
+        <figure class="photo" id="pgPhoto">
+          <div class="photo-frame"><img id="pgImg" alt="The car to identify" decoding="async"></div>
+          <div class="photo-state" id="pgPhotoState"></div>
+          <div class="clock" id="pgClock"><div class="clock-bar" id="pgClockBar"></div><span class="clock-num" id="pgClockNum">60</span></div>
+          <figcaption class="credit" id="pgCredit" hidden></figcaption>
+        </figure>
+
+        <section class="side" aria-label="Your answer and standings">
+          <p class="side-count" id="pgCount">Car 1 of 10</p>
+          <form class="guess" id="pgForm" autocomplete="off" novalidate>
+            <div class="fields" id="pgFields">
+              <label class="field"><span>Make</span><input id="pgMake" type="text" list="makeList" placeholder="Toyota" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field"><span>Model and trim</span><input id="pgModel" type="text" placeholder="Supra GR" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field field--year"><span>Year</span><input id="pgYear" type="text" inputmode="numeric" placeholder="2020" maxlength="4" enterkeyhint="go"></label>
+            </div>
+            <div class="fields fields--kit" id="pgKitFields" hidden>
+              <label class="field"><span>Tuner or body kit</span><input id="pgKit" type="text" placeholder="Liberty Walk" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field"><span>Make</span><input id="pgKitMake" type="text" list="makeList" placeholder="Nissan" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="next"></label>
+              <label class="field"><span>Model</span><input id="pgKitModel" type="text" placeholder="GT-R" autocapitalize="words" autocorrect="off" spellcheck="false" maxlength="60" enterkeyhint="go"></label>
+            </div>
+            <p class="form-msg" id="pgMsg" role="alert"></p>
+            <button class="btn btn--primary btn--lg btn--block" id="pgSubmit" type="submit">Lock it in <kbd class="kbd-hint">Enter</kbd></button>
+          </form>
+          <p class="locked" id="pgLocked" hidden><svg class="ic"><use href="#i-check"/></svg>Locked in. <span id="pgWaiting"></span></p>
+
+          <div class="reveal" id="pgReveal" hidden aria-live="polite">
+            <p class="reveal-verdict" id="pgVerdict"></p>
+            <h2 class="reveal-car" id="pgAnswer"></h2>
+            <ul class="chips" id="pgChips"></ul>
+            <p class="reveal-hint" id="pgHint"></p>
+            <button class="btn btn--primary btn--lg btn--block" id="pgNext" data-action="party-next" hidden>Next car <kbd class="kbd-hint">Enter</kbd></button>
+            <p class="wait" id="pgWaitHost" hidden></p>
+          </div>
+
+          <h2 class="h3 standings-h">Standings</h2>
+          <ol class="board board--live" id="pgStandings"></ol>
+        </section>
+      </div>
     </section>
 
     <!-- PARTY: FINAL -->
     <section class="screen" id="s-pfinal" data-screen="pfinal" aria-labelledby="pfinal-title" hidden>
       <h2 class="h2" id="pfinal-title">Final standings</h2>
-      <p class="sub" id="pfWinner"></p>
+      <p class="block-sub" id="pfWinner"></p>
       <ol class="board board--final" id="pfStandings"></ol>
       <div class="results-actions">
         <button class="btn btn--primary btn--lg" id="pfAgain" data-action="party-start" hidden>Play again</button>
@@ -256,10 +407,44 @@
     </section>
   </main>
 
+  <!-- SOUND SETTINGS -->
+  <dialog class="dialog" id="dlgSound" aria-labelledby="snd-title">
+    <form method="dialog" class="dialog-body">
+      <header class="dialog-head">
+        <h2 class="h3" id="snd-title">Sound</h2>
+        <button class="icon-btn" value="close" aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button>
+      </header>
+      <fieldset class="seg seg--stack" id="sndTheme">
+        <legend>Music</legend>
+        <label><input type="radio" name="sndTheme" value="monaco"><span>Monaco<small>Deep, melodic house</small></span></label>
+        <label><input type="radio" name="sndTheme" value="nightrun"><span>Night Run<small>Drift phonk</small></span></label>
+        <label><input type="radio" name="sndTheme" value="off"><span>No music<small>Sound effects only</small></span></label>
+      </fieldset>
+      <label class="slider"><span>Master</span><input type="range" min="0" max="100" step="1" id="sndMaster"><output for="sndMaster" id="sndMasterOut"></output></label>
+      <label class="slider"><span>Music</span><input type="range" min="0" max="100" step="1" id="sndMusic"><output for="sndMusic" id="sndMusicOut"></output></label>
+      <label class="slider"><span>Effects</span><input type="range" min="0" max="100" step="1" id="sndSfx"><output for="sndSfx" id="sndSfxOut"></output></label>
+      <label class="check"><input type="checkbox" id="sndMute"><span>Mute everything</span></label>
+      <p class="dialog-note">All music and effects are generated in your browser. The music builds as your streak grows and the clock runs down.</p>
+    </form>
+  </dialog>
+
+  <!-- LEAVE GAME -->
+  <dialog class="dialog" id="dlgQuit" aria-labelledby="quit-title">
+    <form method="dialog" class="dialog-body">
+      <h2 class="h3" id="quit-title">Leave this game?</h2>
+      <p id="quitText">Your progress in this game will be lost.</p>
+      <div class="dialog-actions">
+        <button class="btn btn--primary" value="stay" autofocus>Keep playing</button>
+        <button class="btn btn--ghost" value="leave">Leave</button>
+      </div>
+    </form>
+  </dialog>
+
   <datalist id="makeList"></datalist>
 
   <script src="/socket.io/socket.io.min.js" defer></script>
   <script src="scoring.js" defer></script>
+  <script src="audio.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

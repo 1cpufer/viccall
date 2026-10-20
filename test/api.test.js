@@ -172,6 +172,25 @@ test('leaderboard: only finished ranked sessions, once each, per playlist', asyn
   } finally { await srv.stop(); }
 });
 
+test('free play pool counts; photo-failure skips are limited in ranked', async () => {
+  const srv = await startServer();
+  try {
+    const p = await srv.api('GET', '/api/pool?region=japan&era=any&type=constructor');
+    assert.equal(p.body.filters.type, 'any', 'unknown values fall back');
+    assert.equal(p.body.size, CARS.filter(c => !c.excluded && !c.kit && c.region === 'japan').length);
+    const start = await srv.api('POST', '/api/solo/start', { kind: 'endless' });
+    const sid = start.body.sessionId;
+    const results = [];
+    for (let i = 0; i < 3; i++) {
+      await srv.api('POST', '/api/solo/round', { sessionId: sid, idx: i });
+      results.push((await srv.api('POST', '/api/solo/guess', { sessionId: sid, idx: i, photoFailed: true, make: 'Ferrari' })).body);
+    }
+    assert.deepEqual(results.map(r => r.skipped), [true, true, false], 'third claimed failure counts as a miss');
+    assert.deepEqual(results.map(r => r.strikes), [0, 0, 1]);
+    assert.ok(results.every(r => r.pts === 0), 'a skip never scores');
+  } finally { await srv.stop(); }
+});
+
 test('kit playlist maxes out at 100 too', async () => {
   const srv = await startServer();
   try {
