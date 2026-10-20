@@ -1,28 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer } = require('./helpers');
+const { startServer, agent } = require('./helpers');
 const { createMailer } = require('../src/mailer');
 const { ageFrom } = require('../src/auth');
-
-// A browser-like client: keeps the session cookie, sends the CSRF header.
-function agent(srv) {
-  let cookie = '';
-  return {
-    get cookie() { return cookie; },
-    async req(method, url, body, extra = {}) {
-      const headers = { 'content-type': 'application/json', 'x-viccall': '1', ...(cookie ? { cookie } : {}), ...extra };
-      const res = await fetch(srv.base + url, { method, redirect: 'manual', headers, body: body ? JSON.stringify(body) : undefined });
-      for (const c of res.headers.getSetCookie()) {
-        const [kv] = c.split(';');
-        const [k, v] = kv.split('=');
-        cookie = v ? `${k}=${v}` : '';
-      }
-      let json = null;
-      try { json = await res.json(); } catch {}
-      return { status: res.status, body: json, headers: res.headers };
-    },
-  };
-}
 
 const iso = years => { const d = new Date(); d.setUTCFullYear(d.getUTCFullYear() - years); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
 const ADULT = iso(25), TEEN = iso(15), CHILD = iso(10);

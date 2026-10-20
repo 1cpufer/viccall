@@ -129,6 +129,9 @@ const MIGRATIONS = [
      action TEXT NOT NULL, entity TEXT NOT NULL, entity_id TEXT, detail TEXT
    );
    CREATE INDEX audit_entity ON audit_log(entity, entity_id);`,
+
+  // 3: perceptual fingerprints of the whole frame and likely crops (JSON), for duplicate checks
+  `ALTER TABLE images ADD COLUMN fingerprints TEXT;`,
 ];
 
 function openDb(dataDir, file = 'garage.db') {

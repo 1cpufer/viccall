@@ -11,6 +11,7 @@ const { createImageProxy } = require('./images');
 const { openDb } = require('./db');
 const { createMailer } = require('./mailer');
 const { createAuth } = require('./auth');
+const { createGarage } = require('./garage');
 const VCScore = require('../public/scoring.js');
 
 const MAX_PER_BOARD = 100;
@@ -89,7 +90,7 @@ function createApp(opts = {}) {
   // Off unless GARAGE_ENABLED=1: accounts and photos need a persistent disk,
   // and the free hosting plan wipes its disk on every deploy.
   const garageOn = opts.garage !== undefined ? !!opts.garage : process.env.GARAGE_ENABLED === '1';
-  let gdb = null, auth = null;
+  let gdb = null, auth = null, garage = null;
   if (garageOn) {
     gdb = opts.db || openDb(dataDir);
     const mailer = opts.mailer || createMailer();
@@ -98,6 +99,8 @@ function createApp(opts = {}) {
       publicUrl: opts.publicUrl, adminEmails: opts.adminEmails, secureCookies: opts.secureCookies,
     });
     app.use('/api/auth', auth.router);
+    garage = createGarage({ db: gdb, auth, dataDir, limit, cars: CARS, index: VEHICLES, VCScore });
+    app.use('/api/garage', garage.router);
   }
 
   // What the menus need: playlists, filter options, pool sizes. Never answers.
@@ -307,7 +310,7 @@ function createApp(opts = {}) {
   const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth,
+    app, server, io, sessions, party, images, db: gdb, auth, garage,
     close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
