@@ -1,9 +1,18 @@
 /*
- * VicCall answer scoring. One source of truth shared by the browser (solo play)
- * and the server (party play, leaderboard sessions). UMD so both can load it.
+ * VicCall answer scoring. One source of truth shared by the browser and the
+ * server (solo sessions, party rooms, leaderboards). UMD so both can load it.
  *
- * Points: make 1, model 2 (1 for a "close" partial), year 2 exact / 1 within 5.
- * Kit Check: 5 for the right tuner, 0 otherwise.
+ * Every car is worth 10 points.
+ *   Car rounds:  Make 2 · Model 5 (3 if the model is right but the trim or
+ *                generation is missing/wrong) · Year 3 (partial credit for near
+ *                misses, see RULES).
+ *   Kit rounds:  Tuner 6 · Make 2 · Model 2 (1 if the trim is missing).
+ *
+ * Two rulesets:
+ *   casual       Forgives one-letter typos in long words and gives year credit
+ *                within 5 years. Used by Free Play.
+ *   competitive  Exact names only (aliases, codes, accents and punctuation are
+ *                still fine) and year credit only within 2 years.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -11,9 +20,16 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const POINTS = { make: 1, model: 2, modelClose: 1, yearExact: 2, yearNear: 1, kit: 5 };
-  const MAX_PER_CAR = POINTS.make + POINTS.model + POINTS.yearExact; // 5
-  const YEAR_NEAR = 5;
+  const MAX = 10;
+  const POINTS = {
+    car: { make: 2, model: 5, modelPartial: 3, year: 3 },
+    kit: { kit: 6, make: 2, model: 2, modelPartial: 1 },
+  };
+  const RULES = {
+    casual: { typos: true, yearTiers: [[0, 3], [2, 2], [5, 1]] },
+    competitive: { typos: false, yearTiers: [[0, 3], [2, 1]] },
+  };
+  const rulesFor = name => RULES[name] || RULES.casual;
 
   // Lowercase, strip accents, drop joining punctuation so "GT-R" == "GTR", "RX-7" == "RX7".
   function norm(s) {
@@ -23,52 +39,36 @@
       .replace(/[★'’.\-]/g, '')
       .replace(/&/g, ' and ');
   }
-  function compact(s) { return norm(s).replace(/[^a-z0-9]/g, ''); }
-  function tokens(s) { return norm(s).split(/[^a-z0-9]+/).filter(Boolean); }
+  const compact = s => norm(s).replace(/[^a-z0-9]/g, '');
+  const tokens = s => norm(s).split(/[^a-z0-9]+/).filter(Boolean);
   const hasDigit = t => /\d/.test(t);
-  const isCode = t => /[a-z]/.test(t) && /\d/.test(t); // R34, E30, AE86, C8, MX5
+  const isCode = t => /[a-z]/.test(t) && /\d/.test(t); // R34, E30, AE86, C8, G82
 
-  // Common names players actually type. Keys and values are compared after compact().
+  // Names players actually type. Keys and values are compared after compact().
   const MAKE_ALIASES = {
-    'volkswagen': ['vw', 'volks', 'vdub'],
-    'chevrolet': ['chevy', 'chev'],
-    'mercedesbenz': ['mercedes', 'benz', 'merc', 'mb', 'mercedesamg', 'amg'],
-    'bmw': ['bimmer', 'beemer', 'bayerischemotorenwerke'],
-    'alfaromeo': ['alfa'],
-    'astonmartin': ['aston', 'am'],
-    'lamborghini': ['lambo'],
-    'rollsroyce': ['rolls', 'rr'],
-    'landrover': ['lr'],
-    'austinhealey': ['healey', 'austin'],
-    'detomaso': ['tomaso'],
-    'mini': ['austin', 'morris', 'austinmini', 'morrismini', 'bmc'],
-    'dsautomobiles': ['ds', 'citroen'],
-    'datsun': ['nissan'],
-    'autozam': ['mazda'],
-    'shelby': ['ac', 'acshelby'],
-    'hummer': ['amgeneral'],
-    'gmc': ['hummer'],
-    'oldsmobile': ['olds'],
-    'pontiac': [],
-    'cadillac': ['caddy', 'caddi'],
-    'mitsubishi': ['mitsu', 'mitsi'],
-    'porsche': [],
-    'ferrari': [],
-    'mclaren': [],
-    'chrysler': [],
-    'plymouth': [],
-    'jaguar': ['jag'],
-    'lancia': [],
-    'citroen': [],
-    'renault': [],
-    'peugeot': [],
-    'hennessey': ['hennessy', 'hennesseyperformance'],
-    'ssc': ['sscnorthamerica', 'shelbysupercars'],
-    'trabant': [],
-    'maybach': ['mercedesmaybach'],
-    'smart': [],
-    'subaru': ['subie', 'scooby'],
-    'toyota': ['yota'],
+    volkswagen: ['vw', 'volks', 'vdub'],
+    chevrolet: ['chevy'],
+    mercedesbenz: ['mercedes', 'benz', 'merc', 'mb', 'mercedesamg', 'amg'],
+    bmw: ['bimmer', 'beemer'],
+    alfaromeo: ['alfa'],
+    astonmartin: ['aston'],
+    lamborghini: ['lambo'],
+    rollsroyce: ['rolls', 'rr'],
+    landrover: ['lr'],
+    austinhealey: ['healey', 'austin'],
+    detomaso: ['tomaso'],
+    mini: ['austin', 'morris', 'bmc'],
+    dsautomobiles: ['ds', 'citroen'],
+    datsun: ['nissan'],
+    autozam: ['mazda'],
+    shelby: ['ac'],
+    hummer: ['amgeneral'],
+    gmc: ['hummer'],
+    oldsmobile: ['olds'],
+    cadillac: ['caddy'],
+    jaguar: ['jag'],
+    hennessey: ['hennessy'],
+    maybach: ['mercedesmaybach'],
   };
 
   function levenshtein(a, b, cap) {
@@ -88,107 +88,104 @@
     return prev[b.length];
   }
 
-  // Typo tolerance: never on anything containing digits (911 must not match 912).
-  function allowedTypos(answer) {
-    if (hasDigit(answer)) return 0;
-    if (answer.length >= 9) return 2;
-    if (answer.length >= 5) return 1;
-    return 0;
-  }
-  function fuzzyEq(guess, answer) {
+  // Equality, plus (casual only) one typo in a word of 6+ letters with the same
+  // first letter. Never on anything containing digits: 911 must not match 912.
+  function same(guess, answer, rules) {
     if (guess === answer) return true;
-    const cap = allowedTypos(answer);
-    // Real typos almost never change the first letter, and requiring it stops
-    // near-namesakes like "G-Class"/"E-Class" from matching each other.
-    return cap > 0 && !hasDigit(guess) && guess[0] === answer[0] && levenshtein(guess, answer, cap) <= cap;
+    if (!rules.typos || hasDigit(answer) || hasDigit(guess) || answer.length < 6) return false;
+    return guess[0] === answer[0] && levenshtein(guess, answer, 1) <= 1;
   }
+  const tokenIn = (t, list, rules) => list.some(a => same(t, a, rules));
 
-  // Words too generic to earn "close" credit on their own.
-  const GENERIC = new Set(['series', 'class', 'type', 'coupe', 'spider', 'spyder', 'sport', 'sports', 'gt', 's', 'r', 'the', 'model', 'turbo', 'ss', 'v8', 'convertible', 'roadster', 'sedan', 'car']);
-
-  const TRIM = new Set(['rs', 'gts', 'gti', 'hf', 'srt', 'amg', 'base', 'gl', 'gls', 'lx', 'ex', 'si', 'vr', 'v6', 'v10', 'v12', 'awd', 'quattro', 'twin', 'gen', 'generation', 'mark', 'mk', 'facelift', 'edition', 'special', 'limited', 'hatch', 'hatchback', 'wagon', 'estate', 'avant', 'targa', 'cabriolet', 'cabrio', 'hardtop', 'fastback', 'nismo', 'spec', 'evo']);
-  function isTrimWord(t) {
-    return GENERIC.has(t) || TRIM.has(t) || isCode(t) || /^(mk|mark)?[ivx]{1,4}$/.test(t) || /^\d{1,2}$/.test(t);
-  }
+  // Words too generic to earn credit on their own.
+  const GENERIC = new Set(['series', 'class', 'type', 'coupe', 'spider', 'spyder', 'sport', 'sports', 'gt', 's', 'r', 'the', 'model', 'turbo', 'ss', 'v8', 'convertible', 'roadster', 'sedan', 'car', 'new', 'old']);
+  // Trim / body words that may follow a correct model without making it wrong.
+  const TRIM = new Set(['rs', 'gts', 'gti', 'hf', 'srt', 'amg', 'base', 'si', 'vr', 'v6', 'v10', 'v12', 'awd', 'quattro', 'twin', 'gen', 'generation', 'mark', 'mk', 'facelift', 'edition', 'special', 'limited', 'hatch', 'hatchback', 'wagon', 'estate', 'avant', 'targa', 'cabriolet', 'cabrio', 'hardtop', 'fastback', 'nismo', 'spec', 'evo', 'competition', 'performance', 'plus']);
+  const isTrimLike = t => GENERIC.has(t) || TRIM.has(t) || isCode(t) || /^(mk|mark)?[ivx]{1,4}$/.test(t) || /^\d{1,2}$/.test(t);
+  // A token specific enough that sharing it shows real recognition.
+  const isSignificant = t => !GENERIC.has(t) && !TRIM.has(t) && (t.length >= 3 || isCode(t) || /^\d{2,}$/.test(t));
 
   function makeVariants(car) {
     const key = compact(car.make);
     return [key, ...(MAKE_ALIASES[key] || []), ...(car.makeAliases || [])].map(compact);
   }
 
-  function matchMake(guess, car) {
+  function matchMake(guess, car, rules = RULES.casual) {
     const g = compact(guess);
     if (!g) return false;
     const variants = makeVariants(car);
-    if (variants.some(v => fuzzyEq(g, v))) return true;
-    // "Toyota Supra" typed in the make box: accept if it starts with the make.
+    if (variants.some(v => same(g, v, rules))) return true;
+    // "Toyota Supra" typed in the make box: the leading words must be the make.
     const gt = tokens(guess);
     for (let n = 1; n < gt.length; n++) {
       const head = gt.slice(0, n).join('');
-      if (variants.some(v => fuzzyEq(head, v))) return true;
+      if (variants.some(v => same(head, v, rules))) return true;
     }
     return false;
   }
 
-  // Strip any leading make words a player put in the model field ("Nissan Skyline").
-  function stripMake(guessTokens, car) {
+  // Strip leading make words a player put in the model box ("Nissan Skyline").
+  function stripMake(gt, car, rules) {
     const variants = makeVariants(car);
-    for (let n = Math.min(3, guessTokens.length - 1); n >= 1; n--) {
-      const head = guessTokens.slice(0, n).join('');
-      if (variants.some(v => fuzzyEq(head, v))) return guessTokens.slice(n);
+    for (let n = Math.min(3, gt.length - 1); n >= 1; n--) {
+      const head = gt.slice(0, n).join('');
+      if (variants.some(v => same(head, v, rules))) return gt.slice(n);
     }
-    return guessTokens;
+    return gt;
   }
 
-  function tokenIn(t, list) { return list.some(a => fuzzyEq(t, a)); }
-
-  // Compare one guess against one accepted model name. Returns 'full' | 'close' | null.
-  function compareModel(gt, name) {
+  // Compare guess tokens with one accepted name: 'full' | 'partial' | null.
+  function compareName(gt, name, rules) {
     const at = tokens(name);
     if (!at.length || !gt.length) return null;
-    if (gt.join('') === at.join('')) return 'full';
-    if (fuzzyEq(gt.join(''), at.join(''))) return 'full';
-
-    const allAnswerInGuess = at.every(a => tokenIn(a, gt));
-    const extras = gt.filter(g => !tokenIn(g, at));
-    // Guess covers the whole name plus up to two trim/generation words ("Supra MK4",
-    // "911 Turbo"). Extras must be trim-like so "Supra 911" can't hedge two cars.
-    if (allAnswerInGuess && extras.length <= 2 && extras.every(isTrimWord)) return 'full';
-
-    const allGuessInAnswer = gt.every(g => tokenIn(g, at));
-    if (allGuessInAnswer) {
-      // A chassis/generation code is the car's identity: "R34", "E30", "AE86", "C8".
-      const codes = at.filter(isCode);
-      if (codes.length && codes.every(c => gt.includes(c))) return 'full';
-    }
-    // Right family, wrong or missing trim/generation ("Skyline" for "Skyline GT-R R34",
-    // "Skyline R32" for an R34). Generic words like "Series" or "GT" alone don't count.
-    const shared = gt.filter(g => !GENERIC.has(g) && tokenIn(g, at));
-    if (shared.length) return 'close';
+    if (gt.join('') === at.join('') || (rules.typos && same(gt.join(''), at.join(''), rules))) return 'full';
+    const inAnswer = g => tokenIn(g, at, rules);
+    const extras = gt.filter(g => !inAnswer(g));
+    // Whole name present plus up to two trim words: "Supra MK4", "911 Turbo".
+    if (at.every(a => tokenIn(a, gt, rules)) && extras.length <= 2 && extras.every(isTrimLike)) return 'full';
+    // A chassis code alone identifies the car: "R34", "E30", "AE86".
+    const codes = at.filter(isCode);
+    if (!extras.length && codes.length && codes.every(c => gt.includes(c))) return 'full';
+    // Right family, missing or wrong trim: shares a specific word, and anything
+    // else typed is trim-like. "Skyline Supra Civic" can't fish for credit.
+    if (gt.some(g => inAnswer(g) && isSignificant(g)) && extras.every(isTrimLike)) return 'partial';
     return null;
   }
 
-  function matchModel(guess, car) {
+  function variantHit(gt, car, rules) {
+    const names = [car.variant, ...(car.variantAliases || [])].filter(Boolean);
+    return names.some(n => { const vt = tokens(n); return vt.length && vt.every(v => tokenIn(v, gt, rules)); });
+  }
+
+  /*
+   * Model match. Returns { level: 'full' | 'partial' | null, why }.
+   * Cars may split a name into model + variant ("M4" + "Competition"): the
+   * model earns partial credit, model + variant earns full credit.
+   */
+  function matchModel(guess, car, rules = RULES.casual) {
     const raw = tokens(guess);
-    if (!raw.length) return null;
-    // Try both as typed and with a leading make removed: "Hummer EV" is a GMC model
-    // whose name starts with a make alias, while "Nissan Skyline" needs stripping.
-    const stripped = stripMake(raw, car);
+    if (!raw.length) return { level: null, why: 'wrong' };
+    const stripped = stripMake(raw, car, rules);
     const candidates = stripped.length && stripped.length !== raw.length ? [raw, stripped] : [raw];
     const names = [car.model, ...(car.modelAliases || [])];
-    // A generation code that belongs to a different car ("Corvette C8" for a C3)
-    // caps the answer at "close" even if the rest of the name matches.
-    const carCodes = new Set(names.flatMap(n => tokens(n).filter(isCode)));
-    const wrongCode = carCodes.size > 0 && raw.some(t => isCode(t) && !carCodes.has(t));
+    const variantTokens = new Set([car.variant, ...(car.variantAliases || [])].filter(Boolean).flatMap(tokens));
+    const carCodes = new Set([...names, car.variant, ...(car.variantAliases || [])].filter(Boolean).flatMap(n => tokens(n).filter(isCode)));
+    // A code from another car ("Corvette C8" for a C3) caps the answer at partial.
+    const wrongCode = raw.some(t => isCode(t) && !carCodes.has(t));
+
     let best = null;
     for (const gt of candidates) {
+      const base = gt.filter(t => !variantTokens.has(t));
       for (const n of names) {
-        const r = compareModel(gt, n);
-        if (r === 'full' && !wrongCode) return 'full';
-        if (r) best = 'close';
+        const r = compareName(base.length ? base : gt, n, rules);
+        if (!r) continue;
+        if (r === 'full' && !wrongCode) {
+          if (!car.variant || variantHit(gt, car, rules)) return { level: 'full', why: 'exact' };
+          best = { level: 'partial', why: 'variant' };
+        } else if (!best) best = { level: 'partial', why: wrongCode ? 'generation' : 'family' };
       }
     }
-    return best;
+    return best || { level: null, why: 'wrong' };
   }
 
   // "1994", "94", "'94" -> 1994. Two-digit years pivot on the current year.
@@ -203,71 +200,89 @@
     return y;
   }
 
-  function scoreGuess(car, makeGuess, modelGuess, yearGuess) {
-    const res = [];
-    let pts = 0;
-    const mg = String(makeGuess == null ? '' : makeGuess).trim();
-    const mo = String(modelGuess == null ? '' : modelGuess).trim();
-    const yr = String(yearGuess == null ? '' : yearGuess).trim();
+  const fullModel = car => [car.model, car.variant].filter(Boolean).join(' ');
+  const yearSpan = car => {
+    const [lo, hi] = Array.isArray(car.yearRange) ? car.yearRange : [car.year, car.year];
+    return lo === hi ? String(lo) : `${lo}–${hi}`;
+  };
+  const str = v => String(v == null ? '' : v).trim();
 
-    if (mg) {
-      const hit = matchMake(mg, car);
-      const p = hit ? POINTS.make : 0;
-      pts += p;
-      res.push({ label: 'Make', detail: car.make, verdict: hit ? 'hit' : 'miss', pts: p });
-    }
-    if (mo) {
-      const m = matchModel(mo, car);
-      const p = m === 'full' ? POINTS.model : m === 'close' ? POINTS.modelClose : 0;
-      pts += p;
-      res.push({ label: 'Model', detail: car.model, verdict: m === 'full' ? 'hit' : m === 'close' ? 'close' : 'miss', pts: p });
-    }
-    if (yr) {
-      const yg = parseYear(yr);
-      let p = 0, verdict = 'miss', detail = String(car.year);
-      // Long production runs carry a yearRange: any year inside it is exact.
-      const [lo, hi] = Array.isArray(car.yearRange) ? car.yearRange : [car.year, car.year];
-      if (lo !== hi) detail = `${lo}–${hi}`;
-      if (!isNaN(yg)) {
-        const df = yg < lo ? lo - yg : yg > hi ? yg - hi : 0;
-        if (df === 0) { p = POINTS.yearExact; verdict = 'hit'; }
-        else if (df <= YEAR_NEAR) { p = POINTS.yearNear; verdict = 'close'; detail = `${detail} (off by ${df})`; }
-        else detail = `${detail} (off by ${df})`;
-      } else detail = `${detail} (not a year)`;
-      pts += p;
-      res.push({ label: 'Year', detail, verdict, pts: p });
-    }
-    return { pts, res, max: MAX_PER_CAR };
+  function scoreMake(car, guess, rules, pts) {
+    const hit = matchMake(guess, car, rules);
+    return { label: 'Make', verdict: hit ? 'hit' : 'miss', pts: hit ? pts : 0, max: pts, note: hit ? car.make : `It's ${car.make}` };
   }
 
-  function matchKit(guess, car) {
-    let gt = tokens(guess);
+  function scoreModel(car, guess, rules, full, part) {
+    const m = matchModel(guess, car, rules);
+    const name = fullModel(car);
+    if (m.level === 'full') return { label: 'Model', verdict: 'hit', pts: full, max: full, note: name };
+    if (m.level === 'partial') {
+      const note = m.why === 'variant' ? `Right model, missed the ${car.variantKind || 'trim'}: ${car.variant}`
+        : m.why === 'generation' ? `Right family, wrong generation: ${name}`
+        : `Close: it's the ${name}`;
+      return { label: 'Model', verdict: 'close', pts: part, max: full, note };
+    }
+    return { label: 'Model', verdict: 'miss', pts: 0, max: full, note: `It's the ${name}` };
+  }
+
+  function scoreYear(car, guess, rules) {
+    const yg = parseYear(guess);
+    const [lo, hi] = Array.isArray(car.yearRange) ? car.yearRange : [car.year, car.year];
+    const span = yearSpan(car);
+    const max = POINTS.car.year;
+    if (isNaN(yg)) return { label: 'Year', verdict: 'miss', pts: 0, max, note: `Not a year. It's ${span}` };
+    const off = yg < lo ? lo - yg : yg > hi ? yg - hi : 0;
+    const tier = rules.yearTiers.find(([within]) => off <= within);
+    const pts = tier ? tier[1] : 0;
+    if (off === 0) return { label: 'Year', verdict: 'hit', pts, max, note: span };
+    return { label: 'Year', verdict: pts ? 'close' : 'miss', pts, max, note: `Off by ${off} (${span})` };
+  }
+
+  function matchKit(guess, car, rules = RULES.casual) {
+    const gt = tokens(guess);
     if (!gt.length || !car.kit) return false;
     const names = [car.kit, ...(car.kitAliases || [])];
-    const g = gt.join('');
-    if (names.some(n => fuzzyEq(g, compact(n)))) return true;
-    // "Liberty Walk Huracan" — kit name followed by extra words.
+    if (names.some(n => same(gt.join(''), compact(n), rules))) return true;
+    // "Liberty Walk Huracan": the tuner name plus a few words about the car.
     return names.some(n => {
       const at = tokens(n);
-      return at.length && at.every(a => tokenIn(a, gt)) && gt.length - at.length <= 3;
+      return at.length && at.every(a => tokenIn(a, gt, rules)) && gt.length - at.length <= 3;
     });
   }
 
-  function scoreKit(car, kitGuess) {
-    const kg = String(kitGuess == null ? '' : kitGuess).trim();
-    if (!kg) return { pts: 0, res: [{ label: 'Kit', detail: car.kit, verdict: 'miss', pts: 0 }], max: POINTS.kit };
-    const hit = matchKit(kg, car);
-    const p = hit ? POINTS.kit : 0;
-    return { pts: p, res: [{ label: 'Kit', detail: car.kit, verdict: hit ? 'hit' : 'miss', pts: p }], max: POINTS.kit };
-  }
-
-  // Score whichever shape of guess matches the mode.
-  function scoreRound(car, mode, guess) {
+  /*
+   * Score one round. guess: { make, model, year, kit }.
+   * opts.ruleset: 'casual' | 'competitive'. opts.kind: 'car' | 'kit'.
+   * Returns { pts, max, res: [{ label, verdict, pts, max, note }], identified, perfect }.
+   * Blank boxes are listed as skipped so the reveal can show what was missed.
+   */
+  function scoreRound(car, guess, opts = {}) {
     const g = guess || {};
-    return mode === 'kit' ? scoreKit(car, g.kit) : scoreGuess(car, g.make, g.model, g.year);
+    const rules = rulesFor(opts.ruleset);
+    const kind = opts.kind || (car.kit && opts.mode === 'kit' ? 'kit' : 'car');
+    const res = [];
+    const skip = (label, max, note) => res.push({ label, verdict: 'skip', pts: 0, max, note });
+
+    if (kind === 'kit') {
+      const P = POINTS.kit;
+      const kg = str(g.kit);
+      if (kg) {
+        const hit = matchKit(kg, car, rules);
+        res.push({ label: 'Tuner', verdict: hit ? 'hit' : 'miss', pts: hit ? P.kit : 0, max: P.kit, note: hit ? car.kit : `It's ${car.kit}` });
+      } else skip('Tuner', P.kit, `It's ${car.kit}`);
+      if (str(g.make)) res.push(scoreMake(car, str(g.make), rules, P.make)); else skip('Make', P.make, car.make);
+      if (str(g.model)) res.push(scoreModel(car, str(g.model), rules, P.model, P.modelPartial)); else skip('Model', P.model, fullModel(car));
+    } else {
+      const P = POINTS.car;
+      if (str(g.make)) res.push(scoreMake(car, str(g.make), rules, P.make)); else skip('Make', P.make, car.make);
+      if (str(g.model)) res.push(scoreModel(car, str(g.model), rules, P.model, P.modelPartial)); else skip('Model', P.model, fullModel(car));
+      if (str(g.year)) res.push(scoreYear(car, str(g.year), rules)); else skip('Year', P.year, yearSpan(car));
+    }
+    const pts = res.reduce((s, r) => s + r.pts, 0);
+    const hit = l => res.some(r => r.label === l && r.verdict === 'hit');
+    const identified = kind === 'kit' ? hit('Tuner') : hit('Make') && hit('Model');
+    return { pts, max: MAX, res, identified, perfect: pts === MAX };
   }
 
-  function maxForMode(mode) { return mode === 'kit' ? POINTS.kit : MAX_PER_CAR; }
-
-  return { POINTS, MAX_PER_CAR, scoreGuess, scoreKit, scoreRound, maxForMode, matchMake, matchModel, matchKit, parseYear, compact, tokens };
+  return { MAX, POINTS, RULES, scoreRound, matchMake, matchModel, matchKit, parseYear, compact, tokens, fullModel, yearSpan };
 });

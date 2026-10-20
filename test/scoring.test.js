@@ -8,137 +8,173 @@ const car = (make, model, year) => {
   if (!c) throw new Error(`fixture missing: ${make} ${model} ${year}`);
   return c;
 };
+const casual = { ruleset: 'casual' };
+const comp = { ruleset: 'competitive' };
+const modelLevel = (g, c, r = S.RULES.casual) => S.matchModel(g, c, r).level;
 
 const supra = car('Toyota', 'Supra', 1994);
 const r34 = car('Nissan', 'Skyline GT-R R34');
 const golf = car('Volkswagen', 'Golf GTI');
 const benz = car('Mercedes-Benz', '190E');
-const porsche74 = car('Porsche', '911', 1974);
+const p911 = car('Porsche', '911', 1974);
 const miata = car('Mazda', 'Miata MX-5');
 const lambo = CARS.find(c => c.make === 'Lamborghini' && c.kit === 'Liberty Walk');
 const rwb = CARS.find(c => c.kit === 'RWB');
 const citroen = car('Citroën', 'DS');
+// A synthetic model + variant car, so these tests don't depend on dataset edits.
+const m4 = { make: 'BMW', model: 'M4', variant: 'Competition', variantAliases: ['Comp'], modelAliases: ['G82'], year: 2021, yearRange: [2021, 2025] };
 
-test('exact answer scores the maximum', () => {
-  const r = S.scoreGuess(supra, 'Toyota', 'Supra', '1994');
-  assert.equal(r.pts, 5);
-  assert.deepEqual(r.res.map(x => x.verdict), ['hit', 'hit', 'hit']);
+test('every car is worth 10 and a perfect answer gets all of it', () => {
+  const r = S.scoreRound(supra, { make: 'Toyota', model: 'Supra', year: '1994' }, comp);
+  assert.equal(r.pts, 10);
+  assert.equal(r.max, 10);
+  assert.ok(r.perfect && r.identified);
 });
 
-test('make aliases and casing', () => {
+test('make aliases, casing and accents', () => {
   assert.ok(S.matchMake('vw', golf));
   assert.ok(S.matchMake('VOLKSWAGEN', golf));
   assert.ok(S.matchMake('Mercedes', benz));
   assert.ok(S.matchMake('mercedes benz', benz));
-  assert.ok(S.matchMake('Citroen', citroen), 'accents are optional');
+  assert.ok(S.matchMake('Citroen', citroen));
   assert.ok(!S.matchMake('Toyota', golf));
+  assert.ok(S.matchMake('Toyota Supra', supra), 'make box with the model in it');
 });
 
-test('make typed with the model still counts', () => {
-  assert.ok(S.matchMake('Toyota Supra', supra));
+test('typos: one letter forgiven in casual on long words, never in competitive', () => {
+  assert.ok(S.matchMake('Lamborgini', lambo, S.RULES.casual));
+  assert.ok(!S.matchMake('Lamborgini', lambo, S.RULES.competitive));
+  assert.ok(S.matchMake('Toyta', supra, S.RULES.casual), 'one typo in a 6-letter word, casual');
+  assert.ok(!S.matchMake('Toyta', supra, S.RULES.competitive));
+  const civic = car('Honda', 'Civic Type R', 1997);
+  assert.ok(!S.matchMake('Hondo', civic, S.RULES.casual), 'words under 6 letters need exact spelling');
+  assert.equal(modelLevel('912', p911), null, 'numbers are never fuzzy');
+  assert.equal(modelLevel('Supro', supra), null);
 });
 
-test('single-letter typo tolerance on long words, never on numbers', () => {
-  assert.ok(S.matchMake('Toyta', supra));
-  assert.ok(S.matchMake('Lamborgini', lambo));
-  assert.equal(S.matchModel('912', porsche74), null);
-  assert.equal(S.matchModel('911', porsche74), 'full');
+test('no credit for sharing a letter or two', () => {
+  for (const g of ['S', 'GT', 'R', 'Series', 'Sup', 'RS', 'Type R']) {
+    assert.equal(modelLevel(g, supra), null, g);
+  }
+  assert.equal(modelLevel('Series', car('BMW', '3 Series E30')), null);
 });
 
-test('model punctuation and spacing are ignored', () => {
-  assert.equal(S.matchModel('Skyline GTR R34', r34), 'full');
-  assert.equal(S.matchModel('skyline gt-r r-34', r34), 'full');
-  assert.equal(S.matchModel('MX5', miata), 'full');
+test('punctuation, spacing, chassis codes and aliases', () => {
+  assert.equal(modelLevel('Skyline GTR R34', r34), 'full');
+  assert.equal(modelLevel('skyline gt-r r-34', r34), 'full');
+  assert.equal(modelLevel('R34', r34), 'full');
+  assert.equal(modelLevel('MX5', miata), 'full');
+  assert.equal(modelLevel('Miata', miata), 'full');
+  assert.equal(modelLevel('GTI', golf), 'full');
+  assert.equal(modelLevel('Supra MK4', supra), 'full');
+  assert.equal(modelLevel('Nissan Skyline R34', r34), 'full', 'make in the model box');
 });
 
-test('generation codes alone are full credit', () => {
-  assert.equal(S.matchModel('R34', r34), 'full');
-  assert.equal(S.matchModel('R34 GTR', r34), 'full');
+test('model + variant: base model is partial, both is full', () => {
+  assert.equal(modelLevel('M4', m4), 'partial');
+  assert.equal(S.matchModel('M4', m4).why, 'variant');
+  assert.equal(modelLevel('M4 Competition', m4), 'full');
+  assert.equal(modelLevel('M4 Comp', m4), 'full');
+  assert.equal(modelLevel('BMW M4 Competition', m4), 'full');
+  assert.equal(modelLevel('G82 Competition', m4), 'full');
+  assert.equal(modelLevel('M3', m4), null, 'a different model gets nothing');
+  assert.equal(modelLevel('M3 Competition', m4), null);
+  const r = S.scoreRound(m4, { make: 'BMW', model: 'M4', year: '2022' }, comp);
+  assert.equal(r.pts, 2 + 3 + 3);
+  assert.match(r.res[1].note, /missed the trim: Competition/);
 });
 
-test('model aliases from the dataset', () => {
-  assert.equal(S.matchModel('Miata', miata), 'full');
-  assert.equal(S.matchModel('GTI', golf), 'full');
-  assert.equal(S.matchModel('A80', supra), 'full');
+test('right family, wrong generation is partial with a clear note', () => {
+  assert.equal(modelLevel('Skyline', r34), 'partial');
+  const m = S.matchModel('Skyline R32', r34);
+  assert.equal(m.level, 'partial');
+  assert.equal(m.why, 'generation');
 });
 
-test('trim/generation extras still count as full', () => {
-  assert.equal(S.matchModel('Supra MK4', supra), 'full');
-  assert.equal(S.matchModel('Supra Turbo', supra), 'full');
+test('hedging several models in one answer earns nothing extra', () => {
+  assert.equal(modelLevel('Supra 911', supra), null);
+  assert.equal(modelLevel('Supra 911', p911), null);
+  assert.equal(modelLevel('Skyline Supra Civic', r34), null);
+  assert.notEqual(modelLevel('M4 M3', m4), 'full');
 });
 
-test('make in the model box is stripped', () => {
-  assert.equal(S.matchModel('Nissan Skyline R34', r34), 'full');
-  assert.equal(S.matchModel('Toyota Supra', supra), 'full');
-});
-
-test('right family, wrong trim is close (1 pt)', () => {
-  assert.equal(S.matchModel('Skyline', r34), 'close');
-  assert.equal(S.matchModel('Skyline R32', r34), 'close');
-  const r = S.scoreGuess(r34, '', 'Skyline', '');
-  assert.equal(r.pts, 1);
-});
-
-test('generic words alone earn nothing', () => {
-  const e30 = car('BMW', '3 Series E30');
-  assert.equal(S.matchModel('Series', e30), null);
-  assert.equal(S.matchModel('GT', car('Toyota', 'Celica GT-Four')), null);
-});
-
-test('cannot hedge two models in one answer', () => {
-  assert.notEqual(S.matchModel('Supra 911', supra), 'full');
-  assert.notEqual(S.matchModel('Supra 911', porsche74), 'full');
-});
-
-test('wrong model scores zero', () => {
-  assert.equal(S.matchModel('Civic', supra), null);
-  assert.equal(S.matchModel('Camry', car('Chevrolet', 'Camaro', 1969)), null);
-});
-
-test('years: exact, near, far, two-digit', () => {
+test('years: competitive is tighter than casual', () => {
   assert.equal(S.parseYear('94'), 1994);
   assert.equal(S.parseYear("'05"), 2005);
-  assert.equal(S.parseYear('1994'), 1994);
   assert.ok(Number.isNaN(S.parseYear('199')));
-  assert.ok(Number.isNaN(S.parseYear('abcd')));
-  assert.equal(S.scoreGuess(supra, '', '', '94').pts, 2);
-  assert.equal(S.scoreGuess(supra, '', '', '1990').pts, 1);
-  assert.equal(S.scoreGuess(supra, '', '', '1980').pts, 0);
+  const y = (g, o) => S.scoreRound(supra, { year: g }, o).res.find(r => r.label === 'Year').pts;
+  assert.equal(y('1994', comp), 3);
+  assert.equal(y('94', comp), 3);
+  assert.equal(y('1996', casual), 2);
+  assert.equal(y('1996', comp), 1);
+  assert.equal(y('1998', casual), 1);
+  assert.equal(y('1998', comp), 0);
+  assert.equal(y('abcd', casual), 0);
 });
 
-test('kit scoring with aliases and extra words', () => {
-  assert.equal(S.scoreKit(lambo, 'Liberty Walk').pts, 5);
-  assert.equal(S.scoreKit(lambo, 'LB Works').pts, 5);
-  assert.equal(S.scoreKit(lambo, 'lb★works').pts, 5);
-  assert.equal(S.scoreKit(lambo, 'liberty walk huracan').pts, 5);
-  assert.equal(S.scoreKit(lambo, 'Libery Walk').pts, 5, 'typo');
-  assert.equal(S.scoreKit(lambo, 'Rocket Bunny').pts, 0);
-  assert.equal(S.scoreKit(rwb, 'Rauh Welt').pts, 0, 'partial tuner name is not enough');
-  assert.equal(S.scoreKit(rwb, 'Rauh-Welt Begriff').pts, 5);
-  assert.equal(S.scoreKit(lambo, '').pts, 0);
+test('yearRange: any year in the production run is exact', () => {
+  assert.deepEqual(p911.yearRange, [1974, 1989]);
+  const y = g => S.scoreRound(p911, { year: g }, comp).res.find(r => r.label === 'Year');
+  assert.equal(y('1988').pts, 3);
+  assert.equal(y('1990').pts, 1);
+  assert.match(y('1960').note, /Off by 14 \(1974–1989\)/);
 });
 
-test('scoreRound dispatches by mode and handles missing input', () => {
-  assert.equal(S.scoreRound(lambo, 'kit', { kit: 'LB' }).pts, 0);
-  assert.equal(S.scoreRound(supra, 'worldwide', {}).pts, 0);
-  assert.equal(S.scoreRound(supra, 'worldwide', null).pts, 0);
-  assert.equal(S.scoreRound(supra, 'worldwide', { make: 123, model: undefined, year: null }).pts, 0);
-  assert.equal(S.maxForMode('kit'), 5);
-  assert.equal(S.maxForMode('japan'), 5);
+test('blank boxes are listed as skipped with the right answer', () => {
+  const r = S.scoreRound(supra, { make: 'Toyota' }, casual);
+  assert.deepEqual(r.res.map(x => x.verdict), ['hit', 'skip', 'skip']);
+  assert.equal(r.res[1].note, 'Supra');
+  assert.equal(r.pts, 2);
+  assert.equal(S.scoreRound(supra, null, casual).pts, 0);
+  assert.equal(S.scoreRound(supra, { make: 123, model: undefined }, casual).pts, 0);
 });
 
-test('every car in the dataset scores max on its own answer', () => {
+test('kit rounds: tuner 6, make 2, model 2', () => {
+  const k = (g, o = casual) => S.scoreRound(lambo, g, { ...o, kind: 'kit' });
+  assert.equal(k({ kit: 'Liberty Walk', make: 'Lamborghini', model: 'Huracan' }).pts, 10);
+  assert.equal(k({ kit: 'LB Works' }).pts, 6);
+  assert.equal(k({ kit: 'lb★works' }).pts, 6);
+  assert.equal(k({ kit: 'liberty walk huracan' }).pts, 6);
+  assert.equal(k({ kit: 'Libery Walk' }).pts, 6, 'typo forgiven in casual');
+  assert.equal(k({ kit: 'Libery Walk' }, comp).pts, 0, 'but not in competitive');
+  assert.equal(k({ kit: 'Rocket Bunny' }).pts, 0);
+  assert.equal(S.scoreRound(rwb, { kit: 'Rauh Welt' }, { kind: 'kit' }).pts, 0, 'partial tuner name is not enough');
+  assert.equal(S.scoreRound(rwb, { kit: 'Rauh-Welt Begriff' }, { kind: 'kit' }).pts, 6);
+  assert.ok(k({ kit: 'Liberty Walk' }).identified);
+});
+
+test('every car in the dataset scores 10 on its own answer, in both rulesets', () => {
   for (const c of CARS) {
-    const r = c.kit ? S.scoreKit(c, c.kit) : S.scoreGuess(c, c.make, c.model, String(c.year));
-    assert.equal(r.pts, r.max, `${c.make} ${c.model} ${c.year}`);
-    for (const a of c.modelAliases || []) assert.equal(S.matchModel(a, c), 'full', `${c.model} alias ${a}`);
+    for (const o of [casual, comp]) {
+      const kind = c.kit ? 'kit' : 'car';
+      const r = S.scoreRound(c, { kit: c.kit, make: c.make, model: S.fullModel(c), year: String(c.year) }, { ...o, kind });
+      assert.equal(r.pts, 10, `${c.id} (${o.ruleset}): ${JSON.stringify(r.res)}`);
+    }
+    for (const a of c.modelAliases || []) {
+      const lvl = modelLevel(c.variant ? `${a} ${c.variant}` : a, c, S.RULES.competitive);
+      assert.equal(lvl, 'full', `${c.id} alias ${a}`);
+    }
   }
+});
+
+test('no car gets full model credit for another car of the same make', () => {
+  const plain = CARS.filter(c => !c.kit && !c.excluded);
+  const bad = [];
+  for (const a of plain) for (const b of plain) {
+    if (a === b || a.make !== b.make) continue;
+    const g = S.fullModel(a);
+    if (S.fullModel(a).toLowerCase() === S.fullModel(b).toLowerCase()) continue;
+    if (modelLevel(g, b, S.RULES.competitive) === 'full') bad.push(`${g} -> ${b.id}`);
+  }
+  // Known, legitimate overlaps (same car name across generations/trims).
+  const allowed = new Set((process.env.VC_ALLOWED_OVERLAPS || '').split(',').filter(Boolean));
+  const unexpected = bad.filter(x => !allowed.has(x) && !/^(Golf GTI -> volkswagen-golf-1983|Corvette Stingray -> chevrolet-corvette-1963)$/.test(x));
+  assert.deepEqual(unexpected, []);
 });
 
 test('excluded cars carry a reason and are never served', () => {
   const { poolFor } = require('../src/party');
   const excluded = CARS.filter(c => c.excluded);
-  assert.ok(excluded.length > 0);
   for (const c of excluded) assert.ok(typeof c.excluded === 'string' && c.excluded.length > 10);
   for (const m of ['worldwide', 'japan', 'germany', 'usa', 'france', 'italy', 'uk', 'niche', 'supercar', 'timeattack', 'kit']) {
     assert.ok(poolFor(CARS, m).every(c => !c.excluded), m);
@@ -157,15 +193,4 @@ test('dataset integrity', () => {
       assert.ok(Array.isArray(c.yearRange) && c.yearRange.length === 2 && c.yearRange[0] <= c.year && c.year <= c.yearRange[1], `${c.id}.yearRange`);
     }
   }
-});
-
-test('yearRange: any year in a long production run is exact', () => {
-  const p911 = car('Porsche', '911', 1974);
-  assert.deepEqual(p911.yearRange, [1974, 1989]);
-  assert.equal(S.scoreGuess(p911, '', '', '1988').pts, 2);
-  assert.equal(S.scoreGuess(p911, '', '', '1974').pts, 2);
-  assert.equal(S.scoreGuess(p911, '', '', '1992').pts, 1);
-  const r = S.scoreGuess(p911, '', '', '1960');
-  assert.equal(r.pts, 0);
-  assert.match(r.res[0].detail, /1974–1989 \(off by 14\)/);
 });

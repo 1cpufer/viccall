@@ -13,20 +13,20 @@ async function playPerfect(srv, mode = 'worldwide') {
   let last;
   for (let i = 0; i < 10; i++) {
     const car = byImg(images[i]);
-    const guess = mode === 'kit' ? { kit: car.kit } : { make: car.make, model: car.model, year: String(car.year) };
+    const guess = mode === 'kit' ? { kit: car.kit, make: car.make, model: car.model } : { make: car.make, model: car.model, year: String(car.year) };
     last = await srv.api('POST', '/api/solo/guess', { sessionId, idx: i, ...guess });
     assert.equal(last.status, 200);
   }
   return { sessionId, last };
 }
 
-test('solo session: answers only revealed after guessing; perfect game = 50', async () => {
+test('solo session: answers only revealed after guessing; perfect game = 100', async () => {
   const srv = await startServer();
   try {
     const start = await srv.api('POST', '/api/solo/start', { mode: 'japan' });
     assert.equal(JSON.stringify(start.body).includes('"make"'), false, 'no answers in start payload');
     const { last } = await playPerfect(srv, 'japan');
-    assert.equal(last.body.score, 50);
+    assert.equal(last.body.score, 100);
     assert.equal(last.body.done, true);
     assert.ok(last.body.answer.make);
   } finally { await srv.stop(); }
@@ -58,16 +58,16 @@ test('leaderboard only accepts finished server sessions, once', async () => {
     assert.equal((await srv.api('POST', '/api/scores', { sessionId, name: 'Again' })).status, 409);
     const lb = await srv.api('GET', '/api/leaderboard?mode=worldwide');
     assert.equal(lb.body.length, 1);
-    assert.equal(lb.body[0].score, 50);
+    assert.equal(lb.body[0].score, 100);
     assert.equal(lb.body[0].name, 'bFerdb', 'name sanitized');
   } finally { await srv.stop(); }
 });
 
-test('kit sessions max out at 50 too', async () => {
+test('kit sessions max out at 100 too', async () => {
   const srv = await startServer();
   try {
     const { last } = await playPerfect(srv, 'kit');
-    assert.equal(last.body.score, 50);
+    assert.equal(last.body.score, 100);
   } finally { await srv.stop(); }
 });
 

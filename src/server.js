@@ -101,7 +101,7 @@ function createApp(opts = {}) {
     const queue = buildQueue(CARS, mode);
     const now = Date.now();
     sessions.set(id, { id, mode, queue, idx: 0, score: 0, results: [], created: now, roundStart: now, saved: false });
-    res.json({ sessionId: id, mode, total: TOTAL, maxPerCar: VCScore.maxForMode(mode), timeLimitMs: mode === 'timeattack' ? TIME_ATTACK_MS : 0, images: queue.map(c => c.img) });
+    res.json({ sessionId: id, mode, total: TOTAL, maxPerCar: VCScore.MAX, timeLimitMs: mode === 'timeattack' ? TIME_ATTACK_MS : 0, images: queue.map(c => c.img) });
   });
 
   // Client tells the server the round is on screen, so Time Attack can be checked.
@@ -119,7 +119,7 @@ function createApp(opts = {}) {
     if (b.idx !== s.idx || s.idx >= TOTAL) return res.status(409).json({ error: 'round already answered' });
     const car = s.queue[s.idx];
     const guess = { make: clip(b.make, 60), model: clip(b.model, 60), year: clip(b.year, 8), kit: clip(b.kit, 60) };
-    let result = VCScore.scoreRound(car, s.mode, guess);
+    let result = VCScore.scoreRound(car, guess, { ruleset: 'casual', kind: s.mode === 'kit' ? 'kit' : 'car' });
     const late = s.mode === 'timeattack' && Date.now() - s.roundStart > TIME_ATTACK_MS + TIME_ATTACK_SLACK_MS;
     if (late) result = { ...result, pts: 0, res: result.res.map(r => ({ ...r, pts: 0 })), late: true };
     s.score += result.pts;
@@ -141,7 +141,7 @@ function createApp(opts = {}) {
     if (s.saved) return res.status(409).json({ error: 'Score already saved' });
     s.saved = true;
 
-    const entry = { id: crypto.randomUUID(), name: sanitizeName(b.name), mode: s.mode, score: s.score, maxScore: TOTAL * VCScore.maxForMode(s.mode), ts: Date.now() };
+    const entry = { id: crypto.randomUUID(), name: sanitizeName(b.name), mode: s.mode, score: s.score, maxScore: TOTAL * VCScore.MAX, ts: Date.now() };
     const scores = readJson(SCORES_FILE);
     scores.push(entry);
     const forMode = scores.filter(x => x.mode === s.mode).sort((a, c) => c.score - a.score || a.ts - c.ts);

@@ -311,7 +311,7 @@ function attachParty(io, CARS, MODES, opts = {}) {
       if (player.answered) return cb({ ok: false, error: 'Already answered' });
       if (Number.isInteger(payload.idx) && payload.idx !== room.curIdx) return cb({ ok: false, error: 'Round is over' });
       const guess = { make: str(payload.make, 60), model: str(payload.model, 60), year: str(payload.year, 8), kit: str(payload.kit, 60) };
-      const result = VCScore.scoreRound(room.queue[room.curIdx], room.mode, guess);
+      const result = VCScore.scoreRound(room.queue[room.curIdx], guess, { ruleset: 'casual', kind: room.mode === 'kit' ? 'kit' : 'car' });
       player.pending = result.pts;
       player.answered = true;
       player.lastPts = result.pts;

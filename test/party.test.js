@@ -119,8 +119,8 @@ test('kit party scores tuner names', async () => {
     await emit(host, 'party:next', { idx: 0 });
     const { img } = await round2;
     const car = CARS.find(c => c.img === img && c.kit);
-    const good = await emit(host, 'party:guess', { kit: car.kit });
-    assert.equal(good.pts, 5);
+    const good = await emit(host, 'party:guess', { kit: car.kit, make: car.make, model: car.model });
+    assert.equal(good.pts, 10);
   } finally { await srv.stop(); }
 });
 
@@ -224,7 +224,7 @@ test('scores stay hidden until the reveal', async () => {
     const car = CARS.find(c => c.img === img && !c.kit);
     const prog = once(guests[0], 'party:progress');
     const r = await emit(host, 'party:guess', { make: car.make, model: car.model, year: String(car.year) });
-    assert.equal(r.pts, 5);
+    assert.equal(r.pts, 10);
     const p = await prog;
     const h = p.players.find(x => x.name === 'Host');
     assert.equal(h.score, 0, 'score not visible mid-round');
@@ -232,7 +232,7 @@ test('scores stay hidden until the reveal', async () => {
     const rev = once(guests[0], 'party:reveal');
     await emit(guests[0], 'party:guess', { make: 'x' });
     const d = await rev;
-    assert.equal(d.standings.find(x => x.name === 'Host').score, 5);
-    assert.equal(d.standings.find(x => x.name === 'Host').lastPts, 5);
+    assert.equal(d.standings.find(x => x.name === 'Host').score, 10);
+    assert.equal(d.standings.find(x => x.name === 'Host').lastPts, 10);
   } finally { await srv.stop(); }
 });

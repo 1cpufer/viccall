@@ -330,16 +330,13 @@
     if (late) return { text: 'Too late: the clock ran out', cls: 'is-miss' };
     if (empty) return { text: 'No answer', cls: 'is-miss' };
     if (pts >= max) return { text: 'Nailed it', cls: 'is-hit' };
-    if (pts >= 3) return { text: 'Close', cls: 'is-hit' };
+    if (pts >= max * 0.7) return { text: 'Close', cls: 'is-hit' };
     if (pts > 0) return { text: 'Partly right', cls: '' };
     return { text: 'Not this time', cls: 'is-miss' };
   }
   function chipsHtml(res) {
-    return (res || []).map((r, i) => {
-      let label = r.label;
-      const off = /off by \d+/.exec(r.detail || '');
-      if (r.label === 'Year' && off && r.verdict !== 'hit') label += `, ${off[0]}`;
-      else if (r.verdict === 'close') label += ', close';
+    return (res || []).filter(r => r.verdict !== 'skip').map((r, i) => {
+      const label = r.verdict === 'hit' ? r.label : `${r.label}: ${r.note}`;
       return `<li class="chip is-${r.verdict}" style="--i:${i}">${esc(label)} <b>${r.pts > 0 ? '+' + r.pts : '0'}</b></li>`;
     }).join('');
   }
