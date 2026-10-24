@@ -14,6 +14,8 @@ const { createMailer } = require('./mailer');
 const { createAuth } = require('./auth');
 const { createGarage } = require('./garage');
 const { createCommonsProvenance } = require('./provenance');
+const { createScoresBackup, tidy } = require('./scores-backup');
+const { startKeepAwake } = require('./keep-awake');
 const VCScore = require('../public/scoring.js');
 
 const MAX_PER_BOARD = 100;
@@ -37,6 +39,13 @@ function createApp(opts = {}) {
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(SCORES_FILE)) fs.writeFileSync(SCORES_FILE, '[]');
   if (!fs.existsSync(REPORTS_FILE)) fs.writeFileSync(REPORTS_FILE, '[]');
+
+  // Leaderboards survive restarts when a GitHub token is set (see scores-backup.js).
+  const backup = opts.scoresBackup || createScoresBackup({
+    file: SCORES_FILE, token: opts.scoresToken !== undefined ? opts.scoresToken : process.env.SCORES_GITHUB_TOKEN,
+    gistId: process.env.SCORES_GIST_ID, fetch: opts.fetchGithub, log: opts.log !== false,
+  });
+  if (backup.enabled) backup.restore();
 
   const readJson = f => { try { const v = JSON.parse(fs.readFileSync(f, 'utf8')); return Array.isArray(v) ? v : []; } catch { return []; } };
   // Write to a temp file then rename, so a crash mid-write can't corrupt the leaderboard.
@@ -287,10 +296,9 @@ function createApp(opts = {}) {
     scores.push(entry);
     const forBoard = scores.filter(x => x.board === board).sort(sortBoard);
     const rank = forBoard.findIndex(x => x.id === entry.id) + 1;
-    if (forBoard.length > MAX_PER_BOARD) {
-      const keep = new Set(forBoard.slice(0, MAX_PER_BOARD).map(x => x.id));
-      writeJson(SCORES_FILE, scores.filter(x => x.board !== board || keep.has(x.id)));
-    } else writeJson(SCORES_FILE, scores);
+    // Top 100 per board; Daily Challenge boards are kept for 30 days.
+    writeJson(SCORES_FILE, tidy(scores));
+    backup.markDirty();
     res.json({ rank: rank <= MAX_PER_BOARD ? rank : null, total: Math.min(forBoard.length, MAX_PER_BOARD) });
   });
 
@@ -348,15 +356,38 @@ function createApp(opts = {}) {
   const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance,
-    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); if (gdb && !opts.db) gdb.close(); },
+    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup,
+    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); backup.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  const { server, provenance } = createApp();
+  const { server, provenance, images, backup } = createApp();
   server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+
+  // Free hosting sleeps after 15 idle minutes and the restart wipes data/.
+  // RENDER_EXTERNAL_URL is set by Render; KEEP_AWAKE=0 turns this off.
+  if (process.env.KEEP_AWAKE !== '0') startKeepAwake({ url: process.env.KEEP_AWAKE_URL || process.env.RENDER_EXTERNAL_URL });
+
+  // Check once that ranked photos can be fetched through the proxy (otherwise
+  // they fall back to direct Wikimedia links, which can give the car away).
+  setTimeout(async () => {
+    const car = require('./cars.json').find(c => !c.excluded);
+    const t = Date.now();
+    try {
+      const { buf, type } = await images.load(car.img);
+      console.log(`[img] photo proxy works: ${type}, ${Math.round(buf.length / 1024)} KB in ${Date.now() - t} ms`);
+    } catch (e) {
+      console.warn(`[img] photo proxy can't fetch from Wikimedia (${e.message}); ranked photos will use direct links`);
+    }
+  }, 5_000).unref();
+
+  // Deploys and restarts send SIGTERM: save the leaderboards first.
+  process.on('SIGTERM', async () => {
+    try { if (backup.enabled) { await Promise.race([backup.flush(), new Promise(r => setTimeout(r, 20_000))]); console.log('[scores] saved before shutdown'); } } catch {}
+    process.exit(0);
+  });
   // Photo credits: ask Commons for authors and licences when the saved copy is
   // missing or a week old (a few requests, in the background).
   if (process.env.COMMONS_META !== '0') {

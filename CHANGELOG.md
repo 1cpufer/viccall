@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-24: Leaderboards that stay, and no more sleeping
+
+- **Leaderboards survive restarts** (`src/scores-backup.js`).
+  - With `SCORES_GITHUB_TOKEN` set, scores are kept in a private gist on GitHub as well as on the server.
+  - They're restored when the server starts, saved 15 seconds after a new score, and saved again on shutdown.
+  - Nothing is saved until a restore has succeeded, so a GitHub outage at start-up can't wipe the saved boards; the restore retries every minute.
+  - Boards keep their top 100. Daily Challenge boards are now cleared after 30 days.
+- **Keep-awake** (`src/keep-awake.js`). On Render the server requests its own `/api/health` every 10 minutes, so the free instance no longer sleeps: no one-minute wait for the first visitor, and no reset from sleeping. This uses about 744 of the 750 free hours a month.
+- **Photo proxy check.** On start-up the server fetches one ranked photo through its proxy and logs whether it worked.
+- **Tests:** 5 new (93 total), with a stand-in GitHub API.
+
 ## 2026-10-20: Community Garage (branch `game-expansion`, switched off by default)
 
 Off unless `GARAGE_ENABLED=1`. Every game mode still works without an account. Full write-up: `docs/COMMUNITY_GARAGE.md`.

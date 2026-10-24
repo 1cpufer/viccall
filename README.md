@@ -12,7 +12,7 @@ npm run dev    # or: npm start
 Serves on `http://localhost:3000` (override with `PORT`).
 
 ```
-npm test                                   # node:test, 88 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, competitive integrity
+npm test                                   # node:test, 93 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, integrity, leaderboard backup
 node e2e/ui.e2e.js [shotDir]               # browser run of every mode, desktop + phone + a 2-player party
 node e2e/party.e2e.js                      # party edge cases (timers, host leaving, refresh, rematch)
 node e2e/garage.e2e.js [shotDir]           # accounts, upload, moderation, credit, reports, counter-notice, phone
@@ -29,6 +29,8 @@ The browser scripts need Playwright (`npm i --no-save playwright && npx playwrig
 | `TRUST_PROXY` | Set to `1` behind a reverse proxy (Render, Railway, nginx) so rate limits see real client IPs. |
 | `GARAGE_ENABLED` | `1` turns on accounts and the Community Garage (off by default). Its other settings (`PUBLIC_URL`, `ADMIN_EMAILS`, Google, Discord and email keys) are listed in `docs/COMMUNITY_GARAGE.md`. |
 | `COMMONS_META` | `0` stops the weekly lookup of first-party photo authors and licences on Wikimedia Commons. |
+| `SCORES_GITHUB_TOKEN` | A GitHub token allowed to edit gists. Leaderboards are then also kept in a private gist, restored on start-up and saved after each score and on shutdown, so they survive restarts on hosting without a disk. `SCORES_GIST_ID` pins a specific gist (normally found by its description). |
+| `KEEP_AWAKE`, `KEEP_AWAKE_URL` | On Render the server requests its own `/api/health` every 10 minutes (using `RENDER_EXTERNAL_URL`) so the free instance doesn't sleep. `KEEP_AWAKE=0` turns it off; `KEEP_AWAKE_URL` sets the address elsewhere. |
 
 ### Dependencies
 
@@ -38,7 +40,12 @@ Runtime: `express`, `compression`, `socket.io`, and `sharp` (image checks and re
 
 `render.yaml` is a Render Blueprint: in Render choose **New → Blueprint**, pick this repo, and it creates a free web service with `TRUST_PROXY` set and a random `ADMIN_TOKEN`.
 
-On Render's free plan the service sleeps after 15 minutes without visitors (the first visit then takes about a minute), and the disk resets on every restart or deploy, so leaderboards and reports don't persist. Add a persistent disk mounted at `/opt/render/project/src/data` on a paid plan to keep them.
+On Render's free plan the service would sleep after 15 minutes without visitors (the next visit then takes about a minute), and its files reset on every restart, sleep or deploy. Two things work around that:
+
+- **Keep-awake.** The server requests its own address every 10 minutes, so it doesn't sleep. Staying up all month uses about 744 of the workspace's 750 free instance hours, so this only fits while VicCall is the workspace's only free service. If the hours run out, Render suspends free services until the next month.
+- **Leaderboards on GitHub.** With `SCORES_GITHUB_TOKEN` set, scores are saved to a private gist and restored after a restart. Nothing is saved until a restore has succeeded, so a GitHub outage at start-up can't overwrite them. Bug reports aren't backed up.
+
+A persistent disk mounted at `/opt/render/project/src/data` (paid plans) keeps everything, and the Community Garage needs one.
 
 ## Modes
 
@@ -160,6 +167,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 - Photos are checked by file name and hash path only. Wikimedia isn't reachable from the development sandbox, so nobody has looked at every image; the 5 held-back entries were caught by file name. The proxy was tested against a stubbed upstream, not live Wikimedia.
 - No free-licensed photos were found for Top Secret, Varis or newer Prior Design builds, so those tuners aren't in the game yet.
 - Scores from before the expansion used a 50-point scale and the old mode names. They stay in the scores file but aren't shown on the new boards.
+- Leaderboards survive restarts only with `SCORES_GITHUB_TOKEN` set, or on a persistent disk. Scores posted in the 15 seconds before a crash (not a normal restart) can be lost.
 - Personal bests live in the browser only, also for signed-in players. Accounts are only used by the Community Garage.
 - The Community Garage has never run on the production server, and Google and Discord sign-in, Resend email and the Commons credit lookup have only been tested against stubs. Its own limitations are listed in `docs/COMMUNITY_GARAGE.md`.
 
