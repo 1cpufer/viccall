@@ -2,6 +2,36 @@
 
 Vehicle Identification Call: a car-guessing game. You see one photo and name the make, model and year, or for a modified car, the tuner behind the body kit. No account needed to play. Accounts exist only for the optional Community Garage, where players submit their own photos.
 
+## Status (24 October 2026)
+
+- **Live:** https://viccall.onrender.com, Render free plan, deployed from the `overnight-polish` branch. Pushing there deploys.
+- **Branches:**
+  - `main` has the latest code and notes, so start there.
+  - `game-expansion` is the work branch.
+  - `overnight-polish` is what's live. It matches `main` except for the most recent notes.
+- **Running on the live site:**
+  - Every game mode and answer recognition.
+  - Keep-awake: the site doesn't sleep.
+  - Leaderboards backed up to a private gist (`SCORES_GITHUB_TOKEN` is set on Render).
+  - Photo proxy: confirmed working.
+  - Commons photo credits: all 301 photos have usable licences.
+- **Built but switched off:** the Community Garage, meaning accounts, photo submissions and moderation (`GARAGE_ENABLED` isn't set). See `docs/COMMUNITY_GARAGE.md`.
+- **Still to do (owner):**
+  - Before opening the Garage:
+    - a paid instance with a persistent disk
+    - `GARAGE_ENABLED`, `PUBLIC_URL` and `ADMIN_EMAILS` set on Render
+    - email through Resend, which needs a domain
+    - Google and Discord sign-in apps (optional)
+  - Legal: licence decisions and a lawyer's review, terms and a privacy notice, and a DMCA agent registration.
+  - Renew the GitHub token before it expires.
+- **Still to do (code):**
+  - Check every one of the 301 photos shows the right car. This can't be done from the cloud sandbox, which can't reach Wikimedia; it needs a session linked to a computer.
+  - Let moderators add vehicles that aren't in the database.
+  - Email contributors about decisions.
+  - Fingerprint the first-party photos so copies of them are caught.
+  - Test Google, Discord and Resend for real once the keys exist.
+- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (93 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
+
 ## Running it
 
 ```
@@ -175,6 +205,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-24, staying power:** leaderboards backed up to GitHub, keep-awake on the free plan, a start-up photo proxy check.
 - **2026-10-20, Community Garage** (off until switched on): accounts, photo submissions with automatic checks, moderation, competitive exclusion of contributors' photos, reports and copyright handling, first-party photo credits from Commons.
 - **2026-10-20, answer recognition:** one answer box, a vehicle index with generations, shorthand and implied makes, ambiguity handling, data audit.
 - **2026-10-19, game expansion** (branch `game-expansion`): 10-point scoring with casual and competitive rules, 302-car database with difficulty tiers and 25 tuner builds, Daily / Ranked / Endless / Free Play modes, photo proxy, desktop-first interface, synthesised sound effects and music.

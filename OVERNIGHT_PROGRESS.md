@@ -1,5 +1,7 @@
 # VicCall: Overnight Progress
 
+> Historical log of the 17 October overnight session. The current state is in `README.md` under **Status**.
+
 Session start: 2026-10-17, ~00:30 CT. Branch: `overnight-polish` (cut from `main` @ `a7a2048`).
 
 ## How to resume after context loss
