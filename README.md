@@ -81,13 +81,21 @@ A persistent disk mounted at `/opt/render/project/src/data` (paid plans) keeps e
 
 | Mode | Rules | Clock | Leaderboard |
 |---|---|---|---|
-| **Daily Challenge** | 10 cars, the same for everyone each UTC day: 3 easy, 4 medium, 3 hard, easiest first. One ranked attempt per browser; later runs are practice. | 45 s | One per day |
+| **Daily Challenge** | 10 cars, the same for everyone each UTC day: 3 easy, 4 medium, 3 hard, easiest first. One ranked attempt per browser; later runs are practice. | 45 s | One per day; the previous day's stays viewable |
 | **Ranked** | Seven playlists: Worldwide, Modern Cars (2010+), Classic Icons (pre-1990), JDM Challenge, European Performance, Supercar Challenge, Body Kit ID. 10 cars, ordered easy to hard. | 45 s | One per playlist |
 | **Endless** | Keep going until you miss three cars. Difficulty follows your streak; no car repeats. | 45 s | One board |
 | **Free Play** | Pick era, region, type (everything / supercars / body kits), difficulty and clock (off, 60, 30, 15 s). Forgiving spelling. | Optional | None |
 | **Party** | Up to 16 players on the same car at the same time. The host picks the playlist and casual or competitive rules, and can change them between games. Invite links, refresh-to-resume, host handoff. | 60 s casual, 45 s competitive | None |
 
 Ranked, Daily and Endless use the **competitive** rules; Free Play uses **casual**; parties choose. Ties on a leaderboard go to whoever used less time.
+
+### One clock for the Daily Challenge
+
+The daily changes at midnight UTC, at the same moment everywhere: 7 PM Central and 8 PM Eastern in US summer time (an hour earlier in winter), midnight in the UK in winter (1 AM in summer), 9 AM in Japan. The server decides which day it is. The home screen shows the next change in the player's own time ("midnight UTC (7:00 PM your time)") and counts down on the server's clock, so a phone set to the wrong time still counts down correctly. A page left open past midnight picks up the new day without a reload.
+
+There's no timezone setting, on purpose. One worldwide day means everyone gets the same ten cars in the same window, so nobody can see tomorrow's cars early and pass them on. A setting that chose your day (or a local-midnight reset like Wordle's) would let players look at the next day's cars before it opens for everyone else, or get a second ranked attempt. Separate regional dailies would split a small community across several boards. The reset lands mid-evening in the Americas and in the morning in Asia, so the leaderboard keeps a **Previous daily** tab and nobody loses sight of the board they just played.
+
+**Deploying:** the ten cars are drawn from every car in play, so a deploy that adds, removes or re-tiers cars changes that day's ten for anyone who hasn't played yet. Deploy those changes just after midnight UTC.
 
 ## Scoring and answer recognition
 
@@ -177,7 +185,7 @@ All sound is synthesised in the browser (`public/audio.js`, Web Audio API). Ther
 
 | Endpoint | |
 |---|---|
-| `GET /api/meta` | Playlists with pool sizes, Free Play filter values, makes, today's daily date. No answers. |
+| `GET /api/meta` | Playlists with pool sizes, Free Play filter values, makes, today's daily date and when it ends (`daily.nextAt`), and the server's clock (`now`). No answers. |
 | `GET /api/pool?era=&region=&type=&difficulty=` | How many cars a Free Play filter matches. |
 | `POST /api/solo/start` | `{ kind: 'free'|'ranked'|'daily'|'endless', playlist?, filters?, player? }` |
 | `POST /api/solo/round` | Opens round `idx` and returns its photo URL. |

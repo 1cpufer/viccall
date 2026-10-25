@@ -116,6 +116,8 @@ function dailyQueue(CARS, dateKey) {
 }
 
 const utcDateKey = (d = new Date()) => d.toISOString().slice(0, 10);
+// When the next Daily Challenge starts: the coming midnight UTC, the same instant everywhere.
+const nextDailyAt = (d = new Date()) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
 const endlessPools = new WeakMap(); // shared per car list, so sessions don't each copy it
 const ENDLESS_CAP = 250;            // a run this long ends on its own
 
@@ -182,4 +184,4 @@ function catalog(CARS) {
   };
 }
 
-module.exports = { ROUNDS, RANKED_CLOCK_MS, ENDLESS_CAP, PLAYLISTS, FILTERS, DEFAULT_FILTERS, cleanFilters, freePlayFilter, planGame, nextEndless, dailyQueue, catalog, utcDateKey, era, pick, ramp, shuffle, live };
+module.exports = { ROUNDS, RANKED_CLOCK_MS, ENDLESS_CAP, PLAYLISTS, FILTERS, DEFAULT_FILTERS, cleanFilters, freePlayFilter, planGame, nextEndless, dailyQueue, catalog, utcDateKey, nextDailyAt, era, pick, ramp, shuffle, live };

@@ -126,13 +126,16 @@ function createApp(opts = {}) {
   // What the menus need: playlists, filter options, pool sizes. Never answers.
   app.get('/api/meta', (req, res) => {
     const live = Modes.live(CARS);
+    const now = new Date();
     res.json({
       ...Modes.catalog(CARS),
       maxPerCar: VCScore.MAX,
       cars: live.length,
       kits: live.filter(c => c.kit).length,
       makes: [...new Set(live.map(c => c.make))].sort((a, b) => a.localeCompare(b)),
-      daily: { date: Modes.utcDateKey() },
+      // The daily runs on the server's UTC day; `now` lets the browser count down on the server's clock.
+      daily: { date: Modes.utcDateKey(now), nextAt: Modes.nextDailyAt(now) },
+      now: now.getTime(),
       garage: garageOn,
       community: garage ? garage.counts() : null,
     });

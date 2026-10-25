@@ -266,6 +266,11 @@ test('meta exposes playlists and pool sizes, not answers; unknown api 404s', asy
     assert.deepEqual(m.body.playlists.map(p => p.id), ['world', 'modern', 'classic', 'jdm', 'euro', 'super', 'kits']);
     assert.ok(m.body.playlists.every(p => p.size >= 10));
     assert.equal(JSON.stringify(m.body).includes('upload.wikimedia'), false);
+    // One clock for everyone: the daily is the server's UTC date and ends at the next midnight UTC.
+    const { date, nextAt } = m.body.daily;
+    assert.equal(date, new Date(m.body.now).toISOString().slice(0, 10));
+    assert.equal(nextAt - Date.parse(`${date}T00:00:00Z`), 24 * 60 * 60_000);
+    assert.ok(nextAt > m.body.now && nextAt - m.body.now <= 24 * 60 * 60_000);
     assert.equal((await srv.api('GET', '/api/cars')).status, 404);
   } finally { await srv.stop(); }
 });

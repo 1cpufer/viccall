@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-24: Daily Challenge on one clock, shown in your time
+
+The daily already ran on one clock, the UTC day, on the server and in the browser. But nothing said so: at 9 PM in Chicago the home screen showed tomorrow's date, because the 25 October set had started at 7 PM local time.
+
+- **The reset in your own time.** The home screen says "A new ten every day at midnight UTC (7:00 PM your time). Next in 21 h 4 min." Players who've played see "Next ten at 7:00 PM your time".
+- **The server's clock, not the device's.** `/api/meta` sends the server's time and when the day ends (`daily.nextAt`). The countdown runs on the server's clock, so a phone set to the wrong time still counts down correctly.
+- **No stale day.** A page left open past midnight UTC fetches the new day and updates the plate, countdown and leaderboard tabs. Before this, the countdown stuck at "0 min" and "Today's leaderboard" kept pointing at the old board.
+- **Previous daily tab.** The leaderboard keeps the board from the day before, so a player whose day reset mid-evening can still see where they finished.
+- **No timezone setting, on purpose.** One worldwide day means nobody sees tomorrow's cars early. A per-player or regional day would let people preview the next day's cars or take a second ranked attempt, and would split the boards. The reasoning is in the README under "One clock for the Daily Challenge".
+- **Tests:** the meta test checks that the daily date is the server's UTC date and ends at the next midnight UTC. In a browser, with the server's clock set 80 seconds before midnight, an open page rolled over to the new day without a reload.
+
 ## 2026-10-24: Every photo checked
 
 All 301 photos then in play were downloaded from Wikimedia, exactly as the game requests them, and looked at against their answers. Earlier sessions couldn't reach Wikimedia. Every URL loads without the fallback.

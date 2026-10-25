@@ -90,6 +90,8 @@
   const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
   const plateDate = iso => { const [, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
   const niceDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, { day: 'numeric', month: 'long', timeZone: 'UTC' }); };
+  const shiftDay = (iso, n) => { const [y, m, d] = iso.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); };
+  const localClock = ms => new Date(ms).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).replace(/\s/g, ' ');
 
   // ---------------------------------------------------------------- photos
   // Wikimedia thumbnail -> original file, for photos smaller than the thumbnail size.
@@ -236,9 +238,14 @@
 
   // ---------------------------------------------------------------- meta + home
   let META = null;
+  // The daily runs on one clock for everyone, the server's UTC day. This browser's
+  // clock only decides how the reset time is shown, never which day it is.
+  let clockOffset = 0;
+  const serverNow = () => Date.now() + clockOffset;
+  const useMeta = data => { META = data; clockOffset = typeof data.now === 'number' ? data.now - Date.now() : 0; };
   const metaReady = api('GET', '/api/meta').then(r => {
     if (!r.ok) { $('tower').innerHTML = '<li class="board-empty">Couldn’t reach the server. Check your connection and reload.</li>'; return; }
-    META = r.data;
+    useMeta(r.data);
     $('makeList').innerHTML = (META.makes || []).map(m => `<option value="${esc(m)}">`).join('');
     buildBuilder();
     buildPlaylistSelects();
@@ -268,7 +275,20 @@
       }).join('');
   }
 
-  let dailyTimer = 0;
+  let dailyTimer = 0, metaCheckedAt = 0;
+  const nextDailyAt = () => META.daily.nextAt || Date.parse(`${shiftDay(META.daily.date, 1)}T00:00:00Z`);
+  // Past the reset with the page still open: fetch the new day (at most once a minute).
+  async function refreshDaily() {
+    if (Date.now() - metaCheckedAt < 60_000) return;
+    metaCheckedAt = Date.now();
+    const r = await api('GET', '/api/meta');
+    if (!r.ok) return;
+    useMeta(r.data);
+    if (lbBoard && lbBoard.startsWith('daily:')) lbBoard = `daily:${META.daily.date}`;
+    buildBoardTabs();
+    renderHome();
+    if (current === 'leaderboard') loadBoard();
+  }
   function renderDaily() {
     const date = META.daily.date;
     const [, m, d] = date.split('-').map(Number);
@@ -283,16 +303,21 @@
       $('dailyActions').innerHTML = '<button class="btn btn--primary btn--lg" data-action="daily">Play today’s ten</button><button class="btn btn--quiet" data-action="lb-daily">Today’s leaderboard</button>';
     }
     const tick = () => {
-      const now = new Date();
-      const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
-      const mins = Math.max(0, Math.round((next - now) / 60000));
+      const next = nextDailyAt();
+      const mins = Math.max(0, Math.ceil((next - serverNow()) / 60000));
       const h = Math.floor(mins / 60), m = mins % 60;
       const when = h ? `${h} h ${m} min` : `${m} min`;
-      $('dailyMeta').textContent = rec ? `You’ve played today${rec.rank ? `: #${rec.rank} on the board` : ''}. New cars in ${when}.` : `New cars in ${when}.`;
+      const at = localClock(next);
+      $('dailyMeta').textContent = rec
+        ? `You’ve played today${rec.rank ? `: #${rec.rank} on the board` : ''}. Next ten at ${at} your time, in ${when}.`
+        : `A new ten every day at midnight UTC (${at} your time). Next in ${when}.`;
     };
     tick();
     clearInterval(dailyTimer);
-    dailyTimer = setInterval(() => { if (current === 'home') tick(); }, 30_000);
+    dailyTimer = setInterval(() => {
+      if (serverNow() >= nextDailyAt()) refreshDaily();
+      else if (current === 'home') tick();
+    }, 30_000);
   }
 
   // ---------------------------------------------------------------- Free Play builder
@@ -813,11 +838,14 @@
   // ---------------------------------------------------------------- leaderboards
   let lbBoard = null;
   let lastSaved = null;
-  const boardTitle = b => b.startsWith('daily:') ? 'Today’s Daily Challenge' : b === 'endless' ? 'Endless' : playlist(b.slice(7)).title;
+  // Today's board, plus the one before it: the reset lands mid-afternoon or evening in
+  // much of the world, and players should still be able to see where they finished.
+  const pastDaily = b => b.startsWith('daily:') && b !== `daily:${META.daily.date}`;
+  const boardTitle = b => b.startsWith('daily:') ? (pastDaily(b) ? `the ${niceDate(b.slice(6))} Daily Challenge` : 'Today’s Daily Challenge') : b === 'endless' ? 'Endless' : playlist(b.slice(7)).title;
   function buildBoardTabs() {
     lbBoard = lbBoard || `daily:${META.daily.date}`;
     const tab = (id, label) => `<button class="tab" role="tab" data-board="${esc(id)}" aria-selected="false">${esc(label)}</button>`;
-    $('lbTabs').innerHTML = `<span class="lb-group">Daily and Endless</span>${tab(`daily:${META.daily.date}`, 'Today’s daily')}${tab('endless', 'Endless')}<span class="lb-group">Ranked playlists</span>` +
+    $('lbTabs').innerHTML = `<span class="lb-group">Daily and Endless</span>${tab(`daily:${META.daily.date}`, 'Today’s daily')}${tab(`daily:${shiftDay(META.daily.date, -1)}`, 'Previous daily')}${tab('endless', 'Endless')}<span class="lb-group">Ranked playlists</span>` +
       META.playlists.map(p => tab(`ranked:${p.id}`, p.title)).join('');
   }
   $('lbTabs').addEventListener('click', e => {
@@ -857,7 +885,9 @@
     if (!r.ok) { list.innerHTML = '<li class="board-empty">Couldn’t load scores. Check your connection.</li>'; return; }
     const rows = Array.isArray(r.data) ? r.data : [];
     if (!rows.length) {
-      list.innerHTML = `<li class="board-empty">Nobody has posted on ${esc(boardTitle(lbBoard))} yet. Play it and take the top spot.</li>`;
+      list.innerHTML = pastDaily(lbBoard)
+        ? `<li class="board-empty">Nobody posted on ${esc(boardTitle(lbBoard))}.</li>`
+        : `<li class="board-empty">Nobody has posted on ${esc(boardTitle(lbBoard))} yet. Play it and take the top spot.</li>`;
       return;
     }
     const mine = lastSaved && lastSaved.board === lbBoard ? lastSaved : null;
