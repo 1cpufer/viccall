@@ -8,14 +8,14 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
 - **Branches:**
   - `main` has the latest code and notes, so start there.
   - `game-expansion` is the work branch.
-  - `overnight-polish` is what's live. `main` is ahead of it by the 24 October photo fixes, which go live once they're merged into `overnight-polish`.
+  - `overnight-polish` is what's live, and it only ever moves forward to `main`. `git log origin/overnight-polish..origin/main` lists anything not live yet.
 - **Running on the live site:**
   - Every game mode and answer recognition.
   - Keep-awake: the site doesn't sleep.
   - Leaderboards backed up to a private gist (`SCORES_GITHUB_TOKEN` is set on Render).
   - Photo proxy: confirmed working.
-  - Commons photo credits: all 301 photos have usable licences.
-- **Photos checked:** on 24 October every photo in play was looked at against its answer. 10 were replaced and 9 entries corrected (see `CHANGELOG.md`).
+  - Commons photo credits: all 307 photos have usable licences.
+- **Photos checked:** on 24 October every photo was looked at against its answer. 10 were replaced, 9 entries corrected, and the 6 held-back cars came back with correct photos, so all 307 entries are in play (see `CHANGELOG.md`).
 - **Built but switched off:** the Community Garage, meaning accounts, photo submissions and moderation (`GARAGE_ENABLED` isn't set). See `docs/COMMUNITY_GARAGE.md`.
 - **Still to do (owner):**
   - Before opening the Garage:
@@ -26,7 +26,6 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Legal: licence decisions and a lawyer's review, terms and a privacy notice, and a DMCA agent registration.
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
-  - Find correct photos for the 6 held-back entries (search `"excluded"` in `src/cars.json`).
   - Let moderators add vehicles that aren't in the database.
   - Email contributors about decisions.
   - Fingerprint the first-party photos so copies of them are caught.
@@ -137,11 +136,11 @@ Every answer gets a feedback line per field, for example:
 
 ## Car database
 
-`src/cars.json`: 307 entries (301 in play, 6 held back because their photo doesn't show the right car), 298 distinct vehicles, 83 makes.
+`src/cars.json`: 307 entries, all in play, 298 distinct vehicles, 84 makes. An entry whose photo turns out to be wrong can be held back with `"excluded": "<reason>"` until it's fixed.
 
-- Eras: 110 from 2010 onward, 61 from 1990–2009, 130 before 1990.
-- Difficulty, from how recognisable the car is: 60 easy, 123 medium, 118 hard.
-- 59 supercars, 15 cars with a scored trim (`variant`: GT-R Nismo, M4 Competition, 911 GT3 RS…) and 48 entries with a `generation` (E46, 992, S15, A80, W464…) wherever the database holds more than one generation of a name.
+- Eras: 110 from 2010 onward, 63 from 1990–2009, 134 before 1990.
+- Difficulty, from how recognisable the car is: 62 easy, 124 medium, 121 hard.
+- 59 supercars, 18 cars with a scored trim (`variant`: GT-R Nismo, M4 Competition, 911 GT3 RS, 205 Turbo 16…) and 49 entries with a `generation` (E46, 992, S15, A80, W464…) wherever the database holds more than one generation of a name.
 - 25 tuner builds from 13 tuners: ABT Sportsline, Brabus, Hamann, Larte Design, Liberty Walk, Mansory, Novitec, Prior Design, RWB, Rocket Bunny, TechArt, VeilSide, Vorsteiner. Every build is a real one, photographed on the car it was made for.
 - Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). The server looks up each file's author and licence on Commons and shows them after the round (`src/provenance.js`, see `docs/IMAGE_SOURCES.md`). `npm test` checks every URL's Commons hash path, difficulty, credit and year range.
 
@@ -206,7 +205,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
-- **2026-10-24, photo check:** every photo in play looked at; 10 replaced (wrong car, a logo, interiors, a speck on a track) and 9 entries corrected to match their photos.
+- **2026-10-24, photo check:** every photo looked at; 10 replaced (wrong car, a logo, interiors, a speck on a track), 9 entries corrected to match their photos, and the 6 held-back cars back in play.
 - **2026-10-24, staying power:** leaderboards backed up to GitHub, keep-awake on the free plan, a start-up photo proxy check.
 - **2026-10-20, Community Garage** (off until switched on): accounts, photo submissions with automatic checks, moderation, competitive exclusion of contributors' photos, reports and copyright handling, first-party photo credits from Commons.
 - **2026-10-20, answer recognition:** one answer box, a vehicle index with generations, shorthand and implied makes, ambiguity handling, data audit.

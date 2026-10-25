@@ -2,7 +2,7 @@
 
 ## 2026-10-24: Every photo checked
 
-All 301 photos in play were downloaded from Wikimedia, exactly as the game requests them, and looked at against their answers. Earlier sessions couldn't reach Wikimedia. Every URL loads without the fallback.
+All 301 photos then in play were downloaded from Wikimedia, exactly as the game requests them, and looked at against their answers. Earlier sessions couldn't reach Wikimedia. Every URL loads without the fallback.
 
 - **Wrong car, replaced.**
   - Mazda MX-5 (NA): the photo was a current ND.
@@ -23,6 +23,18 @@ All 301 photos in play were downloaded from Wikimedia, exactly as the game reque
   - TechArt Panamera: the Grand GT on the first-generation Panamera (970), not the second. Years 2009–2016, alias 970, hint.
   - Larte Design QX60: the first-generation L50 (2014–2020). 2025 was when the photo was taken.
   - Production-year ranges where the photo shows a different year of the same car: Mustang Mach 1 (a 1970), Peugeot 205 GTI (1989), Honda Prelude (1990), Toyota Soarer (1988), plus the new MX-5, 306, Isetta and Grifo photos.
+- **The six held-back cars are back**, so all 307 entries are in play. Each has a new photo of the right car, chosen like the replacements above:
+  - Subaru Impreza WRX STI: a GC8 type RA STi, without the STi bumper decals. Range 1994–2000.
+  - Mini Cooper: a 1968 Austin Mini Cooper S. Year 1968, range 1961–1971 (the id still says 1959).
+  - Mazda Cosmo: the Eunos Cosmo at the Mazda Museum. Range 1990–1996.
+  - Opel GT: a 1969 GT 1900 with no plate in view. Two other good photos had plates reading "GT 68H" and "GT72H". Range 1968–1973.
+  - Renault 4: an early 4L in a museum. Range 1961–1994: it was built for 33 years with few visible changes.
+  - Peugeot 205 Turbo 16: a road car in Gris Winchester. Range 1984–1985. Another road car had a "205 T16" plate.
+- **Trims, so short answers score like the rest of the game.**
+  - The STI is now the Impreza with trim WRX STI (generation GC8). "Subaru Impreza" was earning full credit; it's now "Right model, missed the trim".
+  - The 205 Turbo 16 and 205 GTI are now the 205 with trims Turbo 16 and GTI. "Peugeot 205" was full credit for the Turbo 16, and for the GTI it said "that's the 205 Turbo 16".
+  - The 2015 WRX STI (VA) loses the alias "Impreza WRX STI". The VA was only ever sold as the WRX STI, and the name now belongs to the GC8. "WRX STI" and "STI" are partial for both and name the two options.
+- **Licences.** `src/provenance.js` run against all 307 photos: 307 usable, none to review.
 - **Tests.** The Evo generation test now uses the IX as the sibling generation that's in the game. The photo-skip test guessed "Ferrari" and failed whenever the third Endless car happened to be one; it now checks only the skipped rounds.
 
 ## 2026-10-24: Leaderboards that stay, and no more sleeping

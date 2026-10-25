@@ -239,7 +239,8 @@
   {
     "id": "peugeot-205-gti-1986",
     "make": "Peugeot",
-    "model": "205 GTI",
+    "model": "205",
+    "variant": "GTI",
     "year": 1986,
     "yearRange": [
       1984,
@@ -392,23 +393,29 @@
   {
     "id": "subaru-impreza-wrx-sti-1999",
     "make": "Subaru",
-    "model": "Impreza WRX STI",
+    "model": "Impreza",
+    "variant": "WRX STI",
+    "variantAliases": [
+      "STI"
+    ],
+    "generation": "GC8",
     "year": 1999,
+    "yearRange": [
+      1994,
+      2000
+    ],
     "region": "japan",
     "niche": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Subaru_Impreza_%28GU%29_Automesse_Ludwigsburg_2024_IMG_1593.jpg/960px-Subaru_Impreza_%28GU%29_Automesse_Ludwigsburg_2024_IMG_1593.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Subaru_IMPREZA_WRX_type_RA_STi_%28GF-GC8%29_front.jpg/960px-Subaru_IMPREZA_WRX_type_RA_STi_%28GF-GC8%29_front.jpg",
     "hint": "Rally-bred AWD sedan",
     "supercar": false,
     "modelAliases": [
       "WRX STI",
-      "STI",
       "WRX",
-      "Impreza WRX",
-      "Impreza STI"
+      "Impreza WRX"
     ],
     "difficulty": 1,
-    "credit": "Subaru Impreza (GU) Automesse Ludwigsburg 2024 IMG 1593.jpg",
-    "excluded": "photo is a 2023 Impreza (GU), not a 1999 WRX STI"
+    "credit": "Subaru IMPREZA WRX type RA STi (GF-GC8) front.jpg"
   },
   {
     "id": "toyota-mr2-1989",
@@ -1106,10 +1113,14 @@
     "id": "mini-cooper-1959",
     "make": "Mini",
     "model": "Cooper",
-    "year": 1959,
+    "year": 1968,
+    "yearRange": [
+      1961,
+      1971
+    ],
     "region": "uk",
     "niche": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Mini_One_%28R50%29_%E2%80%93_Frontansicht%2C_12._Juni_2011%2C_D%C3%BCsseldorf.jpg/960px-Mini_One_%28R50%29_%E2%80%93_Frontansicht%2C_12._Juni_2011%2C_D%C3%BCsseldorf.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/1968_Austin_Mini_Cooper_S_1275cc_Front.jpg/960px-1968_Austin_Mini_Cooper_S_1275cc_Front.jpg",
     "hint": "British icon",
     "supercar": false,
     "modelAliases": [
@@ -1117,9 +1128,8 @@
       "Mini Cooper",
       "Mini Cooper S"
     ],
-    "excluded": "photo is a 2001+ BMW MINI One (R50), not the 1959 Mini",
     "difficulty": 1,
-    "credit": "Mini One (R50) – Frontansicht, 12. Juni 2011, Düsseldorf.jpg"
+    "credit": "1968 Austin Mini Cooper S 1275cc Front.jpg"
   },
   {
     "id": "land-rover-defender-1983",
@@ -1436,17 +1446,20 @@
     "make": "Mazda",
     "model": "Cosmo",
     "year": 1990,
+    "yearRange": [
+      1990,
+      1996
+    ],
     "region": "japan",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/OJ_C_202301015_of_2023_-_LV_Latvian.pdf/page1-960px-OJ_C_202301015_of_2023_-_LV_Latvian.pdf.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Eunos_Cosmo_in_the_Mazda_Museum.jpg/960px-Eunos_Cosmo_in_the_Mazda_Museum.jpg",
     "hint": "Triple-rotor luxury coupe",
     "supercar": false,
     "modelAliases": [
       "Eunos Cosmo"
     ],
-    "excluded": "photo is a page from an EU legal PDF, not a car",
     "difficulty": 3,
-    "credit": "page1-960px-OJ C 202301015 of 2023 - LV Latvian.pdf.jpg"
+    "credit": "Eunos Cosmo in the Mazda Museum.jpg"
   },
   {
     "id": "mazda-rx-8-2003",
@@ -1968,14 +1981,17 @@
     "make": "Opel",
     "model": "GT",
     "year": 1968,
+    "yearRange": [
+      1968,
+      1973
+    ],
     "region": "germany",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Opel_GT_Roadster_rear_-_PSM_2009.jpg/960px-Opel_GT_Roadster_rear_-_PSM_2009.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Opel_GT_1900%2C_1969_-_pic4.jpg/960px-Opel_GT_1900%2C_1969_-_pic4.jpg",
     "hint": "German Corvette-lookalike",
     "supercar": false,
-    "excluded": "photo is the 2007 Opel GT roadster, not the 1968 GT",
     "difficulty": 3,
-    "credit": "Opel GT Roadster rear - PSM 2009.jpg"
+    "credit": "Opel GT 1900, 1969 - pic4.jpg"
   },
   {
     "id": "opel-kadett-gsi-1984",
@@ -2414,9 +2430,13 @@
     "make": "Renault",
     "model": "4",
     "year": 1961,
+    "yearRange": [
+      1961,
+      1994
+    ],
     "region": "france",
     "niche": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Renault_4_CV_1956_rear.jpg/960px-Renault_4_CV_1956_rear.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Renault_4L_%2832351275657%29.jpg/960px-Renault_4L_%2832351275657%29.jpg",
     "hint": "Utilitarian people's car",
     "supercar": false,
     "modelAliases": [
@@ -2425,9 +2445,8 @@
       "Quatrelle",
       "Renault 4"
     ],
-    "excluded": "photo is a Renault 4CV, a different car",
     "difficulty": 2,
-    "credit": "Renault 4 CV 1956 rear.jpg"
+    "credit": "Renault 4L (32351275657).jpg"
   },
   {
     "id": "renault-clio-williams-1993",
@@ -2491,20 +2510,23 @@
   {
     "id": "peugeot-205-turbo-16-1984",
     "make": "Peugeot",
-    "model": "205 Turbo 16",
-    "year": 1984,
-    "region": "france",
-    "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Peugeot_205_%281990%E2%80%931998%29_Wien_26_July_2020_JM_%281%29.jpg/960px-Peugeot_205_%281990%E2%80%931998%29_Wien_26_July_2020_JM_%281%29.jpg",
-    "hint": "Group B rally monster",
-    "supercar": false,
-    "modelAliases": [
-      "205 T16",
+    "model": "205",
+    "variant": "Turbo 16",
+    "variantAliases": [
       "T16"
     ],
-    "excluded": "photo is a regular Peugeot 205, not the Turbo 16",
+    "year": 1984,
+    "yearRange": [
+      1984,
+      1985
+    ],
+    "region": "france",
+    "niche": true,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/1985_Peugeot_205_Turbo_16%2C_front_left_%28Greenwich%29.jpg/960px-1985_Peugeot_205_Turbo_16%2C_front_left_%28Greenwich%29.jpg",
+    "hint": "Group B rally monster",
+    "supercar": false,
     "difficulty": 3,
-    "credit": "Peugeot 205 (1990–1998) Wien 26 July 2020 JM (1).jpg"
+    "credit": "1985 Peugeot 205 Turbo 16, front left (Greenwich).jpg"
   },
   {
     "id": "peugeot-306-1993",
@@ -3822,7 +3844,6 @@
     "modelAliases": [
       "STI",
       "WRX",
-      "Impreza WRX STI",
       "WRX STi"
     ]
   },
