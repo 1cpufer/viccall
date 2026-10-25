@@ -75,11 +75,15 @@
     "id": "mitsubishi-lancer-evolution-2003",
     "make": "Mitsubishi",
     "model": "Lancer Evolution",
-    "generation": "VIII",
+    "generation": "IX",
     "generationAliases": [
-      "8"
+      "9"
     ],
-    "year": 2003,
+    "year": 2005,
+    "yearRange": [
+      2005,
+      2007
+    ],
     "region": "japan",
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/2005_Mitsubishi_Lancer_Evolution_IX_BS_O24.jpg/1280px-2005_Mitsubishi_Lancer_Evolution_IX_BS_O24.jpg",
@@ -237,6 +241,10 @@
     "make": "Peugeot",
     "model": "205 GTI",
     "year": 1986,
+    "yearRange": [
+      1984,
+      1994
+    ],
     "region": "france",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/1989_Peugeot_205_GTI_1.9_%2816556791566%29.jpg/1280px-1989_Peugeot_205_GTI_1.9_%2816556791566%29.jpg",
@@ -421,9 +429,13 @@
     "model": "Miata MX-5",
     "generation": "NA",
     "year": 1990,
+    "yearRange": [
+      1989,
+      1997
+    ],
     "region": "japan",
     "niche": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Mazda_Roadster_%28MX-5%29_by_Negawa_Bridge_%28cropped%29.jpg/960px-Mazda_Roadster_%28MX-5%29_by_Negawa_Bridge_%28cropped%29.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/1996_Mazda_MX-5_1.8.jpg/960px-1996_Mazda_MX-5_1.8.jpg",
     "hint": "Best-selling roadster",
     "supercar": false,
     "modelAliases": [
@@ -432,7 +444,7 @@
       "Eunos Roadster"
     ],
     "difficulty": 1,
-    "credit": "Mazda Roadster (MX-5) by Negawa Bridge (cropped).jpg"
+    "credit": "1996 Mazda MX-5 1.8.jpg"
   },
   {
     "id": "nissan-silvia-s15-1999",
@@ -793,11 +805,11 @@
     "year": 1959,
     "region": "usa",
     "niche": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/67_Cadillac_Eldorado_%2814277560774%29_cropped.jpg/960px-67_Cadillac_Eldorado_%2814277560774%29_cropped.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/1959_Cadillac_Eldorado_Biarritz_convertible_in_Warsaw.jpg/960px-1959_Cadillac_Eldorado_Biarritz_convertible_in_Warsaw.jpg",
     "hint": "Fin-era American luxury",
     "supercar": false,
     "difficulty": 2,
-    "credit": "67 Cadillac Eldorado (14277560774) cropped.jpg"
+    "credit": "1959 Cadillac Eldorado Biarritz convertible in Warsaw.jpg"
   },
   {
     "id": "dodge-viper-1992",
@@ -837,7 +849,11 @@
     "id": "tesla-model-s-2012",
     "make": "Tesla",
     "model": "Model S",
-    "year": 2012,
+    "year": 2016,
+    "yearRange": [
+      2016,
+      2021
+    ],
     "region": "usa",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Tesla_Model_S_%28Facelift_ab_04-2016%29_%28cropped%29.jpg/960px-Tesla_Model_S_%28Facelift_ab_04-2016%29_%28cropped%29.jpg",
@@ -1163,7 +1179,11 @@
     "id": "triumph-spitfire-1962",
     "make": "Triumph",
     "model": "Spitfire",
-    "year": 1962,
+    "year": 1970,
+    "yearRange": [
+      1970,
+      1974
+    ],
     "region": "uk",
     "niche": true,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Triumph_Spitfire_IV_%282014-09-13_7035%29.jpg/960px-Triumph_Spitfire_IV_%282014-09-13_7035%29.jpg",
@@ -1497,6 +1517,10 @@
     "make": "Honda",
     "model": "Prelude",
     "year": 1991,
+    "yearRange": [
+      1987,
+      1991
+    ],
     "region": "japan",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/1990_Honda_Prelude_4WS_Auto.jpg/960px-1990_Honda_Prelude_4WS_Auto.jpg",
@@ -1651,6 +1675,10 @@
     "make": "Toyota",
     "model": "Soarer",
     "year": 1991,
+    "yearRange": [
+      1986,
+      1991
+    ],
     "region": "japan",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/1988_Toyota_Soarer_2.0GT_Twin_Turbo.jpg/960px-1988_Toyota_Soarer_2.0GT_Twin_Turbo.jpg",
@@ -1792,13 +1820,17 @@
     "make": "BMW",
     "model": "Isetta",
     "year": 1955,
+    "yearRange": [
+      1955,
+      1962
+    ],
     "region": "germany",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/BMW_Isetta%2C_Bj._1955%2C_Cockpit_%282015-08-28_3083%29.JPG/960px-BMW_Isetta%2C_Bj._1955%2C_Cockpit_%282015-08-28_3083%29.JPG",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/BMW_Isetta_250_Savanna_Yellow_%281%29.jpg/960px-BMW_Isetta_250_Savanna_Yellow_%281%29.jpg",
     "hint": "Bubble-shaped microcar",
     "supercar": false,
     "difficulty": 3,
-    "credit": "BMW Isetta, Bj. 1955, Cockpit (2015-08-28 3083).JPG"
+    "credit": "BMW Isetta 250 Savanna Yellow (1).jpg"
   },
   {
     "id": "mercedes-benz-300sl-1954",
@@ -2033,6 +2065,10 @@
     "make": "Ford",
     "model": "Mustang Mach 1",
     "year": 1969,
+    "yearRange": [
+      1969,
+      1970
+    ],
     "region": "usa",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Ford_Mustang_Mach_1_%281969-1970%29_Hirschaid-20220709-RM-115225.jpg/960px-Ford_Mustang_Mach_1_%281969-1970%29_Hirschaid-20220709-RM-115225.jpg",
@@ -2129,7 +2165,7 @@
     "year": 1968,
     "region": "usa",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/1968_Chevrolet_Nova_SS_%2820389767164%29.jpg/960px-1968_Chevrolet_Nova_SS_%2820389767164%29.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/1968_Chevrolet_Nova_SS_496_custom%2C_Golden_Super_Cruise_2026-05-02.jpg/960px-1968_Chevrolet_Nova_SS_496_custom%2C_Golden_Super_Cruise_2026-05-02.jpg",
     "hint": "Compact muscle car",
     "supercar": false,
     "modelAliases": [
@@ -2137,7 +2173,7 @@
       "Chevy II"
     ],
     "difficulty": 3,
-    "credit": "1968 Chevrolet Nova SS (20389767164).jpg"
+    "credit": "1968 Chevrolet Nova SS 496 custom, Golden Super Cruise 2026-05-02.jpg"
   },
   {
     "id": "pontiac-gto-1966",
@@ -2146,7 +2182,7 @@
     "year": 1966,
     "region": "usa",
     "niche": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/1966_%26_1969_Pontiac_GTO_%2834841847634%29.jpg/960px-1966_%26_1969_Pontiac_GTO_%2834841847634%29.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/1966_Pontiac_GTO_Hardtop.jpg/960px-1966_Pontiac_GTO_Hardtop.jpg",
     "hint": "The original muscle car",
     "supercar": false,
     "modelAliases": [
@@ -2154,7 +2190,7 @@
       "LeMans GTO"
     ],
     "difficulty": 2,
-    "credit": "1966 & 1969 Pontiac GTO (34841847634).jpg"
+    "credit": "1966 Pontiac GTO Hardtop.jpg"
   },
   {
     "id": "oldsmobile-442-1970",
@@ -2206,15 +2242,15 @@
     "year": 1958,
     "region": "usa",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/1958_Lincoln_Continental_Mark_III_%2829719387991%29.jpg/960px-1958_Lincoln_Continental_Mark_III_%2829719387991%29.jpg",
-    "hint": "Suicide-door luxury sedan",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/1958_Lincoln_Continental_Mark_III_%2818841185979%29.jpg/960px-1958_Lincoln_Continental_Mark_III_%2818841185979%29.jpg",
+    "hint": "Huge late-'50s luxury car with a reverse-slant, drop-down rear window",
     "supercar": false,
     "modelAliases": [
       "Continental",
       "Mark III"
     ],
     "difficulty": 3,
-    "credit": "1958 Lincoln Continental Mark III (29719387991).jpg"
+    "credit": "1958 Lincoln Continental Mark III (18841185979).jpg"
   },
   {
     "id": "cadillac-cts-v-2004",
@@ -2475,13 +2511,17 @@
     "make": "Peugeot",
     "model": "306",
     "year": 1993,
+    "yearRange": [
+      1993,
+      1997
+    ],
     "region": "france",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Peugeot_306_corporative_wordmark_2_%281993-1999%29.png/960px-Peugeot_306_corporative_wordmark_2_%281993-1999%29.png",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/1996_Peugeot_306.jpg/960px-1996_Peugeot_306.jpg",
     "hint": "Praised hot hatch chassis",
     "supercar": false,
     "difficulty": 3,
-    "credit": "Peugeot 306 corporative wordmark 2 (1993-1999).png"
+    "credit": "1996 Peugeot 306.jpg"
   },
   {
     "id": "matra-djet-1962",
@@ -2507,11 +2547,11 @@
     "year": 1994,
     "region": "france",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Venturi_400_GT_1994_%2828809376672%29.jpg/960px-Venturi_400_GT_1994_%2828809376672%29.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Venturi_400GT%2C_Pau_2015_%282%29.jpg/960px-Venturi_400GT%2C_Pau_2015_%282%29.jpg",
     "hint": "Obscure French supercar",
     "supercar": true,
     "difficulty": 3,
-    "credit": "Venturi 400 GT 1994 (28809376672).jpg"
+    "credit": "Venturi 400GT, Pau 2015 (2).jpg"
   },
   {
     "id": "alpine-a310-1971",
@@ -2775,13 +2815,17 @@
     "make": "Iso",
     "model": "Grifo",
     "year": 1965,
+    "yearRange": [
+      1965,
+      1970
+    ],
     "region": "italy",
     "niche": true,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/1965-04-25_1000km_Monza_Iso_Grifo_A3C_Bizzarrini.jpg/960px-1965-04-25_1000km_Monza_Iso_Grifo_A3C_Bizzarrini.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/1967_Iso_Grifo_GL350.jpg/960px-1967_Iso_Grifo_GL350.jpg",
     "hint": "Italian-American muscle GT",
     "supercar": true,
     "difficulty": 3,
-    "credit": "1965-04-25 1000km Monza Iso Grifo A3C Bizzarrini.jpg"
+    "credit": "1967 Iso Grifo GL350.jpg"
   },
   {
     "id": "jaguar-xk120-1948",
@@ -3177,14 +3221,14 @@
     "region": "usa",
     "niche": true,
     "supercar": false,
-    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/1971_AMC_Javelin_AMX_in_Matador_Red_with_red_interior_at_AMO_2024_show_1of2.jpg/1280px-1971_AMC_Javelin_AMX_in_Matador_Red_with_red_interior_at_AMO_2024_show_1of2.jpg",
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/1971_AMC_Javelin_AMX_red_MD_frontright.jpg/960px-1971_AMC_Javelin_AMX_red_MD_frontright.jpg",
     "hint": "AMC's pony car answer to the Mustang and Camaro",
     "modelAliases": [
       "Javelin",
       "AMX"
     ],
     "difficulty": 3,
-    "credit": "1971 AMC Javelin AMX in Matador Red with red interior at AMO 2024 show 1of2.jpg"
+    "credit": "1971 AMC Javelin AMX red MD frontright.jpg"
   },
   {
     "id": "mercury-cougar-1967",
@@ -3525,7 +3569,11 @@
     "id": "infiniti-qx60-2025-larte-design",
     "make": "Infiniti",
     "model": "QX60",
-    "year": 2025,
+    "year": 2016,
+    "yearRange": [
+      2014,
+      2020
+    ],
     "region": "japan",
     "niche": true,
     "supercar": false,
@@ -5163,15 +5211,15 @@
     "id": "porsche-panamera-2017-techart",
     "make": "Porsche",
     "model": "Panamera",
-    "year": 2017,
+    "year": 2011,
     "yearRange": [
-      2016,
-      2023
+      2009,
+      2016
     ],
     "region": "germany",
     "niche": false,
     "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Porsche_Panamera_Techart_Grand_GT_(33831427114).jpg/960px-Porsche_Panamera_Techart_Grand_GT_(33831427114).jpg",
-    "hint": "TechArt Grand GT widebody on a second-gen Panamera",
+    "hint": "TechArt Grand GT widebody on a first-gen Panamera",
     "supercar": false,
     "kit": "TechArt",
     "kitAliases": [
@@ -5180,7 +5228,7 @@
     ],
     "modelAliases": [
       "Panamera Turbo",
-      "971"
+      "970"
     ],
     "difficulty": 2,
     "credit": "Porsche Panamera Techart Grand GT (33831427114).jpg"

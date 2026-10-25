@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-10-24: Every photo checked
+
+All 301 photos in play were downloaded from Wikimedia, exactly as the game requests them, and looked at against their answers. Earlier sessions couldn't reach Wikimedia. Every URL loads without the fallback.
+
+- **Wrong car, replaced.**
+  - Mazda MX-5 (NA): the photo was a current ND.
+  - Cadillac Eldorado (1959): the photo was a 1967 Eldorado.
+  - Peugeot 306: the "photo" was the 306 wordmark logo, which spelled out the answer.
+  - Pontiac GTO (1966): two GTOs in one photo, the nearer one a 1969.
+- **Right car, unusable photo, replaced.**
+  - Venturi 400 GT: a speck on a distant track.
+  - BMW Isetta and AMC Javelin AMX: interiors only.
+  - Lincoln Continental Mark III: a close-up of the grille. Its hint ("suicide-door") described the 1961 Continental, and was rewritten.
+  - Chevrolet Nova SS: a night shot of the supercharger.
+  - Iso Grifo: a black-and-white shot of the A3/C race car, which looks nothing like the road car.
+- **Replacements** are CC BY, CC BY-SA or public domain (the `src/provenance.js` test), at least 2,400 px wide, and have no plate or sign that gives the answer away.
+- **Right car, details corrected to match the photo.**
+  - Lancer Evolution: the photo is a 2005 Evo IX, so the entry is now the IX (2005–2007).
+  - Triumph Spitfire: a Spitfire IV, now 1970–1974.
+  - Tesla Model S: the 2016 facelift, now 2016–2021.
+  - TechArt Panamera: the Grand GT on the first-generation Panamera (970), not the second. Years 2009–2016, alias 970, hint.
+  - Larte Design QX60: the first-generation L50 (2014–2020). 2025 was when the photo was taken.
+  - Production-year ranges where the photo shows a different year of the same car: Mustang Mach 1 (a 1970), Peugeot 205 GTI (1989), Honda Prelude (1990), Toyota Soarer (1988), plus the new MX-5, 306, Isetta and Grifo photos.
+- **Tests.** The Evo generation test now uses the IX as the sibling generation that's in the game. The photo-skip test guessed "Ferrari" and failed whenever the third Endless car happened to be one; it now checks only the skipped rounds.
+
 ## 2026-10-24: Leaderboards that stay, and no more sleeping
 
 - **Leaderboards survive restarts** (`src/scores-backup.js`).

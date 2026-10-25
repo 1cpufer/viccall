@@ -106,11 +106,11 @@ test('a sibling trim or generation is partial, a different model is nothing', ()
   assert.equal(level(gt3rs, 'Cayman GT4 RS'), null);
   assert.equal(level(svj, 'Huracan'), null);
   const evo = byId('mitsubishi-lancer-evolution-x-2008');
-  const viii = read(evo, 'Lancer Evolution VIII');
-  assert.equal(viii.level, 'partial');
-  assert.match(viii.note, /VIII.*This is the Lancer Evolution \(X\)/);
+  const ix = read(evo, 'Lancer Evolution IX');
+  assert.equal(ix.level, 'partial');
+  assert.match(ix.note, /IX.*This is the Lancer Evolution \(X\)/);
   assert.equal(level(evo, 'Evo X'), 'full');
-  assert.equal(level(evo, 'Evo IX'), 'partial', 'a generation that isn\'t in the game is still the wrong one');
+  assert.equal(level(evo, 'Evo VIII'), 'partial', 'a generation that isn\'t in the game is still the wrong one');
   assert.equal(level(evo, 'Lancer Evolution'), 'partial', 'which generation?');
 });
 

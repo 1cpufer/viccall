@@ -8,13 +8,14 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
 - **Branches:**
   - `main` has the latest code and notes, so start there.
   - `game-expansion` is the work branch.
-  - `overnight-polish` is what's live. It matches `main` except for the most recent notes.
+  - `overnight-polish` is what's live. `main` is ahead of it by the 24 October photo fixes, which go live once they're merged into `overnight-polish`.
 - **Running on the live site:**
   - Every game mode and answer recognition.
   - Keep-awake: the site doesn't sleep.
   - Leaderboards backed up to a private gist (`SCORES_GITHUB_TOKEN` is set on Render).
   - Photo proxy: confirmed working.
   - Commons photo credits: all 301 photos have usable licences.
+- **Photos checked:** on 24 October every photo in play was looked at against its answer. 10 were replaced and 9 entries corrected (see `CHANGELOG.md`).
 - **Built but switched off:** the Community Garage, meaning accounts, photo submissions and moderation (`GARAGE_ENABLED` isn't set). See `docs/COMMUNITY_GARAGE.md`.
 - **Still to do (owner):**
   - Before opening the Garage:
@@ -25,7 +26,7 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Legal: licence decisions and a lawyer's review, terms and a privacy notice, and a DMCA agent registration.
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
-  - Check every one of the 301 photos shows the right car. This can't be done from the cloud sandbox, which can't reach Wikimedia; it needs a session linked to a computer.
+  - Find correct photos for the 6 held-back entries (search `"excluded"` in `src/cars.json`).
   - Let moderators add vehicles that aren't in the database.
   - Email contributors about decisions.
   - Fingerprint the first-party photos so copies of them are caught.
@@ -194,7 +195,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 ## Known limitations
 
 - No human has listened to the music or effects yet. They were checked by rendering offline and measuring levels: no clipping anywhere, and the high-frequency energy rises with intensity in both themes as layers come in. The mix may still need tuning by ear.
-- Photos are checked by file name and hash path only. Wikimedia isn't reachable from the development sandbox, so nobody has looked at every image; the 5 held-back entries were caught by file name. The proxy was tested against a stubbed upstream, not live Wikimedia.
+- Photos were last looked at by eye on 24 October 2026. `npm test` checks file names and hash paths, not what a photo shows, so a new or changed photo needs a look. The cloud sandbox can't reach Wikimedia; a session on a computer can.
 - No free-licensed photos were found for Top Secret, Varis or newer Prior Design builds, so those tuners aren't in the game yet.
 - Scores from before the expansion used a 50-point scale and the old mode names. They stay in the scores file but aren't shown on the new boards.
 - Leaderboards survive restarts only with `SCORES_GITHUB_TOKEN` set, or on a persistent disk. Scores posted in the 15 seconds before a crash (not a normal restart) can be lost.
@@ -205,6 +206,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-24, photo check:** every photo in play looked at; 10 replaced (wrong car, a logo, interiors, a speck on a track) and 9 entries corrected to match their photos.
 - **2026-10-24, staying power:** leaderboards backed up to GitHub, keep-awake on the free plan, a start-up photo proxy check.
 - **2026-10-20, Community Garage** (off until switched on): accounts, photo submissions with automatic checks, moderation, competitive exclusion of contributors' photos, reports and copyright handling, first-party photo credits from Commons.
 - **2026-10-20, answer recognition:** one answer box, a vehicle index with generations, shorthand and implied makes, ambiguity handling, data audit.

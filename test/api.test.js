@@ -188,7 +188,8 @@ test('free play pool counts; photo-failure skips are limited in ranked', async (
     }
     assert.deepEqual(results.map(r => r.skipped), [true, true, false], 'third claimed failure counts as a miss');
     assert.deepEqual(results.map(r => r.strikes), [0, 0, 1]);
-    assert.ok(results.every(r => r.pts === 0), 'a skip never scores');
+    // Only the skips: the third round is scored normally, so "Ferrari" earns the make if the car is one.
+    assert.ok(results.filter(r => r.skipped).every(r => r.pts === 0), 'a skip never scores');
   } finally { await srv.stop(); }
 });
 
