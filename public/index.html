@@ -463,13 +463,18 @@
         <legend>Music</legend>
         <label><input type="radio" name="sndTheme" value="monaco"><span>Monaco<small>Deep, melodic house</small></span></label>
         <label><input type="radio" name="sndTheme" value="nightrun"><span>Night Run<small>Drift phonk</small></span></label>
+        <label id="sndPlaylistOpt" hidden><input type="radio" name="sndTheme" value="playlist"><span>Artist playlist<small>Real songs, shuffled</small></span></label>
         <label><input type="radio" name="sndTheme" value="off"><span>No music<small>Sound effects only</small></span></label>
       </fieldset>
+      <div class="now-playing" id="sndNow" hidden aria-live="polite">
+        <p><span class="now-k">Now playing</span> <b id="sndNowTitle"></b> <span id="sndNowBy"></span></p>
+        <button class="btn btn--ghost btn--sm" type="button" id="sndSkip">Next song</button>
+      </div>
       <label class="slider"><span>Master</span><input type="range" min="0" max="100" step="1" id="sndMaster"><output for="sndMaster" id="sndMasterOut"></output></label>
       <label class="slider"><span>Music</span><input type="range" min="0" max="100" step="1" id="sndMusic"><output for="sndMusic" id="sndMusicOut"></output></label>
       <label class="slider"><span>Effects</span><input type="range" min="0" max="100" step="1" id="sndSfx"><output for="sndSfx" id="sndSfxOut"></output></label>
       <label class="check"><input type="checkbox" id="sndMute"><span>Mute everything</span></label>
-      <p class="dialog-note">All music and effects are generated in your browser. The music builds as your streak grows and the clock runs down.</p>
+      <p class="dialog-note" id="sndNote">Monaco, Night Run and the effects are generated in your browser, and build as your streak grows and the clock runs down.</p>
     </form>
   </dialog>
 

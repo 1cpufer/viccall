@@ -28,7 +28,7 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
   - Test Google, Discord and Resend for real once the keys exist.
-- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (111 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
+- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (113 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
 
 ## Running it
 
@@ -191,6 +191,7 @@ All sound is synthesised in the browser (`public/audio.js`, Web Audio API). Ther
 
 - **Effects:** menu select, photo arrival, correct, partial, wrong, clock warning and final-second ticks, score count, streak (3, 5, 10, 15…), game complete, victory and defeat.
 - **Music:** *Monaco* (deep, melodic house, 122 BPM) and *Night Run* (drift phonk, 140 BPM half-time, distorted 808s and a cowbell riff), or no music. Each theme is built from layers (pad, drums, bass, lead, top) that fade in as intensity rises with game progress, your streak and the clock running down, while a filter on the music opens up. Theme and screen changes crossfade.
+- **Artist playlist:** real songs, used with each artist's written permission, shuffled, credited as they start ("Now playing"), and turned down during rounds. The list (`public/music/tracks.json`) is empty until permissions arrive, so the option stays hidden. How to add a song: `docs/MUSIC.md`.
 - **Controls:** master, music and effects volume, music style, mute (also the `M` key). Saved in the browser.
 - **Autoplay-safe:** nothing is created until the first click, tap or key press; audio suspends when the tab is hidden.
 

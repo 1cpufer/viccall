@@ -9,6 +9,11 @@
  * game's intensity rises (progress, streak, clock pressure), and a low-pass
  * filter on the music bus opens with it. Theme and scene changes crossfade.
  *
+ * Artist playlist: real songs, used with each artist's written permission,
+ * listed in public/music/tracks.json (see docs/MUSIC.md). Shuffled, credited
+ * as they start, turned down during rounds. If the list is empty, choosing it
+ * plays Monaco instead.
+ *
  * Autoplay-safe: no AudioContext exists until the first click, tap or key
  * press. Settings persist in localStorage.
  */
@@ -16,7 +21,8 @@
   'use strict';
   const KEY = 'vc_sound';
   const DEFAULTS = { muted: false, master: 80, music: 45, sfx: 80, theme: 'monaco' };
-  const THEMES_OK = ['monaco', 'nightrun', 'off'];
+  const THEMES_OK = ['monaco', 'nightrun', 'playlist', 'off'];
+  const DUCK = 0.5; // playlist volume during rounds, relative to menus
   const SCENE_LEVEL = { menu: 0.34, lobby: 0.34, results: 0.16 };
 
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -392,6 +398,81 @@
   };
 
   // ---------------------------------------------------------------- runtime
+  // ---------------------------------------------------------------- artist playlist
+  let tracks = [];
+  const trackListeners = [];
+  const tracksReady = (typeof fetch === 'function' ? fetch('music/tracks.json', { cache: 'no-cache' }) : Promise.reject())
+    .then(r => (r.ok ? r.json() : {}))
+    .then(d => { tracks = (Array.isArray(d.tracks) ? d.tracks : []).filter(t => t && t.file && t.title && t.artist && t.enabled !== false); })
+    .catch(() => { tracks = []; })
+    .then(() => {
+      listeners.forEach(f => { try { f(api.get()); } catch {} });
+      syncMusic();
+    });
+
+  // Plays the songs through the music bus (volume and mute apply), past the
+  // filter that shapes the synthesised themes.
+  class Playlist {
+    constructor(g) {
+      this.g = g;
+      this.theme = 'playlist';
+      this.el = new Audio();
+      this.el.preload = 'auto';
+      this.src = g.ctx.createMediaElementSource(this.el);
+      this.out = g.ctx.createGain();
+      this.out.gain.value = 0;
+      this.src.connect(this.out);
+      this.out.connect(g.musicBus);
+      this.order = [];
+      this.pos = -1;
+      this.duck = 1;
+      this.fails = 0;
+      this.current = null;
+      this.el.addEventListener('ended', () => this.next());
+      this.el.addEventListener('error', () => { if (++this.fails < tracks.length) this.next(); });
+      this.el.addEventListener('playing', () => { this.fails = 0; });
+    }
+    // A fresh shuffle, never starting with the song that just played.
+    shuffle() {
+      const o = tracks.map((_, i) => i);
+      for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+      if (o.length > 1 && this.current && tracks[o[0]] === this.current) o.push(o.shift());
+      this.order = o;
+      this.pos = -1;
+    }
+    next() {
+      if (!tracks.length) return;
+      if (this.pos + 1 >= this.order.length) this.shuffle();
+      this.pos += 1;
+      this.current = tracks[this.order[this.pos]];
+      this.el.src = this.current.file;
+      this.el.play().catch(() => {});
+      const now = nowPlaying();
+      trackListeners.forEach(f => { try { f(now); } catch {} });
+    }
+    start() {
+      this.out.gain.setTargetAtTime(this.duck, this.g.ctx.currentTime, 0.4);
+      if (!this.current) this.next(); else this.el.play().catch(() => {});
+    }
+    setLevel() {} // songs don't build with the game; setDuck turns them down during rounds
+    setDuck(x) {
+      if (x === this.duck) return;
+      this.duck = x;
+      this.out.gain.setTargetAtTime(x, this.g.ctx.currentTime, 0.5);
+    }
+    pause() { this.el.pause(); }
+    resume() { if (this.current) this.el.play().catch(() => {}); }
+    stop() {
+      this.out.gain.setTargetAtTime(0, this.g.ctx.currentTime, 0.2);
+      const { el, out, src } = this;
+      setTimeout(() => { el.pause(); el.removeAttribute('src'); try { out.disconnect(); src.disconnect(); } catch {} }, 1200);
+    }
+  }
+  const nowPlaying = () => {
+    const t = engine && engine.theme === 'playlist' && engine.current;
+    return t ? { id: t.id, title: t.title, artist: t.artist, link: t.link || null } : null;
+  };
+
   let g = null;
   let engine = null;
   let scene = 'menu';
@@ -411,10 +492,16 @@
 
   function syncMusic() {
     if (!ready()) return;
-    const want = settings.theme !== 'off' && !settings.muted && settings.music > 0 ? settings.theme : null;
+    let want = settings.theme !== 'off' && !settings.muted && settings.music > 0 ? settings.theme : null;
+    if (want === 'playlist' && !tracks.length) want = 'monaco'; // nothing licensed yet (or still loading)
     if (engine && engine.theme !== want) { engine.stop(); engine = null; }
-    if (!engine && want) { engine = new Engine(g, want); engine.setLevel(currentLevel(), true); engine.start(); }
-    if (engine) {
+    if (!engine && want) {
+      engine = want === 'playlist' ? new Playlist(g) : new Engine(g, want);
+      engine.setLevel(currentLevel(), true);
+      engine.start();
+    }
+    if (engine && engine.setDuck) engine.setDuck(scene in SCENE_LEVEL ? 1 : DUCK);
+    else if (engine) {
       engine.setLevel(currentLevel());
       const cutoff = 700 * Math.pow(2, currentLevel() * 4.2); // ~700 Hz closed, ~13 kHz open
       g.musicFilter.frequency.setTargetAtTime(cutoff, g.ctx.currentTime, 0.8);
@@ -430,8 +517,8 @@
   ['pointerdown', 'keydown', 'touchend'].forEach(ev => addEventListener(ev, unlock, { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => {
     if (!g) return;
-    if (document.hidden) g.ctx.suspend().catch(() => {});
-    else g.ctx.resume().then(syncMusic).catch(() => {});
+    if (document.hidden) { if (engine && engine.pause) engine.pause(); g.ctx.suspend().catch(() => {}); }
+    else g.ctx.resume().then(() => { if (engine && engine.resume) engine.resume(); syncMusic(); }).catch(() => {});
   });
 
   const api = {
@@ -463,6 +550,14 @@
       listeners.forEach(f => { try { f(api.get()); } catch {} });
     },
     onChange(f) { listeners.push(f); },
+
+    // Artist playlist.
+    tracks: () => tracks.map(({ id, title, artist, link }) => ({ id, title, artist, link: link || null })),
+    nowPlaying,
+    skip() { if (engine && engine.theme === 'playlist') engine.next(); },
+    onTrack(f) { trackListeners.push(f); },
+    tracksReady,
+    debug: () => ({ theme: engine ? engine.theme : null, duck: engine && engine.duck, scene, time: engine && engine.el ? engine.el.currentTime : null, paused: engine && engine.el ? engine.el.paused : null }),
 
     // Render offline and measure levels (used by the automated audio check).
     async measure({ theme = null, level = 0.5, seconds = 6, sfx = [], sampleRate = 44100 } = {}) {

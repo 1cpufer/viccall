@@ -1282,6 +1282,32 @@
     });
     $('sndMute').checked = !!s.muted;
     document.querySelectorAll('input[name="sndTheme"]').forEach(i => { i.checked = i.value === s.theme; });
+    const songs = A.tracks ? A.tracks() : [];
+    $('sndPlaylistOpt').hidden = !songs.length;
+    $('sndNote').textContent = songs.length
+      ? 'Monaco, Night Run and the effects are generated in your browser. The artist playlist plays real songs, used with each artist’s permission.'
+      : 'Monaco, Night Run and the effects are generated in your browser, and build as your streak grows and the clock runs down.';
+    showNowPlaying(A.nowPlaying ? A.nowPlaying() : null);
+  }
+  // Credit for the song that's playing: in the sound settings, and briefly on menu screens.
+  function showNowPlaying(t) {
+    $('sndNow').hidden = !t;
+    if (!t) return;
+    $('sndNowTitle').textContent = t.title;
+    const by = $('sndNowBy');
+    by.textContent = '';
+    by.append('by ');
+    if (t.link) {
+      const a = document.createElement('a');
+      a.href = t.link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = t.artist;
+      by.append(a);
+    } else by.append(t.artist);
+  }
+  if (A.onTrack) {
+    A.onTrack(t => {
+      if (dlgSound.open) showNowPlaying(t);
+      if (t && !GAME_SCREENS.has(current)) toast(`Now playing: ${t.title} by ${t.artist}`);
+    });
   }
   A.onChange(syncSoundUi);
   function openSound() { dlgSound.showModal(); syncSoundUi(); }
@@ -1291,6 +1317,7 @@
   $('sndSfx').addEventListener('change', () => A.play('correct'));
   $('sndMute').addEventListener('change', e => A.set({ muted: e.target.checked }));
   $('sndTheme').addEventListener('change', e => A.set({ theme: e.target.value }));
+  $('sndSkip').addEventListener('click', () => { if (A.skip) A.skip(); });
   dlgSound.addEventListener('click', e => { if (e.target === dlgSound) dlgSound.close(); });
   syncSoundUi();
 

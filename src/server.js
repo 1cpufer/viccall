@@ -111,7 +111,8 @@ function createApp(opts = {}) {
   });
   app.use(express.static(path.join(__dirname, '..', 'public'), {
     setHeaders(res, file) {
-      if (/\.(woff2|svg|png)$/.test(file)) res.set('Cache-Control', 'public, max-age=604800');
+      // Songs are cached for a week: replace a song under a new file name.
+      if (/\.(woff2|svg|png|mp3|m4a|ogg)$/.test(file)) res.set('Cache-Control', 'public, max-age=604800');
       else res.set('Cache-Control', 'no-cache');
     },
   }));

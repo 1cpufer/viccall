@@ -6,6 +6,7 @@ These scripts drive real Chromium through the game. They're kept out of `npm tes
 npm i --no-save playwright && npx playwright install chromium
 node e2e/ui.e2e.js [screenshotDir]   # defaults to e2e/shots
 node e2e/party.e2e.js
+node e2e/music.e2e.js                             # artist playlist with stand-in songs
 node e2e/garage.e2e.js [screenshotDir]          # AXE=/path/to/axe.min.js also runs axe-core
 ```
 

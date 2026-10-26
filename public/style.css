@@ -860,6 +860,12 @@ body.in-game .bar { display: none; }
 .stats-table-wrap:focus-visible { outline: 2px solid var(--plate); outline-offset: 2px; }
 .stats-table td { font-variant-numeric: tabular-nums; }
 
+.now-playing { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--bg-3); }
+.now-playing p { color: var(--text-2); min-width: 0; }
+.now-playing b { color: var(--text); }
+.now-playing a { color: var(--text); }
+.now-k { display: block; font-size: 13px; color: var(--text-3); }
+
 /* ---------- Motion preferences ---------- */
 
 @media (prefers-reduced-motion: reduce) {

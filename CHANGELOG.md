@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-26: Artist playlist (ready for songs)
+
+- **Sound settings gain "Artist playlist":** real songs, shuffled, through the usual music volume and mute.
+  - The start of each song is credited ("Now playing: Song by Artist", with a link to the artist).
+  - "Next song" skips ahead.
+  - Songs turn down to half volume during a round and pause while the tab is hidden.
+- **Empty until permissions arrive.** The list starts empty, so the option stays hidden, and a saved choice plays Monaco instead.
+- **Permission records are required.** Every song needs one in `public/music/tracks.json`: who gave permission, when, what it covers, and where the written proof is kept. `npm test` refuses a song without one (`src/music.js`).
+- **Guide:** `docs/MUSIC.md` explains how to ask for permission and how to add a song.
+- **Tests:** 2 new (113 total), plus `e2e/music.e2e.js` (15 browser checks with generated test tones).
+
 ## 2026-10-26: Play counter
 
 - **What it counts** (`src/stats.js`): daily totals of visitors (new and came back), games started and finished by mode, cars answered, scores posted, and party games with their player numbers.
