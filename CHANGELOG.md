@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-26: Pace Car
+
+- **A bot to beat** (`src/pace-car.js`). One bot posts one score on each ranked playlist, on Endless, and on every new Daily Challenge (checked hourly), so boards aren't empty.
+- **Always labelled.** It's listed as "Pace Car" with a **bot** tag, and the leaderboard API returns `bot: true`.
+- **Plays for real.** It plays the board's actual cars, and the real scorer scores its answers. It names easy cars about 78% of the time, medium 55% and hard 32%, often gets the make alone, and takes 8 to 30 seconds a car. That averages 50–62 of 100.
+- **Stays out of the numbers.** It isn't counted by the play counter, and it doesn't post until saved leaderboards have loaded after a restart, so it never posts twice. `PACE_CAR=0` turns it off.
+- **Tests:** 4 new (117 total). The bot tag passes axe-core at desktop and phone sizes.
+
 ## 2026-10-26: Artist playlist (ready for songs)
 
 - **Sound settings gain "Artist playlist":** real songs, shuffled, through the usual music volume and mute.

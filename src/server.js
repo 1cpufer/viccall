@@ -17,6 +17,7 @@ const { createCommonsProvenance } = require('./provenance');
 const { createPhotoPrints } = require('./photo-prints');
 const { createScoresBackup, tidy } = require('./scores-backup');
 const { createStats } = require('./stats');
+const PaceCar = require('./pace-car');
 const { startKeepAwake } = require('./keep-awake');
 const VCScore = require('../public/scoring.js');
 
@@ -359,8 +360,25 @@ function createApp(opts = {}) {
       .filter(s => s.board === board)
       .sort(sortBoard)
       .slice(0, lim)
-      .map(({ name, score, maxScore, cars, rounds, bestStreak, timeMs, ts }) => ({ name, score, maxScore, cars, rounds, bestStreak, timeMs, ts })));
+      .map(({ name, score, maxScore, cars, rounds, bestStreak, timeMs, ts, bot }) => ({ name, score, maxScore, cars, rounds, bestStreak, timeMs, ts, bot: !!bot })));
   });
+
+  // Pace Car: one bot score per board (and per Daily Challenge), always marked
+  // as a bot. Started from the production start-up below, not in tests.
+  function paceCarRun(rand = Math.random) {
+    if (backup.enabled && !backup.ready) return []; // wait for the saved boards, or it would post twice
+    const scores = readJson(SCORES_FILE);
+    const posted = [];
+    for (const job of PaceCar.jobs()) {
+      if (scores.some(e => e.bot && e.board === job.board)) continue;
+      const res = PaceCar.play(CARS, VEHICLES, job, rand);
+      if (!res || res.board !== job.board) continue;
+      scores.push({ id: crypto.randomUUID(), name: PaceCar.NAME, bot: true, ...res, player: null, ts: Date.now() });
+      posted.push(job.board);
+    }
+    if (posted.length) { writeJson(SCORES_FILE, tidy(scores)); backup.markDirty(); }
+    return posted;
+  }
 
   // ---- Bug / crash reports ----
   app.post('/api/report', limit(15, 60_000), (req, res) => {
@@ -465,14 +483,21 @@ function createApp(opts = {}) {
   const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor, track });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, stats, prints, index: VEHICLES,
+    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, stats, paceCar: { run: paceCarRun }, prints, index: VEHICLES,
     close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); backup.close(); stats.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  const { server, provenance, images, backup, prints } = createApp();
+  const { server, provenance, images, backup, prints, paceCar } = createApp();
+  // Pace Car (PACE_CAR=0 turns it off): checks hourly for boards it hasn't
+  // played yet, which includes each new Daily Challenge.
+  if (process.env.PACE_CAR !== '0') {
+    const lap = () => { try { const posted = paceCar.run(); if (posted.length) console.log(`[pace-car] posted on ${posted.join(', ')}`); } catch (e) { console.warn('[pace-car]', e.message); } };
+    setTimeout(lap, 30_000).unref();
+    setInterval(lap, 60 * 60_000).unref();
+  }
   server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 
   // Free hosting sleeps after 15 idle minutes and the restart wipes data/.

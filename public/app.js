@@ -901,7 +901,7 @@
     let marked = false;
     list.innerHTML = rows.map((row, i) => {
       const you = mine && !marked && i + 1 === mine.rank && row.score === mine.score && (marked = true);
-      return `<li class="${you ? 'is-you' : ''}"><span class="rank">${i + 1}</span><span class="who">${esc(row.name)}${you ? '<small>you</small>' : ''}</span>
+      return `<li class="${you ? 'is-you' : ''}${row.bot ? ' is-bot' : ''}"><span class="rank">${i + 1}</span><span class="who">${esc(row.name)}${row.bot ? ' <span class="tag-bot" title="A bot that plays each board once, for you to beat">bot</span>' : ''}${you ? '<small>you</small>' : ''}</span>
         <span class="num">${row.cars ?? '–'}</span><span class="num num--streak">${row.bestStreak ?? '–'}</span><span class="num num--time">${row.timeMs != null ? fmtTime(row.timeMs) : '–'}</span>
         <span class="score">${row.score}<small> / ${row.maxScore}</small></span></li>`;
     }).join('');

@@ -866,6 +866,9 @@ body.in-game .bar { display: none; }
 .now-playing a { color: var(--text); }
 .now-k { display: block; font-size: 13px; color: var(--text-3); }
 
+.tag-bot { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); box-shadow: inset 0 0 0 1px var(--line-2); vertical-align: 2px; }
+.board li.is-bot .who { color: var(--text-2); }
+
 /* ---------- Motion preferences ---------- */
 
 @media (prefers-reduced-motion: reduce) {

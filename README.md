@@ -28,7 +28,7 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
   - Test Google, Discord and Resend for real once the keys exist.
-- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (113 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
+- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (117 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
 
 ## Running it
 
@@ -57,6 +57,7 @@ The browser scripts need Playwright (`npm i --no-save playwright && npx playwrig
 | `TRUST_PROXY` | Set to `1` behind a reverse proxy (Render, Railway, nginx) so rate limits see real client IPs. |
 | `GARAGE_ENABLED` | `1` turns on accounts and the Community Garage (off by default). Its other settings (`PUBLIC_URL`, `ADMIN_EMAILS`, Google, Discord and email keys) are listed in `docs/COMMUNITY_GARAGE.md`. |
 | `COMMONS_META` | `0` stops the weekly lookup of first-party photo authors and licences on Wikimedia Commons. |
+| `PACE_CAR` | `0` turns off the Pace Car, a bot that posts one score on each leaderboard (and each Daily Challenge), always tagged as a bot. |
 | `STATS_TZ` | Time zone the play counter's days run on (default `America/Chicago`). |
 | `SCORES_GITHUB_TOKEN` | A GitHub token allowed to edit gists. Leaderboards are then also kept in a private gist, restored on start-up and saved after each score and on shutdown, so they survive restarts on hosting without a disk. `SCORES_GIST_ID` pins a specific gist (normally found by its description). |
 | `KEEP_AWAKE`, `KEEP_AWAKE_URL` | On Render the server requests its own `/api/health` every 10 minutes (using `RENDER_EXTERNAL_URL`) so the free instance doesn't sleep. `KEEP_AWAKE=0` turns it off; `KEEP_AWAKE_URL` sets the address elsewhere. |
@@ -161,6 +162,11 @@ No page has inline scripts, event handlers or style attributes (the JavaScript s
 - Ranked and party photos are served through `/api/img/<token>`. Wikimedia file names usually spell out the car, so the browser never sees them before the reveal. A token is only issued when its round opens, and the 45-second clock starts when the photo is first served, so slow photo loads don't eat your time. If Wikimedia can't be reached from the server, the proxy redirects to the direct URL so the game stays playable (that one photo is no longer hidden).
 - An answer that arrives more than 3 s after the clock ends scores 0. Free skips for photos that fail to load are limited to two per ranked game, and only when the server couldn't deliver the photo.
 - Leaderboards only accept finished server sessions, once each. The daily lock is per browser (a hashed random key), so it stops accidents, not someone determined to clear their storage.
+
+- **Pace Car** (`src/pace-car.js`): one bot plays each ranked playlist, Endless and every Daily Challenge once, so boards aren't empty.
+  - It's always listed as "Pace Car" with a **bot** tag, never passed off as a person.
+  - It plays the board's real cars, scored by the real scorer, and averages about 50–60 of 100, so a decent player beats it.
+  - It doesn't count in the play counter, and it waits for saved leaderboards to load before posting, so it never posts twice.
 
 ## Car database
 
