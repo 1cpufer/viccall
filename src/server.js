@@ -14,6 +14,7 @@ const { createMailer } = require('./mailer');
 const { createAuth } = require('./auth');
 const { createGarage } = require('./garage');
 const { createCommonsProvenance } = require('./provenance');
+const { createPhotoPrints } = require('./photo-prints');
 const { createScoresBackup, tidy } = require('./scores-backup');
 const { startKeepAwake } = require('./keep-awake');
 const VCScore = require('../public/scoring.js');
@@ -33,8 +34,9 @@ function createApp(opts = {}) {
   const REPORTS_FILE = path.join(dataDir, 'reports.json');
   const images = createImageProxy({ fetch: opts.fetchImage });
   // Every answer is read against the whole database, so "918" or "SVJ" can be
-  // recognised and "Supra" can be flagged as ambiguous.
-  const VEHICLES = VCScore.buildIndex(CARS);
+  // recognised and "Supra" can be flagged as ambiguous. This server's own copy:
+  // vehicles moderators add (Garage) are put into it in place.
+  const VEHICLES = { ...VCScore.buildIndex(CARS) };
 
   fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(SCORES_FILE)) fs.writeFileSync(SCORES_FILE, '[]');
@@ -101,8 +103,10 @@ function createApp(opts = {}) {
   // Off unless GARAGE_ENABLED=1: accounts and photos need a persistent disk,
   // and the free hosting plan wipes its disk on every deploy.
   const garageOn = opts.garage !== undefined ? !!opts.garage : process.env.GARAGE_ENABLED === '1';
-  let gdb = null, auth = null, garage = null;
+  let gdb = null, auth = null, garage = null, prints = null;
   if (garageOn) {
+    // Fingerprints of the game's own photos, so uploads of them are caught.
+    prints = opts.photoPrints !== undefined ? opts.photoPrints : createPhotoPrints({ cars: CARS, dataDir, log: opts.log !== false });
     gdb = opts.db || openDb(dataDir);
     const mailer = opts.mailer || createMailer();
     auth = createAuth({
@@ -110,7 +114,7 @@ function createApp(opts = {}) {
       publicUrl: opts.publicUrl, adminEmails: opts.adminEmails, secureCookies: opts.secureCookies,
     });
     app.use('/api/auth', auth.router);
-    garage = createGarage({ db: gdb, auth, dataDir, limit, cars: CARS, index: VEHICLES, VCScore });
+    garage = createGarage({ db: gdb, auth, dataDir, limit, cars: CARS, index: VEHICLES, VCScore, prints });
   }
   // Author and licence of each first-party photo, as stated on Wikimedia Commons.
   const provenance = createCommonsProvenance({ cars: CARS, dataDir, fetch: opts.fetchCommons, db: gdb, log: opts.log !== false });
@@ -359,14 +363,14 @@ function createApp(opts = {}) {
   const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup,
+    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, prints, index: VEHICLES,
     close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); backup.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  const { server, provenance, images, backup } = createApp();
+  const { server, provenance, images, backup, prints } = createApp();
   server.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 
   // Free hosting sleeps after 15 idle minutes and the restart wipes data/.
@@ -398,6 +402,8 @@ if (require.main === module) {
     setTimeout(refresh, 10_000).unref();
     setInterval(refresh, 24 * 60 * 60_000).unref();
   }
+  // Garage on: fingerprint any game photo that src/photo-prints.json doesn't cover yet.
+  if (prints && prints.missing().length) setTimeout(() => prints.fill().catch(e => console.warn('[prints]', e.message)), 30_000).unref();
 }
 
 module.exports = { createApp };

@@ -86,7 +86,9 @@ function gate(max) {
   });
 }
 
-function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
+// `index` is the answer index every mode scores with; moderators' vehicles are
+// added to it in place. `prints` (src/photo-prints.js) knows the game's own photos.
+function createGarage({ db, auth, dataDir, limit, cars, index, VCScore, prints = null }) {
   const store = fileStore(path.join(dataDir, 'garage'));
   const processing = gate(2);
   const router = express.Router();
@@ -115,6 +117,8 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
   };
   const acceptedLicence = userId => !!db.get('SELECT 1 FROM licence_acceptances WHERE user_id = ? AND version = ?', userId, LICENCE_VERSION);
   const vehicleOf = key => (key && index.ids.get(key)) || null;
+  const vehicleCars = new Map(); // 'vehicle:<key>' -> moderators' vehicles, shaped like cars.json entries (no photo)
+  const carOf = id => carsById.get(id) || vehicleCars.get(id);
   const vehicleLabel = v => v && [v.make, v.model, v.generation ? `(${v.generation})` : ''].filter(Boolean).join(' ');
   const photoUrl = (imageId, size = 'medium') => `/api/garage/photos/${imageId}/${size}`;
   const contributorsOf = imageId => db.all('SELECT user_id, relation FROM image_contributors WHERE image_id = ?', imageId);
@@ -133,7 +137,8 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
         preview: img.moderation === 'removed' || img.moderation === 'rejected' ? null : photoUrl(img.id),
         vehicle: img.vehicle_key ? { key: img.vehicle_key, label: vehicleLabel(vehicleOf(img.vehicle_key)), year: img.year } : null,
       },
-      checks: parseJson(s.flags, []),
+      // A near match with one of the game's own photos names the car: moderators only.
+      checks: parseJson(s.flags, []).filter(f => forModerator || f.code !== 'first-party'),
     };
     if (forModerator) {
       const u = db.get('SELECT id, display_name, status, created_at FROM users WHERE id = ?', s.user_id);
@@ -168,7 +173,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
   function toItem(row, contributors) {
     const id = vehicleOf(row.vehicle_key);
     if (!id) return null;
-    const cands = id.cars.map(c => carsById.get(c)).filter(Boolean);
+    const cands = id.cars.map(carOf).filter(Boolean);
     const rep = cands.find(c => !c.kit && !c.excluded) || cands.find(c => !c.kit);
     if (!rep) return null;
     const year = row.year || rep.year;
@@ -214,6 +219,80 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     return { casual: items.length, competitive: items.filter(i => i.eligibility === 'competitive' && !i.flagged).length };
   }
 
+  // ---- vehicles added by moderators ----
+  // A photo can only be approved as a vehicle the answer engine knows. For a car
+  // that isn't in cars.json, a moderator adds it. It joins the shared answer
+  // index, so every mode reads answers about it the same way from then on.
+  const REGIONS = ['japan', 'germany', 'italy', 'uk', 'usa', 'france', 'sweden', 'croatia', 'korea', 'other'];
+  const asCar = v => ({
+    id: `vehicle:${v.key}`, make: v.make, model: v.model,
+    ...(v.variant ? { variant: v.variant } : {}),
+    ...(v.generation ? { generation: v.generation, generationAliases: parseJson(v.generation_aliases, []) } : {}),
+    modelAliases: parseJson(v.model_aliases, []),
+    year: v.year_from, yearRange: [v.year_from, v.year_to], region: v.region || 'other', supercar: !!v.supercar,
+    niche: true, difficulty: 3, hint: '',
+  });
+  const rebuildIndex = () => { Object.assign(index, VCScore.buildIndex([...cars, ...vehicleCars.values()])); invalidate(); };
+  for (const v of db.all('SELECT * FROM vehicles ORDER BY created_at')) vehicleCars.set(`vehicle:${v.key}`, asCar(v));
+  if (vehicleCars.size) rebuildIndex();
+
+  const canonicalOf = c => [c.make, VCScore.fullModel(c), c.generation].filter(Boolean).join(' ');
+  // What npm test guarantees for cars.json, and one step more: the vehicle's own
+  // name earns full credit, its other names point to it (or are honestly
+  // shared), it doesn't take another car's name, and every answer that earns
+  // full credit for a car of the same make today (full names and shorthand like
+  // "918" or "SVJ") still does afterwards.
+  function vehicleProblem(car) {
+    const trial = VCScore.buildIndex([...cars, ...vehicleCars.values(), car]);
+    const read = (c, answer, idx) => VCScore.understand(c, answer, { index: idx, ruleset: 'competitive' }).res;
+    const name = canonicalOf(car);
+    if (read(car, name, trial).level !== 'full') return `“${name}” would also fit a vehicle already in the game. Add the generation or trim that tells them apart.`;
+    for (const a of [...car.modelAliases, ...(car.generationAliases || []).map(g => `${car.model} ${g}`)]) {
+      const r = read(car, `${car.make} ${a}${car.variant ? ` ${car.variant}` : ''}`, trial);
+      if (r.level !== 'full' && r.why !== 'ambiguous') return `“${a}” would point to a different vehicle. Leave that name out.`;
+    }
+    const makeKey = VCScore.compact(car.make);
+    for (const id of index.ids.values()) {
+      if (id.makeKey !== makeKey) continue;
+      const other = id.cars.map(carOf).find(c => c && !c.kit) || carOf(id.cars[0]);
+      if (!other) continue;
+      if (read(other, name, trial).level === 'full') return `“${name}” would also count as the ${vehicleLabel(id)}.`;
+      const answers = new Set([canonicalOf(other), ...id.exact.map(n => `${id.make} ${n.t.join(' ')}`), ...[...id.ident].map(t => `${id.make} ${t}`)]);
+      for (const answer of answers) {
+        if (read(other, answer, index).level === 'full' && read(other, answer, trial).level !== 'full') {
+          return `This would take “${answer}” away from the ${vehicleLabel(id)}. Leave out any name that matches it. If it’s another generation of that car, the built-in entry needs its generation added first.`;
+        }
+      }
+    }
+    return null;
+  }
+  const nameList = (v, n, max) => [...new Set((Array.isArray(v) ? v : String(v || '').split(',')).map(x => text(x, max)).filter(Boolean))].slice(0, n);
+
+  // ---- emails about decisions ----
+  // Contributors hear about each decision on their photo unless they've turned
+  // these emails off under Account. Sending never holds up the decision.
+  const MAIL = {
+    approved: (v, x) => ['Your photo is in VicCall',
+      `Your photo of the ${v} was approved. ${{ competitive: 'It can come up in every mode, ranked games included.', casual: 'It can come up in casual games: Free Play and casual parties.' }[x.eligibility] || 'It’s being kept out of games for now.'}${x.reason ? `\n\nFrom the moderator: ${x.reason}` : ''}`],
+    needs_correction: (v, x) => ['Your VicCall photo needs a change',
+      `A moderator looked at your photo of the ${v} and asked for a change:\n\n${x.reason}\n\nUnder Your photos you can edit the details or upload a new photo, then send it back for review.`],
+    rejected: (v, x) => ['Your VicCall photo wasn’t approved',
+      `A moderator didn’t approve your photo of the ${v}:\n\n${x.reason}\n\nThe photo has been deleted. The decision is under Your photos.`],
+    removed: (v, x) => ['Your VicCall photo was removed', `Your photo of the ${v} was taken out of the game:\n\n${x.reason}`],
+    reinstated: v => ['Your VicCall photo is back', `Your photo of the ${v} is back in the game, in casual games.`],
+  };
+  function notify(req, submissionId, kind, extra = {}) {
+    const s = db.get('SELECT * FROM submissions WHERE id = ?', submissionId);
+    const u = s && db.get('SELECT email, email_verified, notify_email, status FROM users WHERE id = ?', s.user_id);
+    if (!u || u.status !== 'active' || !u.email || !u.email_verified || !u.notify_email || !auth.mailer) return;
+    const img = s.image_id && db.get('SELECT vehicle_key FROM images WHERE id = ?', s.image_id);
+    const v = (img && vehicleLabel(vehicleOf(img.vehicle_key))) || [s.make, s.model, s.trim].filter(Boolean).join(' ');
+    const [subject, body] = MAIL[kind](v, extra);
+    const textBody = `${body}\n\n${auth.baseUrl(req)}/?garage=mine\n\nYou can turn these emails off under Account in the VicCall Garage.`;
+    Promise.resolve().then(() => auth.mailer.send({ to: u.email, subject, text: textBody }))
+      .catch(e => console.error('[mail] decision email failed:', e.message));
+  }
+
   // Delete the files and take an image out of delivery and selection.
   async function retireImage(imageId, { moderation, actorId, reason, keepOriginal = false }) {
     invalidate();
@@ -246,7 +325,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     if (!answer) return [];
     const out = [];
     for (const id of index.ids.values()) {
-      const car = carsById.get(id.cars[0]);
+      const car = carOf(id.cars[0]);
       if (!car) continue;
       const r = VCScore.scoreRound(car, { car: answer }, { index, ruleset: 'casual' });
       const model = r.res.find(x => x.label === 'Model');
@@ -382,6 +461,15 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
       const check = await processing(() => Photos.inspect(buf));
       if (!check.ok) return res.status(422).json({ error: check.error });
 
+      // One of the game's own photos: someone else took it, and players may have
+      // had it in a round. A plain copy is refused without saying which car it is
+      // (that would answer a round); a near match goes to the moderator.
+      const own = prints && prints.match(check);
+      if (own && own.refuse) {
+        db.audit(u.id, 'submission.first_party_copy', 'submission', s.id, { car: own.car, distance: own.distance });
+        return res.status(409).json({ error: 'This photo is already in the game. Submit photos you took yourself.', code: 'first_party' });
+      }
+
       // Duplicate and derivative detection against every photo on record.
       const matches = [];
       for (const other of db.all('SELECT id, sha256, fingerprints, moderation, contributor_id FROM images WHERE fingerprints IS NOT NULL')) {
@@ -406,6 +494,10 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
           ? `Matches a photo you submitted before (${best.how}).`
           : `Matches a photo from another contributor (${best.how}). Check who took it.` });
       }
+      if (own) {
+        const c = carOf(own.car);
+        flags.unshift({ code: 'first-party', text: `Close to the game’s own photo of the ${c ? `${c.make} ${VCScore.fullModel(c)}` : own.car} (from Wikimedia Commons). Check who took it.` });
+      }
       const flagged = flags.some(f => f.code === 'ai') ? 1 : 0;
       const t = now();
       const previous = s.image_id;
@@ -424,7 +516,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
         db.audit(u.id, 'submission.photo', 'submission', s.id, { image: imageId, replaced: previous || undefined, flags: flags.map(f => f.code), measures: check.measures });
       });
       if (previous) await retireImage(previous, { moderation: 'rejected', actorId: u.id, reason: 'replaced by a new photo' });
-      res.json({ submission: viewSubmission(db.get('SELECT * FROM submissions WHERE id = ?', s.id)), checks: flags });
+      res.json({ submission: viewSubmission(db.get('SELECT * FROM submissions WHERE id = ?', s.id)), checks: flags.filter(f => f.code !== 'first-party') });
     }));
 
   router.get('/submissions', signedIn, (req, res) => {
@@ -630,10 +722,46 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     const out = [];
     for (const id of index.ids.values()) {
       const hay = `${id.make} ${id.model} ${id.generation || ''} ${id.key}`.toLowerCase();
-      if (words.every(w => hay.includes(w))) out.push({ key: id.key, label: vehicleLabel(id), years: [id.lo, id.hi] });
+      if (words.every(w => hay.includes(w))) out.push({ key: id.key, label: vehicleLabel(id), years: [id.lo, id.hi], added: id.cars.every(c => vehicleCars.has(c)) });
       if (out.length >= 20) break;
     }
     res.json({ vehicles: out });
+  });
+
+  // Add a vehicle that isn't in the game yet, for a photo of it.
+  mod.post('/vehicles', limit(30, 60 * 60_000), (req, res) => {
+    const b = req.body || {};
+    const make = text(b.make, 40), model = text(b.model, 60);
+    if (!make || !model) return res.status(400).json({ error: 'Enter the make and model.' });
+    const from = Number(b.yearFrom);
+    const to = b.yearTo === '' || b.yearTo == null ? from : Number(b.yearTo);
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1886 || to > thisYear() + 1 || from > to) {
+      return res.status(400).json({ error: `Enter the years it was built, from 1886 to ${thisYear() + 1}.` });
+    }
+    if (!REGIONS.includes(b.region)) return res.status(400).json({ error: 'Choose where the maker is from.' });
+    const generation = text(b.generation, 30) || null;
+    const row = {
+      make, model, variant: text(b.variant, 40) || null, generation,
+      generation_aliases: JSON.stringify(generation ? nameList(b.generationAliases, 5, 20) : []),
+      model_aliases: JSON.stringify(nameList(b.modelAliases, 8, 40)),
+      year_from: from, year_to: to, region: b.region, supercar: bool(b.supercar) ? 1 : 0,
+    };
+    const car = asCar(row);
+    const key = VCScore.identityKey(car);
+    car.id = `vehicle:${key}`;
+    if (index.ids.has(key)) return res.status(409).json({ error: 'That vehicle is already in the game. Search for it instead.', vehicle: { key, label: vehicleLabel(vehicleOf(key)) } });
+    const problem = vehicleProblem(car);
+    if (problem) return res.status(409).json({ error: problem });
+    db.tx(() => {
+      db.run(`INSERT INTO vehicles (key, make, model, variant, generation, generation_aliases, model_aliases, year_from, year_to, region, supercar, created_by, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      key, row.make, row.model, row.variant, row.generation, row.generation_aliases, row.model_aliases, from, to, row.region, row.supercar, req.user.id, now());
+      db.audit(req.user.id, 'vehicle.create', 'vehicle', key, { make, model, variant: row.variant, generation, years: [from, to], region: row.region, names: car.modelAliases });
+    });
+    vehicleCars.set(car.id, car);
+    rebuildIndex();
+    const id = vehicleOf(key);
+    res.status(201).json({ vehicle: { key, label: vehicleLabel(id), years: [id.lo, id.hi], added: true } });
   });
 
   function cleanBlur(list) {
@@ -665,12 +793,14 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
           db.run(`UPDATE submissions SET status = 'needs_correction', reason = ?, updated_at = ? WHERE id = ?`, reason, now(), s.id);
           db.audit(actor, 'submission.needs_correction', 'submission', s.id, { reason });
         });
+        notify(req, s.id, 'needs_correction', { reason });
       } else {
         db.tx(() => {
           db.run(`UPDATE submissions SET status = 'rejected', reason = ?, updated_at = ? WHERE id = ?`, reason, now(), s.id);
           db.audit(actor, 'submission.reject', 'submission', s.id, { reason });
         });
         await retireImage(img.id, { moderation: 'rejected', actorId: actor, reason });
+        notify(req, s.id, 'rejected', { reason });
       }
       return res.json({ submission: viewSubmission(db.get('SELECT * FROM submissions WHERE id = ?', s.id), { forModerator: true }) });
     }
@@ -708,6 +838,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
       invalidate();
       db.audit(actor, 'submission.approve', 'submission', s.id, { image: img.id, vehicle: vehicle.key, year, difficulty, eligibility, blur: blur.length, note: reason || undefined });
     });
+    notify(req, s.id, 'approved', { eligibility, reason });
     res.json({ submission: viewSubmission(db.get('SELECT * FROM submissions WHERE id = ?', s.id), { forModerator: true }) });
   }));
 
@@ -758,13 +889,15 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     const reason = text((req.body || {}).reason, 500);
     if (reason.length < 3) return res.status(400).json({ error: 'Give a reason.' });
     if (img.moderation === 'removed') return res.json({ ok: true });
+    const subs = db.all(`SELECT id, status FROM submissions WHERE image_id = ? AND status != 'removed'`, img.id);
     db.tx(() => {
-      for (const s of db.all(`SELECT id, status FROM submissions WHERE image_id = ? AND status != 'removed'`, img.id)) {
+      for (const s of subs) {
         db.run(`UPDATE submissions SET status = 'removed', reason = ?, updated_at = ? WHERE id = ?`, reason, now(), s.id);
         db.audit(req.user.id, 'submission.remove', 'submission', s.id, { by: 'moderator', was: s.status, reason });
       }
     });
     await retireImage(img.id, { moderation: 'removed', actorId: req.user.id, reason });
+    for (const s of subs) notify(req, s.id, 'removed', { reason });
     res.json({ ok: true });
   }));
 
@@ -863,10 +996,11 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     // Uphold: the photo leaves the game. For copyright, the original is kept
     // for the counter-notice window, and the contributor gets a strike.
     const copyright = r.kind === 'copyright';
+    const why = copyright ? 'Removed after a copyright complaint. If you believe this is a mistake, you can send a counter-notice.' : note;
+    const subs = db.all(`SELECT id, status FROM submissions WHERE image_id = ? AND status != 'removed'`, img.id);
     db.tx(() => {
-      for (const s of db.all(`SELECT id, status FROM submissions WHERE image_id = ? AND status != 'removed'`, img.id)) {
-        db.run(`UPDATE submissions SET status = 'removed', reason = ?, updated_at = ? WHERE id = ?`,
-          copyright ? 'Removed after a copyright complaint. If you believe this is a mistake, you can send a counter-notice.' : note, now(), s.id);
+      for (const s of subs) {
+        db.run(`UPDATE submissions SET status = 'removed', reason = ?, updated_at = ? WHERE id = ?`, why, now(), s.id);
         db.audit(actor, 'submission.remove', 'submission', s.id, { by: 'moderator', report: r.id, was: s.status });
       }
       const rs = parseJson(img.restrictions, {});
@@ -875,6 +1009,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
     });
     close('actioned');
     await retireImage(img.id, { moderation: 'removed', actorId: actor, reason: `report ${r.id}: ${note}`, keepOriginal: copyright });
+    for (const s of subs) notify(req, s.id, 'removed', { reason: why });
     let blocked = false;
     if (copyright && img.contributor_id) {
       const strikes = db.get(`SELECT COUNT(*) n FROM reports r JOIN images i ON i.id = r.image_id
@@ -925,6 +1060,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore }) {
       db.audit(req.user.id, 'image.reinstate', 'image', img.id, { reason });
     });
     invalidate();
+    for (const s of db.all(`SELECT id FROM submissions WHERE image_id = ? AND status = 'approved'`, img.id)) notify(req, s.id, 'reinstated');
     res.json({ ok: true });
   }));
 

@@ -788,7 +788,7 @@ body.in-game .bar { display: none; }
 .review-facts b { color: var(--text); }
 .flags { list-style: none; display: grid; gap: 4px; }
 .flag { padding: 6px 10px; border-radius: 6px; background: var(--bg-2); font-size: 14px; }
-.flag--ai, .flag--duplicate { background: var(--miss-bg); color: var(--miss); }
+.flag--ai, .flag--duplicate, .flag--first-party { background: var(--miss-bg); color: var(--miss); }
 .dup { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; padding: 10px; border-radius: 8px; background: var(--miss-bg); }
 .dup img { width: 100%; border-radius: 6px; }
 .vopts { display: grid; gap: 4px; }
@@ -796,6 +796,12 @@ body.in-game .bar { display: none; }
 .vopt:hover { background: var(--bg-3); }
 .vopt input { accent-color: var(--plate); width: 18px; height: 18px; }
 .vopt small { color: var(--text-3); }
+.vadd { margin-top: 4px; }
+.vadd-body { display: grid; gap: 12px; margin-top: 12px; }
+.vadd[open] { padding: 12px; border-radius: 8px; background: var(--bg-2); }
+.vadd summary { cursor: pointer; color: var(--text-2); }
+.vadd-msg { color: var(--miss); font-size: 15px; }
+.vadd-msg:empty { display: none; }
 .history summary, .fix summary { cursor: pointer; color: var(--text-2); }
 .history ol { list-style: none; display: grid; gap: 4px; margin-top: 8px; font-size: 14px; color: var(--text-2); }
 

@@ -144,6 +144,10 @@ const MIGRATIONS = [
      status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','forwarded','reinstated','closed')),
      created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
    );`,
+
+  // 5: generation names for moderators' vehicles; contributors choose whether decisions are emailed
+  `ALTER TABLE vehicles ADD COLUMN generation_aliases TEXT;
+   ALTER TABLE users ADD COLUMN notify_email INTEGER NOT NULL DEFAULT 1;`,
 ];
 
 function openDb(dataDir, file = 'garage.db') {

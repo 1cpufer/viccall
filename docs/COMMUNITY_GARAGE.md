@@ -15,7 +15,7 @@ Accounts exist only for this. Every game mode still works without one, and nothi
 | `ADMIN_EMAILS` | Comma-separated emails that become admins once confirmed. Admins appoint moderators in **Moderation → People**. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. "Continue with Google". Redirect URI: `PUBLIC_URL/api/auth/oauth/google/callback`. |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional. "Continue with Discord". Redirect URI: `PUBLIC_URL/api/auth/oauth/discord/callback`. |
-| `RESEND_API_KEY`, `MAIL_FROM` | Email for address confirmation and password resets, through Resend. Without them, links are only written to the server log. |
+| `RESEND_API_KEY`, `MAIL_FROM` | Email through Resend: address confirmation, password resets, and decisions on contributors' photos. Without them, emails are only written to the server log. |
 | `COMMONS_META=0` | Optional. Stops the weekly check of first-party photo credits on Wikimedia Commons. |
 
 The database (`garage.db`, SQLite via Node's built-in `node:sqlite`, Node 22.13+) and the photos (`garage/`) live in the `data/` folder. On Render that folder must be on a persistent disk mounted at `/opt/render/project/src/data`, or every deploy wipes accounts and photos. At the time of writing, disks need a paid instance (the cheapest is $7 a month) and cost $0.25 per GB a month.
@@ -46,11 +46,14 @@ The database (`garage.db`, SQLite via Node's built-in `node:sqlite`, Node 22.13+
    - The same contributor re-uploading the same photo is refused.
    - A match with someone else's photo is flagged, and both people are linked to both photos (see competitive rules).
    - Approving a likely copy needs an explicit confirmation.
+   - **The game's own photos.** Every first-party (Wikimedia Commons) photo has the same fingerprints, kept in `src/photo-prints.json`. A plain copy of one (the original, a resize, a re-save, a light crop) is refused with "This photo is already in the game", without saying which car it is, because that would answer a round. A near match goes through with a note only moderators see, naming the car. The attempt is in the audit log.
 6. **Moderation** (Moderation → Review queue).
    - The moderator sees the photo, the original, automatic notes, any possible copy, the contributor's record and suggested vehicles. Suggestions come from running the contributor's description through the answer-recognition engine.
    - They drag to blur plates and faces, choose the vehicle, year and difficulty (1–5), choose "all modes", "casual only" or "keep out of play", and approve, ask for a correction or reject.
    - Rejections and corrections need a message, which the contributor sees.
+   - **A car that isn't in the game** can be added from the review screen ("Not in the game? Add the vehicle"): make, model, optional trim and generation, other names, years built, the maker's country. Before it's saved, the answer engine checks it the way `npm test` checks `cars.json`. Its own name has to earn full credit. Its other names have to point to it (or be shared honestly). And no answer that earns full credit for a car already in the game, like "918" for the 918 Spyder, may lose it. The vehicle then joins the answer index for every mode straight away and is kept in the `vehicles` table.
    - Moderators can't review their own photos. Every action goes in the audit log.
+   - **The contributor is emailed** when a photo is approved, sent back for a correction, rejected, removed or reinstated, with the moderator's message and a link to Your photos. They can turn this off under Account. Emails only go to confirmed addresses, and a mail failure never holds up a decision.
 7. **In the game.** Approved photos join the round pool alongside the first-party photos. The photographer is credited after the round, or as "Community photographer" if they chose that. Public profiles show approved photos and badges, and the place or event only if the contributor opted in.
 
 Rejected photos have their files deleted straight away; the record and fingerprints stay. Contributors can withdraw or remove a photo at any time, and it leaves the game immediately. Closing an account removes all of that person's photos the same way.
@@ -98,6 +101,7 @@ Tests: `test/integrity.test.js`. It runs real solo and party games against a sma
 | `src/db.js` | Schema and migrations: users, sessions, identities, licence acceptances, images, contributors, submissions, reports, counter-notices, audit log |
 | `src/auth.js` | Accounts, sessions, Google and Discord sign-in, email links |
 | `src/photos.js` | Upload checks, fingerprints, display copies |
+| `src/photo-prints.js`, `src/photo-prints.json` | Fingerprints of the game's own photos. Rebuild the file with `node scripts/photo-prints.js` after adding or changing photos; with the Garage on, the server fingerprints any it's missing itself. |
 | `src/garage.js` | Submissions, moderation, profiles, reports, photo delivery, round items |
 | `src/pools.js` | Who may see which community photo |
 | `src/provenance.js` | First-party photo credits from Wikimedia Commons |
@@ -116,13 +120,12 @@ This is built for one server: a single SQLite file and local disk.
 
 ## Known limitations
 
-- **Duplicate detection:**
-  - Mirrored or heavily edited copies, and arbitrary crops, can get past it; moderators and reports are the backstop.
-  - First-party photos aren't fingerprinted, so an upload of a Commons photo isn't caught automatically.
-- **Vehicles.** Only vehicles already in the car database can be approved. A photo of anything else has to wait for the car to be added.
-- **Contributors:**
-  - They aren't emailed about decisions; they see the status and reason on Your photos.
-  - A display-name or credit change can take up to a minute to show in new rounds.
+- **Duplicate detection:** mirrored or heavily edited copies, and heavy crops, can get past it, for community and first-party photos alike. Measured on the game's photos, a 65% crop scores 8 to 16 bits from its original and a mirror image 18 to 31, against a limit of 10. Moderators and reports are the backstop.
+- **Vehicles:**
+  - Moderators can add vehicles but not edit or delete them; a mistake needs a developer.
+  - If a built-in entry has no generation, another generation of that car can't be added until the entry gets one, because its short name would become ambiguous. The error says so.
+  - Added vehicles can't be tuner builds (Body Kit ID uses `cars.json` only).
+- **Contributors:** a display-name or credit change can take up to a minute to show in new rounds.
 - **The blur tool** is pointer-first. A keyboard user can add and remove boxes but not position them.
 - **Untested against the real services.** Google and Discord sign-in, Resend email and the Commons credit lookup are tested against stubs. None has run against the real service yet.
 - **Not deployed.** The Garage has never run on the production server.

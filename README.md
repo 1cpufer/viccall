@@ -26,11 +26,8 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Legal: licence decisions and a lawyer's review, terms and a privacy notice, and a DMCA agent registration.
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
-  - Let moderators add vehicles that aren't in the database.
-  - Email contributors about decisions.
-  - Fingerprint the first-party photos so copies of them are caught.
   - Test Google, Discord and Resend for real once the keys exist.
-- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (93 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
+- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (97 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
 
 ## Running it
 
@@ -42,7 +39,7 @@ npm run dev    # or: npm start
 Serves on `http://localhost:3000` (override with `PORT`).
 
 ```
-npm test                                   # node:test, 93 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, integrity, leaderboard backup
+npm test                                   # node:test, 97 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, integrity, leaderboard backup
 node e2e/ui.e2e.js [shotDir]               # browser run of every mode, desktop + phone + a 2-player party
 node e2e/party.e2e.js                      # party edge cases (timers, host leaving, refresh, rematch)
 node e2e/garage.e2e.js [shotDir]           # accounts, upload, moderation, credit, reports, counter-notice, phone
@@ -150,7 +147,7 @@ Every answer gets a feedback line per field, for example:
 - Difficulty, from how recognisable the car is: 62 easy, 129 medium, 121 hard.
 - 59 supercars, 18 cars with a scored trim (`variant`: GT-R Nismo, M4 Competition, 911 GT3 RS, 205 Turbo 16…) and 49 entries with a `generation` (E46, 992, S15, A80, W464…) wherever the database holds more than one generation of a name.
 - 30 tuner builds from 14 tuners: ABT Sportsline, Brabus, Hamann, Larte Design, Liberty Walk, Mansory, Novitec, Prior Design, RWB, Rocket Bunny, TechArt, Top Secret, VeilSide, Vorsteiner. Every build is a real one, photographed on the car it was made for. Tuners show their cars wearing their own name ("LB★PERFORMANCE" on a bumper, a "PRIOR DESIGN" plate, an RWB windscreen banner), so a tuner photo may show it, the way a stock car shows its maker's badge.
-- Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). The server looks up each file's author and licence on Commons and shows them after the round (`src/provenance.js`, see `docs/IMAGE_SOURCES.md`). `npm test` checks every URL's Commons hash path, difficulty, credit and year range.
+- Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). The server looks up each file's author and licence on Commons and shows them after the round (`src/provenance.js`, see `docs/IMAGE_SOURCES.md`). `npm test` checks every URL's Commons hash path, difficulty, credit and year range. After adding or changing photos, run `node scripts/photo-prints.js` from a computer that can reach Wikimedia: it fingerprints them so the Community Garage can refuse uploads of the game's own photos.
 
 Entry fields: `id, make, model, variant?, variantAliases?, generation?, generationAliases?, year, yearRange, region, niche, supercar, difficulty (1–3), img, credit, hint`. Optional `modelAliases` and `makeAliases`; tuner builds add `kit` and `kitAliases`.
 
@@ -213,6 +210,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-25, Garage tools** (still switched off): moderators can add vehicles that aren't in the game, contributors are emailed about decisions, and uploads of the game's own photos are caught.
 - **2026-10-25, tuners:** Top Secret joins with its R35 GT-R and LS 460 demo cars, and Prior Design gains a Panamera, Urus and RS Q8 (30 builds from 14 tuners).
 - **2026-10-24, photo check:** every photo looked at; 10 replaced (wrong car, a logo, interiors, a speck on a track), 9 entries corrected to match their photos, and the 6 held-back cars back in play.
 - **2026-10-24, staying power:** leaderboards backed up to GitHub, keep-awake on the free plan, a start-up photo proxy check.

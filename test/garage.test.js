@@ -7,6 +7,10 @@ const { startServer, agent } = require('./helpers');
 const { createMailer } = require('../src/mailer');
 const Photos = require('../src/photos');
 const { LICENCE_VERSION, DECLARATIONS } = require('../src/garage');
+const VCScore = require('../public/scoring.js');
+const CARS = require('../src/cars.json');
+const { createApp } = require('../src/server');
+const { createPhotoPrints, readPrints, SHIPPED } = require('../src/photo-prints');
 
 // ---- test photos: a random grid of tones plus grain, different for every seed ----
 async function photo(seed, { w = 1600, h = 1000, quality = 90, exif } = {}) {
@@ -22,9 +26,9 @@ async function photo(seed, { w = 1600, h = 1000, quality = 90, exif } = {}) {
 
 // ---- accounts ----
 const iso = years => { const d = new Date(); d.setUTCFullYear(d.getUTCFullYear() - years); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
-async function garage() {
+async function garage(opts = {}) {
   const mailer = createMailer({ apiKey: '', log: false });
-  const srv = await startServer({ garage: true, mailer, publicUrl: 'http://vc.test', adminEmails: 'boss@example.com' });
+  const srv = await startServer({ garage: true, mailer, publicUrl: 'http://vc.test', adminEmails: 'boss@example.com', ...opts });
   async function user(name, { verified = true, age = 30, licence = true } = {}) {
     const a = agent(srv);
     const email = `${name.toLowerCase()}@example.com`;
@@ -399,4 +403,154 @@ test('limits: submissions per day; admins appoint moderators and suspend contrib
     assert.equal((await boss.req('POST', `/api/garage/admin/users/${ann.id}`, { status: 'suspended', reason: 'Repeated copyright complaints' })).status, 200);
     assert.equal((await ann.req('POST', '/api/garage/submissions', details())).status, 401, 'signed out');
   } finally { await srv.stop(); }
+});
+
+test('moderators add vehicles the game doesn’t have, without making any answer ambiguous', async () => {
+  const { srv, user } = await garage();
+  try {
+    const boss = await user('Boss');
+    const ann = await user('Ann');
+    const add = (a, body) => a.req('POST', '/api/garage/mod/vehicles', { region: 'japan', yearFrom: 1986, yearTo: 1993, ...body });
+    assert.equal((await add(ann, { make: 'Toyota', model: 'Supra', generation: 'A70' })).status, 403, 'players can’t add vehicles');
+    assert.equal((await add(boss, { make: '', model: 'Supra' })).status, 400);
+    assert.equal((await add(boss, { make: 'Toyota', model: 'Supra', generation: 'A70', yearFrom: 1995, yearTo: 1990 })).status, 400, 'years in order');
+    assert.equal((await add(boss, { make: 'Toyota', model: 'Supra', generation: 'A70', region: 'mars' })).status, 400);
+
+    // The same checks npm test runs on cars.json.
+    const dup = await add(boss, { make: 'Porsche', model: '918 Spyder', yearFrom: 2013, yearTo: 2015, region: 'germany' });
+    assert.equal(dup.status, 409);
+    assert.match(dup.body.error, /already in the game/);
+    assert.match((await add(boss, { make: 'Toyota', model: 'Supra' })).body.error, /would also fit/, '"Supra" alone is the A80 or A90 too');
+    assert.match((await add(boss, { make: 'Porsche', model: 'Macan', modelAliases: '918', region: 'germany', yearFrom: 2014, yearTo: 2026 })).body.error,
+      /take “Porsche 918” away from the Porsche 918 Spyder/, '"918" alone is the 918 Spyder today');
+    assert.match((await add(boss, { make: 'Honda', model: 'Beat', generation: 'PP1', yearFrom: 1991, yearTo: 1996 })).body.error,
+      /take “Honda Beat” away from the Honda Beat/, 'the existing Beat would lose its full-credit name');
+    assert.equal((await add(boss, { make: 'Porsche', model: 'Macan', region: 'germany', yearFrom: 2014, yearTo: 2026 })).status, 201, 'without the borrowed name it’s fine');
+
+    const ok = await add(boss, { make: 'Toyota', model: 'Supra', generation: 'A70', generationAliases: 'Mk3, MkIII' });
+    assert.equal(ok.status, 201, JSON.stringify(ok.body));
+    assert.deepEqual(ok.body.vehicle, { key: 'toyota|supra|a70', label: 'Toyota Supra (A70)', years: [1986, 1993], added: true });
+    const found = (await boss.req('GET', '/api/garage/mod/vehicles?q=supra a70')).body.vehicles;
+    assert.deepEqual(found.map(v => [v.key, v.added]), [['toyota|supra|a70', true]]);
+    assert.ok(srv.db.get(`SELECT 1 FROM audit_log WHERE action = 'vehicle.create' AND entity_id = 'toyota|supra|a70'`));
+
+    // A photo of it can be approved and played, and every mode reads answers about it.
+    const { id } = await submit(ann, await photo(60), { make: 'Toyota', model: 'Supra', generation: 'Mk3', year: 1990 });
+    const sub = (await boss.req('GET', `/api/garage/mod/submissions/${id}`)).body.submission;
+    assert.equal(sub.suggestions[0].key, 'toyota|supra|a70', 'suggested from the contributor’s details');
+    assert.equal((await approve(boss, id, { vehicleKey: 'toyota|supra|a70', year: 1990 })).status, 200);
+    const item = srv.garage.roundItems().find(i => i.vkey === 'toyota|supra|a70');
+    assert.ok(item, 'in the round pool');
+    const pts = (car, answer, year = car.year) => VCScore.scoreRound(car, { car: answer, year: String(year) }, { index: srv.index, ruleset: 'competitive', kind: 'car' }).pts;
+    assert.equal(pts(item, 'Toyota Supra Mk3'), 10);
+    assert.equal(pts(item, 'Supra A70'), 10);
+    assert.equal(pts(item, 'Toyota Supra'), 8, 'shared name: partial');
+    const a80 = CARS.find(c => c.id === 'toyota-supra-1994');
+    assert.equal(pts(a80, 'Toyota Supra A80'), 10, 'the A80 keeps its name');
+
+    // Vehicles are kept: a restarted server knows them.
+    const again = createApp({ dataDir: srv.dataDir, garage: true, adminToken: '', log: false, mailer: createMailer({ apiKey: '', log: false }) });
+    try { assert.ok(again.index.ids.has('toyota|supra|a70')); } finally { again.close(); }
+  } finally { await srv.stop(); }
+});
+
+test('decision emails reach the contributor, who can turn them off', async () => {
+  const { srv, mailer, user } = await garage();
+  try {
+    const boss = await user('Boss');
+    const ann = await user('Ann');
+    const mailTo = who => mailer.outbox.filter(m => m.to === `${who}@example.com` && !/Confirm/.test(m.subject));
+    const one = await submit(ann, await photo(80), { model: 'Spider' });
+    await boss.req('POST', `/api/garage/mod/submissions/${one.id}/decision`, { action: 'needs_correction', reason: 'Is this the 918 Spyder?' });
+    let m = mailTo('ann').pop();
+    assert.equal(m.subject, 'Your VicCall photo needs a change');
+    assert.match(m.text, /Is this the 918 Spyder\?/);
+    assert.match(m.text, /http:\/\/vc\.test\/\?garage=mine/);
+    assert.match(m.text, /turn these emails off/);
+
+    await ann.req('PATCH', `/api/garage/submissions/${one.id}`, { model: '918 Spyder', resubmit: true });
+    await approve(boss, one.id, { eligibility: 'competitive' });
+    m = mailTo('ann').pop();
+    assert.equal(m.subject, 'Your photo is in VicCall');
+    assert.match(m.text, /Porsche 918 Spyder was approved/);
+    assert.match(m.text, /every mode/);
+
+    const imageId = srv.db.get('SELECT image_id FROM submissions WHERE id = ?', one.id).image_id;
+    await boss.req('POST', `/api/garage/mod/images/${imageId}/remove`, { reason: 'The plate is readable.' });
+    m = mailTo('ann').pop();
+    assert.equal(m.subject, 'Your VicCall photo was removed');
+    assert.match(m.text, /The plate is readable\./);
+    assert.equal(mailTo('ann').length, 3);
+
+    // Turned off: decisions still happen, no email.
+    const off = await ann.req('POST', '/api/auth/profile', { notifyEmail: false });
+    assert.equal(off.body.user.notifyEmail, false);
+    const two = await submit(ann, await photo(81));
+    assert.equal((await boss.req('POST', `/api/garage/mod/submissions/${two.id}/decision`, { action: 'reject', reason: 'Too small in the frame.' })).status, 200);
+    assert.equal(mailTo('ann').length, 3);
+  } finally { await srv.stop(); }
+});
+
+test('uploads of the game’s own photos: copies refused without naming the car, near matches go to the moderator', async () => {
+  const gamePhoto = await photo(70);
+  const car = CARS.find(c => c.id === 'porsche-918-spyder-2013');
+  const prints = createPhotoPrints({ cars: CARS, prints: { [car.id]: { credit: car.credit, hashes: await Photos.printsOf(gamePhoto) } }, log: false });
+  const { srv, user } = await garage({ photoPrints: prints });
+  try {
+    const boss = await user('Boss');
+    const ann = await user('Ann');
+    const crop = scale => {
+      const w = Math.round(1600 * scale), h = Math.round(1000 * scale);
+      return sharp(gamePhoto).extract({ left: Math.round((1600 - w) / 2), top: Math.round((1000 - h) / 2), width: w, height: h })
+        .resize(1500).jpeg({ quality: 88 }).withExif({ IFD0: { Make: 'X' } }).toBuffer();
+    };
+    const resaved = await sharp(gamePhoto).resize(1400).jpeg({ quality: 70 }).withExif({ IFD0: { Make: 'X' } }).toBuffer();
+    for (const copy of [gamePhoto, resaved, await crop(0.85)]) {
+      const { upload } = await submit(ann, copy);
+      assert.equal(upload.status, 409);
+      assert.equal(upload.body.code, 'first_party');
+      assert.doesNotMatch(upload.body.error, /Porsche|918/, 'never says which car it is');
+    }
+    assert.equal(srv.db.get(`SELECT COUNT(*) n FROM audit_log WHERE action = 'submission.first_party_copy'`).n, 3);
+
+    // A heavier crop is close but not certain: accepted, and only the moderator sees why.
+    const near = await submit(ann, await crop(0.8));
+    assert.equal(near.upload.status, 200, JSON.stringify(near.upload.body));
+    assert.ok(!near.upload.body.checks.some(c => c.code === 'first-party'));
+    assert.ok(!(await ann.req('GET', `/api/garage/submissions/${near.id}`)).body.submission.checks.some(c => c.code === 'first-party'));
+    const flag = (await boss.req('GET', `/api/garage/mod/submissions/${near.id}`)).body.submission.checks.find(c => c.code === 'first-party');
+    assert.match(flag.text, /Porsche 918 Spyder/);
+
+    const other = await submit(ann, await photo(71));
+    assert.equal(other.upload.status, 200);
+    assert.ok(!(await boss.req('GET', `/api/garage/mod/submissions/${other.id}`)).body.submission.checks.some(c => c.code === 'first-party'));
+  } finally { await srv.stop(); }
+});
+
+test('first-party fingerprints: the shipped file is well formed, and changed photos are fingerprinted again', async () => {
+  const ids = new Set(CARS.map(c => c.id));
+  for (const [id, p] of Object.entries(readPrints(SHIPPED))) {
+    assert.ok(ids.has(id), `${id} is a car`);
+    assert.ok(typeof p.credit === 'string' && p.credit, `${id}.credit`);
+    assert.deepEqual(Object.keys(p.hashes).sort(), ['bl', 'br', 'c70', 'c85', 'full', 'tl', 'tr'], `${id} hashes`);
+    assert.ok(Object.values(p.hashes).every(h => /^[0-9a-f]{16}$/.test(h)), `${id} hash format`);
+  }
+
+  // An entry whose credit no longer matches the car's photo doesn't count, and fill() replaces it.
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'vc-prints-'));
+  try {
+    const cars = [{ id: 'a', make: 'A', model: 'One', img: 'https://x.test/a.jpg', credit: 'A new.jpg' }, { id: 'b', make: 'B', model: 'Two', img: 'https://x.test/b.jpg', credit: 'B.jpg' }];
+    const [pa, pb] = [await photo(90), await photo(91)];
+    const shipped = path.join(dir, 'shipped.json');
+    fs.writeFileSync(shipped, JSON.stringify({ a: { credit: 'A old.jpg', hashes: await Photos.printsOf(pb) }, b: { credit: 'B.jpg', hashes: await Photos.printsOf(pb) } }));
+    const asked = [];
+    const fetch = async url => { asked.push(url); return new Response(url.endsWith('a.jpg') ? pa : pb, { headers: { 'content-type': 'image/jpeg' } }); };
+    const prints = createPhotoPrints({ cars, dataDir: dir, shipped, fetch, log: false });
+    assert.deepEqual(prints.missing().map(c => c.id), ['a']);
+    assert.equal(prints.match({ hashes: await Photos.printsOf(pa) }), null, 'the old entry isn’t used');
+    assert.deepEqual(await prints.fill({ delayMs: 0 }), { done: 1, failed: 0, missing: 0 });
+    assert.deepEqual(asked, ['https://x.test/a.jpg']);
+    assert.equal(prints.match({ hashes: await Photos.printsOf(pa) }).car, 'a');
+    assert.equal(createPhotoPrints({ cars, dataDir: dir, shipped, fetch, log: false }).missing().length, 0, 'kept in DATA_DIR');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

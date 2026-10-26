@@ -170,7 +170,7 @@ function createAuth(opts) {
   const publicUser = u => u && {
     id: u.id, displayName: u.display_name, email: u.email, emailVerified: !!u.email_verified, adult: !!u.adult,
     role: u.role, status: u.status, profileComplete: !!u.profile_complete, hasPassword: !!u.password_hash, ageChecked: !!u.age_checked_at,
-    creditAnonymous: !!u.credit_anonymous,
+    creditAnonymous: !!u.credit_anonymous, notifyEmail: !!u.notify_email,
     providers: db.all('SELECT provider FROM identities WHERE user_id = ?', u.id).map(r => r.provider),
   };
 
@@ -334,6 +334,7 @@ function createAuth(opts) {
       sets.push('adult = ?', 'age_checked_at = ?'); vals.push(age >= 18 ? 1 : 0, now());
     }
     if (b.creditAnonymous !== undefined) { sets.push('credit_anonymous = ?'); vals.push(b.creditAnonymous ? 1 : 0); }
+    if (b.notifyEmail !== undefined) { sets.push('notify_email = ?'); vals.push(b.notifyEmail ? 1 : 0); }
     if (!u.profile_complete) {
       if (b.acceptTerms !== true) return res.status(400).json({ error: 'Accept the terms to finish setting up.', field: 'acceptTerms' });
       const nameSet = b.displayName !== undefined || u.display_name;
@@ -449,7 +450,7 @@ function createAuth(opts) {
     res.redirect(302, u.profile_complete ? st.return_to : `${st.return_to}${sep}finish=1&suggest=${encodeURIComponent((profile.name || '').slice(0, 20))}`);
   });
 
-  return { router, currentUser, requireUser, publicUser, closeAccount, onClose: fn => closeHooks.push(fn), providers, csrf };
+  return { router, currentUser, requireUser, publicUser, closeAccount, onClose: fn => closeHooks.push(fn), providers, csrf, baseUrl, mailer };
 }
 
 module.exports = { createAuth, hashPassword, checkPassword, ageFrom, displayNameProblem, passwordProblem, PROVIDERS, COOKIE };

@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-25: Garage tools: new vehicles, decision emails, copies of the game's photos
+
+All three are part of the Community Garage, which is still switched off (`GARAGE_ENABLED`). Nothing changes for players until it's on.
+
+- **Moderators can add vehicles** that aren't in the game, from the review screen ("Not in the game? Add the vehicle"): make, model, optional trim and generation, other names, years built, the maker's country.
+  - Before it's saved, the answer engine runs the checks `npm test` runs on `cars.json`. Its own name has to earn full credit, and its other names have to point to it or be honestly shared.
+  - It's also refused if it would take a full-credit answer away from a car already in the game, short names included. Giving a Porsche Macan the name "918" would make "918" ambiguous for the 918 Spyder, so it's refused with a message that says so.
+  - Added vehicles are kept in the `vehicles` table, which the schema already had, and join the answer index for every mode straight away (`POST /api/garage/mod/vehicles`).
+- **Contributors are emailed about decisions**: approved, needs a correction, rejected, removed, reinstated.
+  - Each email carries the moderator's message and a link straight to Your photos (`/?garage=mine`).
+  - There's an opt-out under Account (`notify_email`, on by default).
+  - Only confirmed addresses get them, and a mail failure never holds up a decision.
+- **Uploads of the game's own photos are caught.**
+  - All 312 first-party photos are fingerprinted in `src/photo-prints.json` (`scripts/photo-prints.js` rebuilds it). The server fingerprints any it's missing when the Garage is on.
+  - A plain copy is refused without naming the car, because that would answer a round. A near match goes to the moderator with a note naming the car.
+  - Thresholds come from measuring the real photos. No two different game photos are closer than 11 bits; copies made from the Commons original score 0 to 3, a 90% crop 2 to 11, an 80% corner crop 3 to 10. Refused at 6 or less, flagged at 10 or less.
+- **Database:** migration 5 adds `vehicles.generation_aliases` and `users.notify_email`.
+- **Tests:** 4 new, 97 in total. Adding vehicles (including the refusals and a restart), decision emails and the opt-out, refused copies and moderator-only near matches, and the fingerprint file and top-up. Checked by hand in a browser against a local Garage: adding a vehicle from the review screen (Enter adds the vehicle, never approves the photo), approving with it, the email it sent, and the Account setting.
+
 ## 2026-10-25: Two more tuners in Body Kit ID
 
 Searched Wikimedia Commons from a computer (the cloud sandbox can't reach it) for the tuners missing from the game.

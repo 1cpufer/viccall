@@ -64,6 +64,12 @@ async function fingerprints(upright, width, height) {
   }
   return out;
 }
+// Fingerprints of any photo file, from a small upright copy (hashing only needs 9x8 pixels).
+async function printsOf(buf) {
+  const upright = await sharp(buf).rotate().resize(800, 800, { fit: 'inside' }).toBuffer();
+  const um = await sharp(upright).metadata();
+  return fingerprints(upright, um.width, um.height);
+}
 
 /*
  * Inspect an upload. Returns { ok, error } or
@@ -105,13 +111,10 @@ async function inspect(buf) {
     flags.push({ code: 'location', text: 'Contained location data (removed from every public copy).' });
   }
   if (!meta.exif) flags.push({ code: 'no-camera-data', text: 'No camera data: could be a screenshot or a downloaded copy.' });
-  // Small upright copy for fingerprints: hashing only needs 9x8 pixels.
-  const upright = await sharp(buf).rotate().resize(800, 800, { fit: 'inside' }).toBuffer();
-  const um = await sharp(upright).metadata();
   return {
     ok: true, format: meta.format, width, height, flags,
     sha256: crypto.createHash('sha256').update(buf).digest('hex'),
-    hashes: await fingerprints(upright, um.width, um.height),
+    hashes: await printsOf(buf),
     measures: { brightness: Math.round(lum), sharpness: Math.round(sharpness), bytesPerMp: Math.round(buf.length / mp) },
   };
 }
@@ -160,4 +163,4 @@ async function derive(buf, { blur = [] } = {}) {
   return out;
 }
 
-module.exports = { inspect, derive, similar, dhash, hamming, focus, fingerprints, LIMITS, SIZES };
+module.exports = { inspect, derive, similar, dhash, hamming, focus, fingerprints, printsOf, LIMITS, SIZES };

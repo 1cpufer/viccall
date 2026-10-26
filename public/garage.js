@@ -196,6 +196,7 @@
       <form class="dialog-form" data-g-form="account" novalidate>
         ${input('displayName', 'Display name', `required minlength="3" maxlength="20" value="${esc(u.displayName || '')}"`)}
         ${check('creditAnonymous', 'Credit my photos as “Community photographer” instead of my name (this also hides my public profile)', u.creditAnonymous ? 'checked' : '')}
+        ${check('notifyEmail', 'Email me when a moderator decides on one of my photos', u.notifyEmail ? 'checked' : '')}
         <p class="form-msg" role="alert"></p>
         <button class="btn btn--primary" type="submit">Save</button>
       </form>
@@ -618,13 +619,35 @@
       <p class="field-note">Drag across a number plate or a face to blur it. <button type="button" class="link" data-blur-add>Add a box</button> <span class="blur-list" aria-live="polite"></span></p>
     </div>`;
 
-  // Vehicle picker: suggestions plus search, as radio buttons.
+  // Vehicle picker: suggestions plus search, as radio buttons, and a way to add
+  // a vehicle the game doesn't have yet.
+  const REGION_LABEL = { japan: 'Japan', germany: 'Germany', italy: 'Italy', uk: 'Britain', usa: 'United States', france: 'France', sweden: 'Sweden', croatia: 'Croatia', korea: 'South Korea', other: 'Somewhere else' };
+  const vopt = (v, checked = false) => `<label class="vopt"><input type="radio" name="vehicleKey" value="${esc(v.key)}" ${checked ? 'checked' : ''}><span>${esc(v.label)} <small>${esc(v.years[0] === v.years[1] ? v.years[0] : `${v.years[0]}–${v.years[1]}`)}${v.added ? ' · added by a moderator' : ''}</small></span></label>`;
   function vehiclePicker(suggestions, current) {
-    const opt = v => `<label class="vopt"><input type="radio" name="vehicleKey" value="${esc(v.key)}" ${v.key === current ? 'checked' : ''}><span>${esc(v.label)} <small>${esc(v.years[0] === v.years[1] ? v.years[0] : `${v.years[0]}–${v.years[1]}`)}</small></span></label>`;
     return `<fieldset class="group"><legend>Vehicle in the game</legend>
-      <div class="vopts" data-vopts>${suggestions.map(opt).join('') || '<p class="wait">No close match. Search below.</p>'}</div>
+      <div class="vopts" data-vopts>${suggestions.map(v => vopt(v, v.key === current)).join('') || '<p class="wait">No close match. Search below.</p>'}</div>
       <label class="field"><span>Search</span><input type="search" data-vsearch placeholder="Make, model or generation" autocomplete="off"></label>
       <div class="vopts" data-vresults></div>
+      <details class="vadd" data-vadd>
+        <summary>Not in the game? Add the vehicle</summary>
+        <div class="vadd-body">
+        <p class="field-note">Search first. A new vehicle can be named in every mode from then on, so its names are checked against every car already in the game.</p>
+        <div class="grid2">
+          ${input('nvMake', 'Make', 'maxlength="40" autocomplete="off"')}
+          ${input('nvModel', 'Model', 'maxlength="60" autocomplete="off"')}
+          ${input('nvVariant', 'Trim (optional)', 'maxlength="40" autocomplete="off"', 'Only if it’s part of the name: Type R, GT3 RS')}
+          ${input('nvGeneration', 'Generation (optional)', 'maxlength="30" autocomplete="off"', 'Chassis or generation code: E30, A70')}
+          ${input('nvYearFrom', 'Built from', 'inputmode="numeric" maxlength="4"')}
+          ${input('nvYearTo', 'Built until', 'inputmode="numeric" maxlength="4"', 'Leave empty for a single year')}
+        </div>
+        ${input('nvModelAliases', 'Other names for the model (optional)', 'maxlength="200" autocomplete="off"', 'Separate with commas: Celica Supra, MA70')}
+        ${input('nvGenerationAliases', 'Other names for the generation (optional)', 'maxlength="120" autocomplete="off"', 'Separate with commas: Mk3, MkIII')}
+        <label class="field"><span>Maker’s country</span><select name="nvRegion"><option value="">Choose…</option>${Object.entries(REGION_LABEL).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label>
+        ${check('nvSupercar', 'It’s a supercar')}
+        <p class="vadd-msg" role="alert"></p>
+        <div><button class="btn btn--ghost" type="button" data-vadd-go>Add vehicle</button></div>
+        </div>
+      </details>
     </fieldset>`;
   }
   function wirePicker(root) {
@@ -637,8 +660,37 @@
         const q = box.value.trim();
         if (!q) { out.innerHTML = ''; return; }
         const r = await api('GET', `/api/garage/mod/vehicles?q=${encodeURIComponent(q)}`);
-        out.innerHTML = r.ok && r.data.vehicles.length ? r.data.vehicles.map(v => `<label class="vopt"><input type="radio" name="vehicleKey" value="${esc(v.key)}"><span>${esc(v.label)} <small>${esc(v.years[0] === v.years[1] ? v.years[0] : `${v.years[0]}–${v.years[1]}`)}</small></span></label>`).join('') : '<p class="wait">No vehicles match. Only cars already in the game can be chosen.</p>';
+        out.innerHTML = r.ok && r.data.vehicles.length ? r.data.vehicles.map(v => vopt(v)).join('') : '<p class="wait">No vehicles match. If it isn’t in the game yet, add it below.</p>';
       }, 200);
+    });
+    const add = root.querySelector('[data-vadd]');
+    const go = add.querySelector('[data-vadd-go]');
+    const msg = add.querySelector('.vadd-msg');
+    // The panel sits inside the decision form: Enter here adds the vehicle, never approves the photo.
+    add.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); go.click(); }
+    });
+    go.addEventListener('click', async () => {
+      const f = name => add.querySelector(`[name="${name}"]`);
+      const val = name => (f(name).type === 'checkbox' ? f(name).checked : f(name).value.trim());
+      msg.textContent = '';
+      busy(go, true);
+      const r = await api('POST', '/api/garage/mod/vehicles', {
+        make: val('nvMake'), model: val('nvModel'), variant: val('nvVariant'), generation: val('nvGeneration'),
+        yearFrom: val('nvYearFrom'), yearTo: val('nvYearTo'), modelAliases: val('nvModelAliases'), generationAliases: val('nvGenerationAliases'),
+        region: val('nvRegion'), supercar: val('nvSupercar'),
+      });
+      busy(go, false);
+      if (!r.ok) {
+        msg.textContent = r.status === 0 ? 'Couldn’t reach the server. Check your connection.' : (r.data && r.data.error) || 'Something went wrong. Try again.';
+        return;
+      }
+      // Select the new vehicle, and fill in the year if it's still empty.
+      root.querySelector('[data-vopts]').insertAdjacentHTML('afterbegin', vopt(r.data.vehicle, true));
+      const year = root.querySelector('[name="year"]');
+      if (year && !year.value) year.value = r.data.vehicle.years[0];
+      add.open = false;
+      toast(`Added: ${r.data.vehicle.label}`);
     });
   }
 
@@ -883,7 +935,7 @@
         }
         await signedInChanged('All set.');
       } else if (kind === 'account') {
-        const r = await api('POST', '/api/auth/profile', { displayName: v.displayName, creditAnonymous: v.creditAnonymous });
+        const r = await api('POST', '/api/auth/profile', { displayName: v.displayName, creditAnonymous: v.creditAnonymous, notifyEmail: v.notifyEmail });
         if (!r.ok) return fail(form, r);
         closeDialog();
         toast('Saved');
@@ -1007,7 +1059,11 @@
       showProfile(name);
       return;
     }
-    if (params.has('garage')) { clean(); VC.show('garage'); }
+    if (params.has('garage')) {
+      if (params.get('garage') === 'mine') S.tab = 'mine'; // from a decision email
+      clean();
+      VC.show('garage');
+    }
     if (params.has('finish') || (S.user && !S.user.profileComplete)) {
       const suggest = params.get('suggest') || '';
       if (params.has('finish')) clean();
