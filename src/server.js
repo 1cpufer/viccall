@@ -67,7 +67,9 @@ function createApp(opts = {}) {
     next();
   });
   app.use(compression());
-  app.use(express.json({ limit: '16kb' }));
+  // Browsers never compress request bodies; refusing them (415) also keeps the
+  // decompression path out of reach (body-parser GHSA-27r3-jxmh-p828).
+  app.use(express.json({ limit: '16kb', inflate: false }));
   // Link previews need an absolute og:image URL, so fill in this server's origin.
   const INDEX = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
   app.get(['/', '/index.html'], (req, res) => {
@@ -351,6 +353,15 @@ function createApp(opts = {}) {
   });
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));
+
+  // Errors answer in plain JSON whatever NODE_ENV says: Express's own error page
+  // shows the stack trace and the server's file paths outside production.
+  app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+    const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 600 ? err.status : 500;
+    if (status >= 500) console.error('[server]', err);
+    if (res.headersSent) return;
+    res.status(status).json({ error: { 413: 'Request too large', 415: 'Unsupported request encoding' }[status] || (status >= 500 ? 'Something went wrong' : 'Bad request') });
+  });
 
   // Party players are identified from the session cookie on their socket, so
   // competitive rooms can keep each player's own photos out.

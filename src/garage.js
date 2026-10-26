@@ -451,7 +451,7 @@ function createGarage({ db, auth, dataDir, limit, cars, index, VCScore, prints =
   };
 
   router.put('/submissions/:id/photo', contributor, limit(60, 60 * 60_000),
-    express.raw({ type: () => true, limit: Photos.LIMITS.maxBytes + 1024 * 1024 }),
+    express.raw({ type: () => true, limit: Photos.LIMITS.maxBytes + 1024 * 1024, inflate: false }),
     safe(async (req, res) => {
       const u = req.user;
       const s = ownSubmission(req, res);
