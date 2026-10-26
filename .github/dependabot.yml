@@ -1,0 +1,12 @@
+# Weekly pull requests for npm updates (security fixes arrive as soon as they're published),
+# monthly for the CI actions.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
