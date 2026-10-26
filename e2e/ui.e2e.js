@@ -118,6 +118,7 @@ async function desktop(browser) {
   check((await page.textContent('#gScore')).trim() === '10' || (await page.waitForFunction(() => document.getElementById('gScore').textContent.trim() === '10').then(() => true)), `${vp}: score shows 10`);
   check(await page.locator('#gCredit a').isVisible(), `${vp}: photo credit links to Commons after the reveal`);
   check(await page.locator('#gClockNum').isHidden(), `${vp}: no clock in free play without a timer`);
+  check(/^Answered in [\d.:]+s?/.test((await page.textContent('#gSpeed')).trim()) && await page.isVisible('#gSpeed'), `${vp}: the reveal says how fast (${(await page.textContent('#gSpeed')).trim()})`);
   await shot(page, vp, '04-reveal');
   // Enter moves on.
   await page.keyboard.press('Enter');
@@ -133,6 +134,7 @@ async function desktop(browser) {
   await revealed(page);
   check(/Partly right|Not this time|Close/.test(await page.textContent('#gVerdict')), `${vp}: make-only answer is partial (${(await page.textContent('#gVerdict')).trim()})`);
   check((await page.textContent('#gChips')).includes('Left blank'), `${vp}: blank fields are called out`);
+  check(await page.isVisible('#gSpeed'), `${vp}: a partial answer still shows its time`);
 
   // ---- Recognition through the real UI: the shortest unique name earns full model credit.
   await page.keyboard.press('Enter');
@@ -366,12 +368,16 @@ async function partyFlow(browser) {
   await B.page.waitForSelector('#pgReveal:not([hidden])');
   check((await A.page.textContent('#pgVerdict')).includes('Spot on'), 'party: host verdict');
   check(await B.page.locator('#pgCredit a').isVisible(), 'party: photo credit after reveal');
+  check(await A.page.isVisible('#pgPodium') && (await A.page.$$('#pgPodiumList li')).length === 1, 'party: podium shows the one correct answer');
+  check(/Host\s*you/.test(await A.page.textContent('#pgPodiumList')) && /^Host\b/.test((await B.page.textContent('#pgPodiumList .podium-who')).trim()), 'party: podium names who was quickest, marked "you" for them');
+  check((await B.page.textContent('#pgSpeed')).includes('You locked in at'), 'party: each player sees their own time');
   await A.page.screenshot({ path: path.join(outDir, 'party-desk-reveal.png') });
   await B.page.screenshot({ path: path.join(outDir, 'party-mob-reveal.png'), fullPage: true });
   // Refresh mid-game resumes.
   await B.page.reload({ waitUntil: 'networkidle' });
   await B.page.waitForSelector('#s-pgame:not([hidden])', { timeout: 5000 });
   check(true, 'party: guest refresh resumes the game');
+  check(await B.page.waitForSelector('#pgPodium:not([hidden])', { timeout: 3000 }).then(() => true, () => false) && (await B.page.textContent('#pgSpeed')).includes('You locked in at'), 'party: after a refresh the podium and your time are still there');
   for (let i = 1; i < 10; i++) {
     await A.page.keyboard.press('Enter');
     await A.page.waitForSelector('#pgForm:not([hidden])');

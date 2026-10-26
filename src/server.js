@@ -17,6 +17,7 @@ const { createCommonsProvenance } = require('./provenance');
 const { createPhotoPrints } = require('./photo-prints');
 const { createScoresBackup, tidy } = require('./scores-backup');
 const { createStats } = require('./stats');
+const { createSpeed } = require('./speed');
 const PaceCar = require('./pace-car');
 const { startKeepAwake } = require('./keep-awake');
 const VCScore = require('../public/scoring.js');
@@ -61,6 +62,7 @@ function createApp(opts = {}) {
   // Daily play totals for the owner (no information about players). Saved with the leaderboards.
   let backupRef = null;
   const stats = createStats({ file: path.join(dataDir, 'stats.json'), tz: opts.statsTz, onChange: () => backupRef && backupRef.markDirty() });
+  const speed = createSpeed({ tz: opts.statsTz, now: opts.now });
   const backup = opts.scoresBackup || createScoresBackup({
     extras: [{ name: 'viccall-stats.json', snapshot: stats.snapshot, restore: stats.restore }],
     file: SCORES_FILE, token: opts.scoresToken !== undefined ? opts.scoresToken : process.env.SCORES_GITHUB_TOKEN,
@@ -294,8 +296,11 @@ function createApp(opts = {}) {
     const timedOut = !!b.timedOut || late;
     if (late) result = { ...result, pts: 0, identified: false, perfect: false, res: result.res.map(r => ({ ...r, pts: 0 })) };
 
+    const usedMs = s.plan.clockMs > 0 ? Math.min(elapsed, s.plan.clockMs) : elapsed;
     s.score += result.pts;
-    s.timeMs += s.plan.clockMs > 0 ? Math.min(elapsed, s.plan.clockMs) : elapsed;
+    s.timeMs += usedMs;
+    // How fast, and today's fastest correct answer on this car (shown on the reveal; not scored).
+    const pace = photoSkip || timedOut ? null : speed.answer(car.id, usedMs, result.identified);
     if (photoSkip) { /* no streak change, no strike */ } else if (result.identified) { s.cars += 1; s.streak += 1; s.bestStreak = Math.max(s.bestStreak, s.streak); } else { s.streak = 0; }
     if (s.plan.kind === 'endless' && !result.identified && !photoSkip) s.strikes += 1;
     s.results.push({ carId: car.id, pts: result.pts });
@@ -313,7 +318,7 @@ function createApp(opts = {}) {
     res.json({
       pts: result.pts, res: result.res, identified: result.identified, perfect: result.perfect,
       late, timedOut, skipped: photoSkip, score: s.score, cars: s.cars, timeMs: s.timeMs, streak: s.streak, bestStreak: s.bestStreak,
-      strikes: s.strikes, lives: s.plan.lives, idx: s.idx, done,
+      strikes: s.strikes, lives: s.plan.lives, idx: s.idx, done, speed: pace,
       answer: {
         id: car.id, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year,
         yearRange: car.yearRange || null, kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null,
@@ -483,7 +488,7 @@ function createApp(opts = {}) {
   const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor, track });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, stats, paceCar: { run: paceCarRun }, prints, index: VEHICLES,
+    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, stats, speed, paceCar: { run: paceCarRun }, prints, index: VEHICLES,
     close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); backup.close(); stats.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }

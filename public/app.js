@@ -680,11 +680,26 @@
     musicLevel({ progress: solo.rounds ? solo.idx / solo.rounds : Math.min(1, solo.idx / 20), streak: solo.streak });
   }
 
+  // "4.2s · fastest today 2.1s" under the car on the solo reveal (speed isn't scored, just shown).
+  const STOPWATCH = '<svg class="ic" aria-hidden="true"><use href="#i-stopwatch"/></svg>';
+  function soloSpeedHtml(sp, identified) {
+    if (!sp || !(sp.ms >= 0)) return '';
+    const you = `${STOPWATCH}<span class="speed-you">Answered in ${fmtTime(sp.ms)}</span>`;
+    if (sp.isBest) return `${you} <span class="speed-tag">${sp.first ? 'First to name it today' : 'Fastest today'}</span>`;
+    if (sp.best != null && !(identified && sp.ms <= sp.best)) return `${you} <span class="speed-best">fastest today ${fmtTime(sp.best)}</span>`;
+    return you;
+  }
+  function setSpeed(el, html) {
+    el.innerHTML = html;
+    el.hidden = !html;
+  }
+
   function renderSoloReveal(d, empty) {
     const v = verdictFor(d, empty);
     $('gVerdict').textContent = v.text;
     $('gVerdict').className = `reveal-verdict ${v.cls}`;
     $('gAnswer').innerHTML = answerHtml(d.answer, solo.roundKind);
+    setSpeed($('gSpeed'), soloSpeedHtml(d.speed, d.identified));
     $('gHint').textContent = d.answer.hint || '';
     $('gChips').innerHTML = chipsHtml(d.res, d.skipped);
     stagger($('gChips'));
@@ -1120,7 +1135,7 @@
       return;
     }
     party.answered = true;
-    party.myResult = { pts: r.pts, res: r.res };
+    party.myResult = { pts: r.pts, res: r.res, ms: r.ms };
     A.play('select');
     if (party.state === 'playing') {
       $('pgForm').hidden = true;
@@ -1140,6 +1155,8 @@
     $('pgVerdict').textContent = v.text;
     $('pgVerdict').className = `reveal-verdict ${v.cls}`;
     $('pgAnswer').innerHTML = answerHtml(d, party.kind);
+    setSpeed($('pgSpeed'), mine && mine.ms != null ? `${STOPWATCH}<span class="speed-you">You locked in at ${fmtTime(mine.ms)}</span>` : '');
+    renderPodium(d.podium || []);
     $('pgHint').textContent = d.hint || '';
     $('pgChips').innerHTML = mine ? chipsHtml(mine.res) : '';
     stagger($('pgChips'));
@@ -1150,6 +1167,13 @@
     renderStandings({ deltas: true });
     if (mine && mine.pts >= MAX) A.play('correct'); else if (mine && mine.pts > 0) A.play('partial'); else A.play('wrong');
     if (isHost() && !coarse.matches) $('pgNext').focus({ preventScroll: true });
+  }
+
+  // Up to three fastest to name the car this round.
+  function renderPodium(list) {
+    $('pgPodium').hidden = !list.length;
+    $('pgPodiumList').innerHTML = list.map((p, i) => `<li class="podium-row${p.id === party.youId ? ' is-you' : ''}"><span class="podium-place">${['1st', '2nd', '3rd'][i]}</span> <span class="podium-who">${esc(p.name)}${p.id === party.youId ? ' <small>you</small>' : ''}</span> <span class="podium-time">${fmtTime(p.ms)}</span></li>`).join('');
+    stagger($('pgPodiumList'));
   }
 
   function updateHostControls() {

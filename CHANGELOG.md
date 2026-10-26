@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-26: Speed on the reveal
+
+- **Solo.** The reveal says how long you took ("Answered in 4.2s"), and shows today's fastest correct answer on that car next to it. Beat it and it says **Fastest today**, or **First to name it today** if nobody had yet.
+- **Parties.** The reveal shows the three quickest to name the car, with their times, and each player's own time.
+- **Scoring is unchanged.** Speed is only shown. Points work exactly as before, and leaderboards still use total time only to break ties.
+- **What's kept.** Today's fastest time per car, in memory only: no names, nothing about the player. It clears at midnight (`STATS_TZ`) and on a restart. A time under 1 second isn't kept as a record, and a photo that never loaded or a round that timed out gets no time.
+- **Tests:** 4 new (121 total), and new browser checks for the speed line, the podium, and the podium after a refresh. axe-core passes on both reveals at desktop and phone sizes.
+
 ## 2026-10-26: Pace Car
 
 - **A bot to beat** (`src/pace-car.js`). One bot posts one score on each ranked playlist, on Endless, and on every new Daily Challenge (checked hourly), so boards aren't empty.

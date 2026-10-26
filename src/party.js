@@ -94,6 +94,12 @@ function attachParty(io, CARS, opts = {}) {
     }));
   }
   const standings = room => publicPlayers(room).sort((a, b) => b.score - a.score);
+  // The quickest three to name the car this round (time from the round starting to locking in).
+  const podium = room => [...room.players.values()]
+    .filter(p => p.answered && p.identified && p.answerMs != null)
+    .sort((a, b) => a.answerMs - b.answerMs)
+    .slice(0, 3)
+    .map(p => ({ id: p.id, name: p.name, ms: p.answerMs }));
 
   function uniqueName(room, name) {
     const taken = new Set([...room.players.values()].map(p => p.name.toLowerCase()));
@@ -109,7 +115,7 @@ function attachParty(io, CARS, opts = {}) {
     return {
       idx: room.curIdx, make: car.make, model: car.model, variant: car.variant || null, generation: car.generation || null, year: car.year, yearRange: car.yearRange || null,
       kit: car.kit || null, hint: car.hint, credit: car.credit || null, photo: car.photo || null,
-      attribution: !car.community && opts.attributionFor ? opts.attributionFor(car) : null, carId: car.id, standings: standings(room),
+      attribution: !car.community && opts.attributionFor ? opts.attributionFor(car) : null, carId: car.id, standings: standings(room), podium: podium(room),
     };
   }
 
@@ -154,9 +160,10 @@ function attachParty(io, CARS, opts = {}) {
   function startRound(room) {
     clearRoundTimer(room);
     room.state = 'playing';
-    room.players.forEach(p => { p.answered = false; p.lastPts = null; p.lastResult = null; p.pending = 0; });
+    room.players.forEach(p => { p.answered = false; p.lastPts = null; p.lastResult = null; p.pending = 0; p.answerMs = null; p.identified = false; });
     const ms = roundMsFor(room);
-    room.deadline = Date.now() + ms;
+    room.startedAt = Date.now();
+    room.deadline = room.startedAt + ms;
     room.timer = setTimeout(() => revealRound(room), ms);
     const car = roundCar(room);
     if (!car) { // nothing safe to show: end the game rather than show an excluded photo
@@ -231,7 +238,7 @@ function attachParty(io, CARS, opts = {}) {
   function addPlayer(socket, room, name, key) {
     const player = {
       id: crypto.randomUUID(), key: validKey(key) ? key : null, name: uniqueName(room, name),
-      score: 0, pending: 0, answered: false, lastPts: null, lastResult: null, socketId: null, dropTimer: null, awaySince: 0,
+      score: 0, pending: 0, answered: false, answerMs: null, identified: false, lastPts: null, lastResult: null, socketId: null, dropTimer: null, awaySince: 0,
     };
     room.players.set(player.id, player);
     bind(socket, room, player);
@@ -355,12 +362,15 @@ function attachParty(io, CARS, opts = {}) {
       if (Number.isInteger(payload.idx) && payload.idx !== room.curIdx) return cb({ ok: false, error: 'Round is over' });
       const guess = { car: str(payload.car, 100), make: str(payload.make, 60), model: str(payload.model, 60), year: str(payload.year, 8), kit: str(payload.kit, 60) };
       const result = VCScore.scoreRound(room.queue[room.curIdx], guess, { ruleset: room.ruleset, kind: kindFor(room), index });
+      const answerMs = Math.max(0, Math.min(Date.now() - room.startedAt, roundMsFor(room)));
       player.pending = result.pts;
       player.answered = true;
+      player.answerMs = answerMs;
+      player.identified = result.identified;
       player.lastPts = result.pts;
-      player.lastResult = { pts: result.pts, res: result.res };
+      player.lastResult = { pts: result.pts, res: result.res, ms: answerMs };
       touch(room);
-      cb({ ok: true, pts: result.pts, res: result.res });
+      cb({ ok: true, pts: result.pts, res: result.res, ms: answerMs });
       io.to(room.code).emit('party:progress', {
         answeredCount: waitingOn(room).filter(p => p.answered).length,
         total: waitingOn(room).length,

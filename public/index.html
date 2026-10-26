@@ -37,6 +37,7 @@
       <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6l16 0" /> <path d="M4 12l16 0" /> <path d="M4 18l16 0" /></symbol>
       <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6l-12 12" /> <path d="M6 6l12 12" /></symbol>
       <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 10.941c2.333 -3.308 .167 -7.823 -1 -8.941c0 3.395 -2.235 5.299 -3.667 6.706c-1.43 1.408 -2.333 3.621 -2.333 5.588c0 3.704 3.134 6.706 7 6.706s7 -3.002 7 -6.706c0 -1.712 -1.232 -4.403 -2.333 -5.588c-2.084 3.353 -3.257 3.353 -4.667 2.235" /></symbol>
+      <symbol id="i-stopwatch" viewBox="0 0 24 24"><path d="M5 13a7 7 0 1 0 14 0a7 7 0 0 0 -14 0z" /> <path d="M14.5 10.5l-2.5 2.5" /> <path d="M17 8l1 -1" /> <path d="M14 3h-4" /></symbol>
       <symbol id="i-external" viewBox="0 0 24 24"><path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6" /> <path d="M11 13l9 -9" /> <path d="M15 4h5v5" /></symbol>
     </defs>
   </svg>
@@ -205,6 +206,7 @@
           <div class="reveal" id="gReveal" hidden aria-live="polite">
             <p class="reveal-verdict" id="gVerdict"></p>
             <h2 class="reveal-car" id="gAnswer"></h2>
+            <p class="reveal-speed" id="gSpeed" hidden></p>
             <ul class="chips" id="gChips"></ul>
             <p class="reveal-hint" id="gHint"></p>
             <button class="btn btn--primary btn--lg btn--block" id="gNext" data-action="next">Next car <kbd class="kbd-hint">Enter</kbd></button>
@@ -427,8 +429,13 @@
           <div class="reveal" id="pgReveal" hidden aria-live="polite">
             <p class="reveal-verdict" id="pgVerdict"></p>
             <h2 class="reveal-car" id="pgAnswer"></h2>
+            <p class="reveal-speed" id="pgSpeed" hidden></p>
             <ul class="chips" id="pgChips"></ul>
             <p class="reveal-hint" id="pgHint"></p>
+            <div class="podium" id="pgPodium" hidden>
+              <h3 class="podium-h">Quickest to name it</h3>
+              <ol class="podium-list" id="pgPodiumList"></ol>
+            </div>
             <button class="btn btn--primary btn--lg btn--block" id="pgNext" data-action="party-next" hidden>Next car <kbd class="kbd-hint">Enter</kbd></button>
             <p class="wait" id="pgWaitHost" hidden></p>
           </div>

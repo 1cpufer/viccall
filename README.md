@@ -58,7 +58,7 @@ The browser scripts need Playwright (`npm i --no-save playwright && npx playwrig
 | `GARAGE_ENABLED` | `1` turns on accounts and the Community Garage (off by default). Its other settings (`PUBLIC_URL`, `ADMIN_EMAILS`, Google, Discord and email keys) are listed in `docs/COMMUNITY_GARAGE.md`. |
 | `COMMONS_META` | `0` stops the weekly lookup of first-party photo authors and licences on Wikimedia Commons. |
 | `PACE_CAR` | `0` turns off the Pace Car, a bot that posts one score on each leaderboard (and each Daily Challenge), always tagged as a bot. |
-| `STATS_TZ` | Time zone the play counter's days run on (default `America/Chicago`). |
+| `STATS_TZ` | Time zone the play counter's days, and "fastest today", run on (default `America/Chicago`). |
 | `SCORES_GITHUB_TOKEN` | A GitHub token allowed to edit gists. Leaderboards are then also kept in a private gist, restored on start-up and saved after each score and on shutdown, so they survive restarts on hosting without a disk. `SCORES_GIST_ID` pins a specific gist (normally found by its description). |
 | `KEEP_AWAKE`, `KEEP_AWAKE_URL` | On Render the server requests its own `/api/health` every 10 minutes (using `RENDER_EXTERNAL_URL`) so the free instance doesn't sleep. `KEEP_AWAKE=0` turns it off; `KEEP_AWAKE_URL` sets the address elsewhere. |
 | `NODE_ENV` | `production` on Render (`render.yaml`). Outside production the mailer writes emails, sign-in links included, to the log. |
@@ -162,6 +162,8 @@ No page has inline scripts, event handlers or style attributes (the JavaScript s
 - Ranked and party photos are served through `/api/img/<token>`. Wikimedia file names usually spell out the car, so the browser never sees them before the reveal. A token is only issued when its round opens, and the 45-second clock starts when the photo is first served, so slow photo loads don't eat your time. If Wikimedia can't be reached from the server, the proxy redirects to the direct URL so the game stays playable (that one photo is no longer hidden).
 - An answer that arrives more than 3 s after the clock ends scores 0. Free skips for photos that fail to load are limited to two per ranked game, and only when the server couldn't deliver the photo.
 - Leaderboards only accept finished server sessions, once each. The daily lock is per browser (a hashed random key), so it stops accidents, not someone determined to clear their storage.
+
+- **Speed on the reveal** (`src/speed.js`): solo shows how long you took and today's fastest correct answer on that car; parties show the three quickest to name it. Only shown, never scored. Today's times are kept in memory without names and clear at midnight (`STATS_TZ`) or on a restart.
 
 - **Pace Car** (`src/pace-car.js`): one bot plays each ranked playlist, Endless and every Daily Challenge once, so boards aren't empty.
   - It's always listed as "Pace Car" with a **bot** tag, never passed off as a person.
