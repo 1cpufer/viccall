@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-26: Play counter
+
+- **What it counts** (`src/stats.js`): daily totals of visitors (new and came back), games started and finished by mode, cars answered, scores posted, and party games with their player numbers.
+- **What it doesn't store:** anything about who played. The browser sends only the last day it visited (`/api/meta?seen=`), and the server keeps counts, never identifiers. Requests without that flag, like bots and keep-awake, aren't counted.
+- **Days** run on `STATS_TZ` (default America/Chicago) and are kept for 120 days.
+- **Survives restarts:** the totals are saved in the same private gist as the leaderboards, and restored by taking the larger of each count, so nothing is counted twice.
+- **Owner page:** `/stats.html`, opened with the `ADMIN_TOKEN` key (remembered in that browser); the data comes from `GET /api/stats`.
+- **Tests:** 6 new (111 total). The UI, party and Garage browser checks pass. axe-core finds nothing on the counter page.
+
 ## 2026-10-25: Security audit
 
 - **Urgent, deployed first (`f67841b`).**

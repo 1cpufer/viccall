@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0f2019">
+  <title>Play counter · VicCall</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app doc stats-page">
+    <p><a class="doc-back" href="/">VicCall</a></p>
+    <h1 class="h2">Play counter</h1>
+    <p class="block-sub">Daily totals of visits and games. Nothing about who played is stored.</p>
+
+    <form class="stats-key" id="keyForm" hidden>
+      <label class="field"><span>Owner key</span><input id="key" type="password" autocomplete="off" required></label>
+      <p class="field-note">The <code>ADMIN_TOKEN</code> value from Render: viccall, Environment. It’s kept in this browser only.</p>
+      <p class="form-msg" id="keyMsg" role="alert"></p>
+      <button class="btn btn--primary" type="submit">Show the numbers</button>
+    </form>
+
+    <div id="out" aria-live="polite"></div>
+  </main>
+  <script src="stats.js" defer></script>
+</body>
+</html>

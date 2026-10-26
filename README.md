@@ -2,12 +2,12 @@
 
 Vehicle Identification Call: a car-guessing game. You see one photo and name the make, model and year, or for a modified car, the tuner behind the body kit. No account needed to play. Accounts exist only for the optional Community Garage, where players submit their own photos.
 
-## Status (24 October 2026)
+## Status (26 October 2026)
 
 - **Live:** https://viccall.onrender.com, Render free plan, deployed from the `overnight-polish` branch. Pushing there deploys.
 - **Branches:**
   - `main` has the latest code and notes, so start there.
-  - `game-expansion` is the work branch.
+  - `game-expansion` is an old work branch, kept for history.
   - `overnight-polish` is what's live, and it only ever moves forward to `main`. `git log origin/overnight-polish..origin/main` lists anything not live yet.
 - **Running on the live site:**
   - Every game mode and answer recognition.
@@ -15,6 +15,7 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Leaderboards backed up to a private gist (`SCORES_GITHUB_TOKEN` is set on Render).
   - Photo proxy: confirmed working.
   - Commons photo credits: all 312 photos have usable licences.
+  - Play counter: daily visitors and games at `/stats.html`. The owner key is `ADMIN_TOKEN` from Render; nothing about who played is stored.
 - **Photos checked:** on 24 October every photo was looked at against its answer. 10 were replaced, 9 entries corrected, and the 6 held-back cars came back with correct photos, so every entry is in play (see `CHANGELOG.md`). On 25 October, 5 tuner builds were added (Top Secret and Prior Design).
 - **Built but switched off:** the Community Garage, meaning accounts, photo submissions and moderation (`GARAGE_ENABLED` isn't set). See `docs/COMMUNITY_GARAGE.md`.
 - **Still to do (owner):**
@@ -27,7 +28,7 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
   - Test Google, Discord and Resend for real once the keys exist.
-- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (104 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
+- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (111 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
 
 ## Running it
 
@@ -56,6 +57,7 @@ The browser scripts need Playwright (`npm i --no-save playwright && npx playwrig
 | `TRUST_PROXY` | Set to `1` behind a reverse proxy (Render, Railway, nginx) so rate limits see real client IPs. |
 | `GARAGE_ENABLED` | `1` turns on accounts and the Community Garage (off by default). Its other settings (`PUBLIC_URL`, `ADMIN_EMAILS`, Google, Discord and email keys) are listed in `docs/COMMUNITY_GARAGE.md`. |
 | `COMMONS_META` | `0` stops the weekly lookup of first-party photo authors and licences on Wikimedia Commons. |
+| `STATS_TZ` | Time zone the play counter's days run on (default `America/Chicago`). |
 | `SCORES_GITHUB_TOKEN` | A GitHub token allowed to edit gists. Leaderboards are then also kept in a private gist, restored on start-up and saved after each score and on shutdown, so they survive restarts on hosting without a disk. `SCORES_GIST_ID` pins a specific gist (normally found by its description). |
 | `KEEP_AWAKE`, `KEEP_AWAKE_URL` | On Render the server requests its own `/api/health` every 10 minutes (using `RENDER_EXTERNAL_URL`) so the free instance doesn't sleep. `KEEP_AWAKE=0` turns it off; `KEEP_AWAKE_URL` sets the address elsewhere. |
 | `NODE_ENV` | `production` on Render (`render.yaml`). Outside production the mailer writes emails, sign-in links included, to the log. |
@@ -212,6 +214,7 @@ All sound is synthesised in the browser (`public/audio.js`, Web Audio API). Ther
 | `GET /api/leaderboard?board=` | `ranked:<playlist>`, `daily:YYYY-MM-DD` or `endless`. |
 | `GET /api/img/:token` | Photo proxy for ranked and party rounds. |
 | `POST /api/report`, `GET /api/reports` | Bug and crash reports (reading needs `ADMIN_TOKEN`). |
+| `GET /api/stats?days=` | Play counter: visitors (new, came back), games started and finished by mode, cars answered, scores posted, party games. Needs `ADMIN_TOKEN` in `x-admin-token`. The page is `/stats.html`. |
 | `/api/auth/*` | Garage only. Sign-up, sign-in, sign-out, email links, profile, closing an account, Google and Discord sign-in. |
 | `/api/garage/*` | Garage only. Licence, submissions and uploads, photos, profiles, reports, counter-notices. Moderation lives under `/mod/*` and admin under `/admin/*`. State-changing requests need the `X-VicCall: 1` header. |
 

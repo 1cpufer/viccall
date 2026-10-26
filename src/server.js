@@ -16,6 +16,7 @@ const { createGarage } = require('./garage');
 const { createCommonsProvenance } = require('./provenance');
 const { createPhotoPrints } = require('./photo-prints');
 const { createScoresBackup, tidy } = require('./scores-backup');
+const { createStats } = require('./stats');
 const { startKeepAwake } = require('./keep-awake');
 const VCScore = require('../public/scoring.js');
 
@@ -56,10 +57,15 @@ function createApp(opts = {}) {
   if (!fs.existsSync(REPORTS_FILE)) fs.writeFileSync(REPORTS_FILE, '[]');
 
   // Leaderboards survive restarts when a GitHub token is set (see scores-backup.js).
+  // Daily play totals for the owner (no information about players). Saved with the leaderboards.
+  let backupRef = null;
+  const stats = createStats({ file: path.join(dataDir, 'stats.json'), tz: opts.statsTz, onChange: () => backupRef && backupRef.markDirty() });
   const backup = opts.scoresBackup || createScoresBackup({
+    extras: [{ name: 'viccall-stats.json', snapshot: stats.snapshot, restore: stats.restore }],
     file: SCORES_FILE, token: opts.scoresToken !== undefined ? opts.scoresToken : process.env.SCORES_GITHUB_TOKEN,
     gistId: process.env.SCORES_GIST_ID, fetch: opts.fetchGithub, log: opts.log !== false,
   });
+  backupRef = backup;
   if (backup.enabled) backup.restore();
 
   const readJson = f => { try { const v = JSON.parse(fs.readFileSync(f, 'utf8')); return Array.isArray(v) ? v : []; } catch { return []; } };
@@ -159,7 +165,10 @@ function createApp(opts = {}) {
   app.get('/api/meta', (req, res) => {
     const live = Modes.live(CARS);
     const now = new Date();
+    // ?seen= is the last day this browser visited ('none' the first time); only the totals are kept.
+    const statsDay = req.query.seen !== undefined ? stats.visit(String(req.query.seen).slice(0, 10)) : stats.today();
     res.json({
+      statsDay,
       ...Modes.catalog(CARS),
       maxPerCar: VCScore.MAX,
       cars: live.length,
@@ -188,6 +197,7 @@ function createApp(opts = {}) {
     for (const [id, s] of sessions) if (now - s.created > SESSION_TTL_MS) sessions.delete(id);
     while (sessions.size > MAX_SESSIONS) sessions.delete(sessions.keys().next().value);
   }
+  const modeOf = plan => (plan.kind === 'ranked' ? `ranked:${plan.key}` : plan.kind);
   const getSession = b => sessions.get(clip(b && b.sessionId, 64));
   const ranked = s => !!s.plan.board && !s.unranked;
   const finished = s => (s.plan.rounds ? s.idx >= s.plan.rounds : s.over);
@@ -216,6 +226,7 @@ function createApp(opts = {}) {
     };
     if (plan.kind === 'endless') s.queue.push(Modes.nextEndless(plan, new Set(), 0));
     sessions.set(s.id, s);
+    stats.started(modeOf(plan));
     if (plan.board && s.queue[0]) images.warm(s.queue[0].img);
     res.json({
       sessionId: s.id, kind: plan.kind, key: plan.key, title: plan.title, board: ranked(s) ? plan.board : null,
@@ -293,6 +304,8 @@ function createApp(opts = {}) {
       else s.queue.push(Modes.nextEndless(s.plan, new Set(s.queue.map(c => c.id)), s.streak));
     }
     const done = finished(s);
+    stats.round();
+    if (done) stats.finished(modeOf(s.plan));
     if (!done && s.plan.board) images.warm(s.queue[s.idx].img);
 
     res.json({
@@ -321,6 +334,7 @@ function createApp(opts = {}) {
     const board = s.plan.board;
     if (board.startsWith('daily:') && dailyAlreadyPosted(board, s.player)) return res.status(409).json({ error: "You've already posted today's Daily Challenge" });
     s.saved = true;
+    stats.posted();
 
     const maxScore = s.plan.rounds ? s.plan.rounds * VCScore.MAX : s.idx * VCScore.MAX;
     const entry = {
@@ -366,16 +380,27 @@ function createApp(opts = {}) {
     res.json({ ok: true });
   });
 
-  // Reports contain user agents and stack traces: owner-only.
-  // Set ADMIN_TOKEN and call /api/reports?token=..., or read it from the same machine.
-  app.get('/api/reports', (req, res) => {
+  // Owner-only endpoints: ADMIN_TOKEN in the x-admin-token header (or ?token=),
+  // or, without ADMIN_TOKEN set, a request from the server machine itself.
+  const ownerOk = req => {
     const local = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress) && !req.get('x-forwarded-for');
     const token = String(req.get('x-admin-token') || req.query.token || '');
-    const ok = ADMIN_TOKEN
+    return ADMIN_TOKEN
       ? token.length === ADMIN_TOKEN.length && crypto.timingSafeEqual(Buffer.from(token), Buffer.from(ADMIN_TOKEN))
       : local;
-    if (!ok) return res.status(404).json({ error: 'not found' });
+  };
+
+  // Reports contain user agents and stack traces: owner-only.
+  app.get('/api/reports', (req, res) => {
+    if (!ownerOk(req)) return res.status(404).json({ error: 'not found' });
     res.json(readJson(REPORTS_FILE).slice().reverse());
+  });
+
+  // Play counter (daily totals, nothing about who played): owner-only. The page is /stats.html.
+  app.get('/api/stats', limit(60, 60_000), (req, res) => {
+    if (!ownerOk(req)) return res.status(404).json({ error: 'not found' });
+    res.set('Cache-Control', 'no-store');
+    res.json(stats.summary(Math.min(120, Math.max(1, parseInt(req.query.days, 10) || 30))));
   });
 
   // ---- CSP violation reports ----
@@ -431,11 +456,16 @@ function createApp(opts = {}) {
     return u && u.status === 'active' ? u.id : null;
   } : null;
   const community = garage ? { items: () => garage.roundItems(), state: id => garage.itemState(id), photo: (id, ctx) => garage.roundPhoto(id, ctx) } : null;
-  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor });
+  const track = (event, n) => {
+    if (event === 'room') stats.partyRoom();
+    else if (event === 'game') { stats.partyGame(n); }
+    else if (event === 'finished') stats.partyFinished();
+  };
+  const party = attachParty(io, CARS, { ...opts.party, images, index: VEHICLES, community, identify, attributionFor: provenance.attributionFor, track });
 
   return {
-    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, prints, index: VEHICLES,
-    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); backup.close(); if (gdb && !opts.db) gdb.close(); },
+    app, server, io, sessions, party, images, db: gdb, auth, garage, provenance, backup, stats, prints, index: VEHICLES,
+    close() { clearInterval(hitSweep); images.close(); party.close(); io.close(); server.close(); if (garage) garage.close(); backup.close(); stats.close(); if (gdb && !opts.db) gdb.close(); },
   };
 }
 
@@ -463,6 +493,7 @@ if (require.main === module) {
 
   // Deploys and restarts send SIGTERM: save the leaderboards first.
   process.on('SIGTERM', async () => {
+    try { stats.flush(); } catch {}
     try { if (backup.enabled) { await Promise.race([backup.flush(), new Promise(r => setTimeout(r, 20_000))]); console.log('[scores] saved before shutdown'); } } catch {}
     process.exit(0);
   });

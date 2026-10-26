@@ -51,6 +51,7 @@ function attachParty(io, CARS, opts = {}) {
   // Community photos need the proxy (they're served by token) and a way to tell who's playing.
   const community = images && opts.community ? opts.community : null;
   const identify = opts.identify || (() => null);
+  const track = opts.track || (() => {}); // play counter: 'room', 'game' (with player count), 'finished'
   // Everyone seated in the room counts, connected or not.
   const ctxFor = room => ({ competitive: room.ruleset === 'competitive', participants: [...room.players.values()].map(p => p.userId || null) });
   // Photo URL players see. With the proxy it's opaque, so the file name can't give the car away.
@@ -276,6 +277,7 @@ function attachParty(io, CARS, opts = {}) {
       const ruleset = payload.ruleset === 'competitive' ? 'competitive' : 'casual';
       const room = { code: makeCode(), playlist, ruleset, hostId: null, players: new Map(), queue: [], imgs: [], fallback: [], curIdx: -1, state: 'lobby', timer: null, deadline: 0, lastActive: Date.now() };
       rooms.set(room.code, room);
+      track('room');
       const p = addPlayer(socket, room, sanitizeName(payload.name), payload.key);
       room.hostId = p.id;
       cb({ ok: true, ...snapshot(room, p.id) });
@@ -341,6 +343,7 @@ function attachParty(io, CARS, opts = {}) {
       room.curIdx = 0;
       room.players.forEach(p => { p.score = 0; p.pending = 0; });
       touch(room);
+      track('game', room.players.size);
       startRound(room);
       cb({ ok: true });
     });
@@ -381,6 +384,7 @@ function attachParty(io, CARS, opts = {}) {
       room.curIdx += 1;
       if (room.curIdx >= TOTAL) {
         room.state = 'final';
+        track('finished');
         room.players.forEach(p => { p.answered = false; });
         io.to(room.code).emit('party:final', { standings: standings(room) });
       } else {

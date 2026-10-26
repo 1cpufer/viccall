@@ -36,7 +36,12 @@ function tidy(entries, now = Date.now()) {
   return [...boards.values()].flatMap(list => list.sort(sortBoard).slice(0, MAX_PER_BOARD));
 }
 
-function createScoresBackup({ file, token, gistId: pinned, fetch: fetcher = (u, i) => fetch(u, i), log = true, saveDelayMs = 15_000, retryMs = 60_000 } = {}) {
+/*
+ * extras: other small files kept in the same gist, each
+ *   { name, snapshot: () => string, restore: (savedText | null) => void }
+ * (the play counter uses this).
+ */
+function createScoresBackup({ file, token, gistId: pinned, fetch: fetcher = (u, i) => fetch(u, i), log = true, saveDelayMs = 15_000, retryMs = 60_000, extras = [] } = {}) {
   const enabled = !!token;
   let gistId = pinned || null;
   let ready = false;
@@ -75,18 +80,21 @@ function createScoresBackup({ file, token, gistId: pinned, fetch: fetcher = (u, 
     return null;
   }
 
+  async function fileText(f) {
+    if (!f) return null;
+    if (!f.truncated || !f.raw_url) return f.content;
+    const res = await fetcher(f.raw_url, { headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'VicCall-server' }, signal: AbortSignal.timeout(15_000) });
+    if (!res.ok) throw new Error(`GitHub raw: ${res.status}`);
+    return res.text();
+  }
+  // Returns the saved scores, and the saved text of each extra file.
   async function readGist() {
     const g = await gh('GET', `/gists/${gistId}`);
-    const f = g.files && g.files[FILE];
-    if (!f) return [];
-    let text = f.content;
-    if (f.truncated && f.raw_url) {
-      const res = await fetcher(f.raw_url, { headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'VicCall-server' }, signal: AbortSignal.timeout(15_000) });
-      if (!res.ok) throw new Error(`GitHub raw: ${res.status}`);
-      text = await res.text();
-    }
-    const v = JSON.parse(text || '[]');
-    return Array.isArray(v) ? v : [];
+    const files = g.files || {};
+    const v = JSON.parse((await fileText(files[FILE])) || '[]');
+    const extra = {};
+    for (const e of extras) extra[e.name] = await fileText(files[e.name]);
+    return { scores: Array.isArray(v) ? v : [], extra };
   }
 
   // Merge what's saved with anything posted since this server started.
@@ -94,7 +102,9 @@ function createScoresBackup({ file, token, gistId: pinned, fetch: fetcher = (u, 
     if (!enabled) return { restored: 0 };
     try {
       if (!gistId) gistId = await findGist();
-      const saved = gistId ? await readGist() : [];
+      const got = gistId ? await readGist() : { scores: [], extra: {} };
+      const saved = got.scores;
+      for (const e of extras) { try { e.restore(got.extra[e.name] || null); } catch (err) { warn(`couldn’t restore ${e.name}: ${err.message}`); } }
       const merged = tidy([...saved, ...readLocal()]);
       writeLocal(merged);
       ready = true;
@@ -116,9 +126,10 @@ function createScoresBackup({ file, token, gistId: pinned, fetch: fetcher = (u, 
     dirty = false;
     saving = (async () => {
       try {
-        const content = JSON.stringify(tidy(readLocal()));
-        if (gistId) await gh('PATCH', `/gists/${gistId}`, { files: { [FILE]: { content } } });
-        else gistId = (await gh('POST', '/gists', { description: DESCRIPTION, public: false, files: { [FILE]: { content } } })).id;
+        const files = { [FILE]: { content: JSON.stringify(tidy(readLocal())) } };
+        for (const e of extras) files[e.name] = { content: e.snapshot() };
+        if (gistId) await gh('PATCH', `/gists/${gistId}`, { files });
+        else gistId = (await gh('POST', '/gists', { description: DESCRIPTION, public: false, files })).id;
         return true;
       } catch (e) {
         dirty = true;

@@ -8,41 +8,11 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { startServer } = require('./helpers');
-const { createScoresBackup, tidy, FILE, DESCRIPTION } = require('../src/scores-backup');
+const { createScoresBackup, tidy, DESCRIPTION } = require('../src/scores-backup');
+const { fakeGitHub } = require('./fake-github');
 const { startKeepAwake } = require('../src/keep-awake');
 const { bestAnswer, buildIndex } = require('../public/scoring.js');
 const IDX = buildIndex(require('../src/cars.json'));
-
-// An in-memory stand-in for the GitHub gists API.
-function fakeGitHub() {
-  const gists = new Map();
-  const calls = [];
-  const state = { down: false };
-  const reply = (status, body) => ({ ok: status < 300, status, json: async () => body, text: async () => JSON.stringify(body) });
-  async function fetch(url, init = {}) {
-    const method = init.method || 'GET';
-    const u = new URL(url);
-    calls.push(`${method} ${u.pathname}`);
-    if (state.down) return reply(503, {});
-    if (!/^Bearer tok_/.test((init.headers || {}).Authorization || '')) return reply(401, {});
-    if (method === 'GET' && u.pathname === '/gists') return reply(200, [...gists.values()].map(g => ({ id: g.id, description: g.description, files: { [FILE]: {} } })));
-    const m = /^\/gists\/(\w+)$/.exec(u.pathname);
-    if (method === 'GET' && m) return gists.has(m[1]) ? reply(200, gists.get(m[1])) : reply(404, {});
-    if (method === 'POST' && u.pathname === '/gists') {
-      const b = JSON.parse(init.body);
-      const g = { id: `g${gists.size + 1}`, description: b.description, public: b.public, files: { [FILE]: { content: b.files[FILE].content } } };
-      gists.set(g.id, g);
-      return reply(201, g);
-    }
-    if (method === 'PATCH' && m) {
-      const b = JSON.parse(init.body);
-      gists.get(m[1]).files[FILE].content = b.files[FILE].content;
-      return reply(200, gists.get(m[1]));
-    }
-    return reply(404, {});
-  }
-  return { fetch, gists, calls, state, saved: () => JSON.parse([...gists.values()][0].files[FILE].content) };
-}
 
 async function playRanked(srv, name) {
   const st = await srv.api('POST', '/api/solo/start', { kind: 'ranked', playlist: 'world' });

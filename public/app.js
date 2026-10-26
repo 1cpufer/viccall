@@ -243,8 +243,12 @@
   let clockOffset = 0;
   const serverNow = () => Date.now() + clockOffset;
   const useMeta = data => { META = data; clockOffset = typeof data.now === 'number' ? data.now - Date.now() : 0; };
-  const metaReady = api('GET', '/api/meta').then(r => {
+  // The play counter: the browser says the last day it visited (just a date),
+  // so the server can count new and returning visitors without knowing who.
+  const lastSeen = store.get('vc_seen');
+  const metaReady = api('GET', `/api/meta?seen=${/^\d{4}-\d{2}-\d{2}$/.test(lastSeen) ? lastSeen : 'none'}`).then(r => {
     if (!r.ok) { $('tower').innerHTML = '<li class="board-empty">Couldn’t reach the server. Check your connection and reload.</li>'; return; }
+    if (r.data.statsDay) store.set('vc_seen', r.data.statsDay);
     useMeta(r.data);
     $('makeList').innerHTML = (META.makes || []).map(m => `<option value="${esc(m)}">`).join('');
     buildBuilder();

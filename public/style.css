@@ -841,6 +841,25 @@ body.in-game .bar { display: none; }
 .doc-back { font-weight: 700; color: var(--plate) !important; text-decoration: none; }
 .doc-status { padding: 12px 16px; border-left: 3px solid var(--plate); background: var(--bg-2); border-radius: 0 8px 8px 0; color: var(--text) !important; }
 
+/* ---------- Play counter page ---------- */
+
+.stats-page { max-width: calc(var(--wide) + 2 * var(--gutter)); }
+.stats-key { display: grid; gap: 12px; max-width: 420px; margin-top: 20px; }
+.stats-cards { display: grid; gap: 14px; margin: 24px 0 8px; }
+@media (min-width: 900px) { .stats-cards { grid-template-columns: repeat(3, 1fr); } }
+.stats-card { padding: 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-2); }
+.stats-card h2 { margin: 0; }
+.stats-card dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-top: 12px; }
+.stats-card dt { color: var(--text-3); font-size: 14px; }
+.stats-card dd { font-size: 24px; font-weight: 760; font-variant-numeric: tabular-nums; }
+.stats-card dd small { font-size: 14px; font-weight: 500; color: var(--text-2); }
+.doc .stats-modes { list-style: none; display: grid; gap: 0; max-width: 520px; padding: 0; margin: 10px 0 24px; border-top: 1px solid var(--line); }
+.stats-modes li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--text-2); }
+.stats-modes b { color: var(--text); font-variant-numeric: tabular-nums; }
+.stats-table-wrap { overflow-x: auto; border-radius: 6px; }
+.stats-table-wrap:focus-visible { outline: 2px solid var(--plate); outline-offset: 2px; }
+.stats-table td { font-variant-numeric: tabular-nums; }
+
 /* ---------- Motion preferences ---------- */
 
 @media (prefers-reduced-motion: reduce) {
