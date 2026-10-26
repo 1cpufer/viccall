@@ -452,9 +452,11 @@
     return (res || []).map((r, i) => {
       const note = r.verdict === 'hit' ? '' : r.verdict === 'skip' ? 'Left blank' : r.note;
       const cls = r.verdict === 'skip' ? 'miss' : r.verdict;
-      return `<li class="chip is-${cls}" style="--i:${i}"><span class="lab">${esc(r.label)}</span><b>${r.pts > 0 ? '+' + r.pts : '0'}<span class="sr-only"> of ${r.max}</span></b>${note ? `<span class="note">${esc(note)}</span>` : ''}</li>`;
+      return `<li class="chip is-${cls}"><span class="lab">${esc(r.label)}</span><b>${r.pts > 0 ? '+' + r.pts : '0'}<span class="sr-only"> of ${r.max}</span></b>${note ? `<span class="note">${esc(note)}</span>` : ''}</li>`;
     }).join('');
   }
+  // The chips come in one after another. Set through the DOM: the CSP allows no inline style attributes.
+  const stagger = el => [...el.children].forEach((c, i) => c.style.setProperty('--i', i));
   const yearText = a => (Array.isArray(a.yearRange) && a.yearRange[0] !== a.yearRange[1] ? `${a.yearRange[0]}–${a.yearRange[1]}` : String(a.year));
   const carName = a => [a.make, a.model, a.variant].filter(Boolean).join(' ');
   const detail = a => [a.generation, yearText(a)].filter(Boolean).join(', ');
@@ -681,6 +683,7 @@
     $('gAnswer').innerHTML = answerHtml(d.answer, solo.roundKind);
     $('gHint').textContent = d.answer.hint || '';
     $('gChips').innerHTML = chipsHtml(d.res, d.skipped);
+    stagger($('gChips'));
     $('gCredit').innerHTML = creditHtml(d.answer);
     $('gCredit').hidden = !$('gCredit').innerHTML;
     $('gForm').hidden = true;
@@ -1135,6 +1138,7 @@
     $('pgAnswer').innerHTML = answerHtml(d, party.kind);
     $('pgHint').textContent = d.hint || '';
     $('pgChips').innerHTML = mine ? chipsHtml(mine.res) : '';
+    stagger($('pgChips'));
     $('pgCredit').innerHTML = creditHtml(d);
     $('pgCredit').hidden = !$('pgCredit').innerHTML;
     playReveal($('pgReveal'));

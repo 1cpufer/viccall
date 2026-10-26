@@ -255,3 +255,41 @@ test('the date of birth is asked once: a teen account can’t re-enter a differe
     assert.equal((await a.req('GET', '/api/auth/me')).body.user.adult, false);
   } finally { await srv.stop(); }
 });
+
+test('passwords: stored at the current scrypt cost; older hashes still sign in and are upgraded', async () => {
+  const { SCRYPT, needsRehash } = require('../src/auth');
+  const crypto = require('crypto');
+  const { srv } = await garage();
+  try {
+    const a = agent(srv);
+    assert.equal((await signup(a)).status, 201);
+    const stored = () => srv.db.get('SELECT password_hash FROM users WHERE email = ?', 'ferd@example.com').password_hash;
+    assert.ok(stored().startsWith(`scrypt$${SCRYPT.N}$${SCRYPT.r}$${SCRYPT.p}$`));
+    assert.equal(needsRehash(stored()), false);
+    // A hash made with the old, cheaper parameters (p=1).
+    const salt = crypto.randomBytes(16);
+    const old = `scrypt$16384$8$1$${salt.toString('base64url')}$${crypto.scryptSync('correct horse battery', salt, 64, { N: 16384, r: 8, p: 1 }).toString('base64url')}`;
+    srv.db.run('UPDATE users SET password_hash = ? WHERE email = ?', old, 'ferd@example.com');
+    assert.equal(needsRehash(old), true);
+    const b = agent(srv);
+    assert.equal((await b.req('POST', '/api/auth/login', { email: 'ferd@example.com', password: 'wrong password here' })).status, 401);
+    assert.equal(stored(), old, 'a failed sign-in changes nothing');
+    assert.equal((await b.req('POST', '/api/auth/login', { email: 'ferd@example.com', password: 'correct horse battery' })).status, 200);
+    assert.ok(stored().startsWith(`scrypt$${SCRYPT.N}$${SCRYPT.r}$${SCRYPT.p}$`), 'upgraded at sign-in');
+    assert.equal((await agent(srv).req('POST', '/api/auth/login', { email: 'ferd@example.com', password: 'correct horse battery' })).status, 200);
+  } finally { await srv.stop(); }
+});
+
+test('a malformed session cookie counts as signed out, never as an error', async () => {
+  const { parseCookies } = require('../src/auth');
+  assert.deepEqual(parseCookies('vc_session=%E0%A4%A; other=ok'), { other: 'ok' });
+  const { srv } = await garage();
+  try {
+    const bad = { cookie: 'vc_session=%E0%A4%A', 'x-viccall': '1', 'content-type': 'application/json' };
+    const me = await fetch(`${srv.base}/api/auth/me`, { headers: bad });
+    assert.equal(me.status, 200);
+    assert.equal((await me.json()).user, null);
+    const start = await fetch(`${srv.base}/api/solo/start`, { method: 'POST', headers: bad, body: JSON.stringify({ kind: 'free' }) });
+    assert.equal(start.status, 200, 'games still start');
+  } finally { await srv.stop(); }
+});

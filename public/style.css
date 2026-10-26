@@ -847,3 +847,6 @@ body.in-game .bar { display: none; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; }
   .photo-frame img { transform: none; }
 }
+
+/* Icon sprite: defines symbols only, takes no space. */
+.svg-defs { position: absolute; }

@@ -27,7 +27,7 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Renew the GitHub token before it expires.
 - **Still to do (code):**
   - Test Google, Discord and Resend for real once the keys exist.
-- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (97 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
+- **Picking it up:** clone, `npm install` (Node 22.13 or newer), `npm test` (104 tests), `npm run dev`. The change history is in `CHANGELOG.md`.
 
 ## Running it
 
@@ -39,7 +39,7 @@ npm run dev    # or: npm start
 Serves on `http://localhost:3000` (override with `PORT`).
 
 ```
-npm test                                   # node:test, 97 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, integrity, leaderboard backup
+npm test                                   # node:test, 104 tests: recognition, modes, API, proxy, multiplayer, accounts, Garage, integrity, leaderboard backup
 node e2e/ui.e2e.js [shotDir]               # browser run of every mode, desktop + phone + a 2-player party
 node e2e/party.e2e.js                      # party edge cases (timers, host leaving, refresh, rematch)
 node e2e/garage.e2e.js [shotDir]           # accounts, upload, moderation, credit, reports, counter-notice, phone
@@ -58,6 +58,8 @@ The browser scripts need Playwright (`npm i --no-save playwright && npx playwrig
 | `COMMONS_META` | `0` stops the weekly lookup of first-party photo authors and licences on Wikimedia Commons. |
 | `SCORES_GITHUB_TOKEN` | A GitHub token allowed to edit gists. Leaderboards are then also kept in a private gist, restored on start-up and saved after each score and on shutdown, so they survive restarts on hosting without a disk. `SCORES_GIST_ID` pins a specific gist (normally found by its description). |
 | `KEEP_AWAKE`, `KEEP_AWAKE_URL` | On Render the server requests its own `/api/health` every 10 minutes (using `RENDER_EXTERNAL_URL`) so the free instance doesn't sleep. `KEEP_AWAKE=0` turns it off; `KEEP_AWAKE_URL` sets the address elsewhere. |
+| `NODE_ENV` | `production` on Render (`render.yaml`). Outside production the mailer writes emails, sign-in links included, to the log. |
+| `CSP_ENFORCE` | `1` enforces the full Content Security Policy. Until then it's report-only beside an enforced baseline; see "Security headers". |
 
 ### Dependencies
 
@@ -131,6 +133,25 @@ Every answer gets a feedback line per field, for example:
 - "Porsche, from the model"
 
 `npm test` checks that every car in play has an answer worth full credit in both rule sets. It also checks that every alias is either exact or a reviewed ambiguity, and that no car's full name earns full credit for a different car of the same make.
+
+## Security headers
+
+Every response carries them (`src/server.js`); Render's edge adds none of its own.
+
+| Header | Value |
+|---|---|
+| `Content-Security-Policy` | Enforced baseline: `object-src 'none'; base-uri 'self'; frame-ancestors 'none'` |
+| `Content-Security-Policy-Report-Only` | The full policy: `default-src 'self'`, scripts and styles from this site only (no `'unsafe-inline'`, no `'unsafe-eval'`), images also from `upload.wikimedia.org` and `blob:` (Garage upload previews), `form-action 'self'`, reports to `/api/csp-report` |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`, on https requests (needs `TRUST_PROXY`). Not submitted for HSTS preload, which takes months to undo. |
+| `X-Frame-Options` | `DENY` (with `frame-ancestors 'none'`: nothing embeds the game) |
+| `X-Content-Type-Options` | `nosniff` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | Camera, microphone, location, motion sensors, payment and USB denied |
+| `Cross-Origin-Opener-Policy` | `same-origin` |
+
+No page has inline scripts, event handlers or style attributes (the JavaScript sets styles through the DOM), so the full policy needs no nonces or hashes. `test/headers.test.js` fails if one is added.
+
+**Enforcing the full policy.** Report-only is a test phase. Violations reported by browsers are kept with the bug reports (`/api/reports`, type `csp`, one entry per kind a day with a count). On **8 November 2026**, if they show nothing unexpected, set `CSP_ENFORCE=1` on Render. The full policy was already enforced locally across every flow (home, Free Play and Daily rounds, the reveal, leaderboards, a party, the Garage and moderation) without a violation.
 
 ## How ranked play is protected
 
@@ -210,6 +231,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-25, security:** body-parser fix (a crafted request could crash the server), JSON error responses, security headers with a report-only CSP, stronger password hashing, CI with tests and a dependency check.
 - **2026-10-25, Garage tools** (still switched off): moderators can add vehicles that aren't in the game, contributors are emailed about decisions, and uploads of the game's own photos are caught.
 - **2026-10-25, tuners:** Top Secret joins with its R35 GT-R and LS 460 demo cars, and Prior Design gains a Panamera, Urus and RS Q8 (30 builds from 14 tuners).
 - **2026-10-24, photo check:** every photo looked at; 10 replaced (wrong car, a logo, interiors, a speck on a track), 9 entries corrected to match their photos, and the 6 held-back cars back in play.

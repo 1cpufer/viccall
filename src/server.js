@@ -24,6 +24,19 @@ const MAX_REPORTS = 500;
 const MAX_SESSIONS = 5000;
 const SESSION_TTL_MS = 2 * 60 * 60_000;
 const CLOCK_SLACK_MS = 3_000; // network + render allowance on timed rounds
+
+// Content Security Policy. Everything the pages load is first-party except the
+// Wikimedia photos (and blob: previews of Garage uploads); there are no inline
+// scripts or style attributes, so no 'unsafe-inline' anywhere. The baseline is
+// enforced; the full policy is report-only until CSP_ENFORCE=1 (README).
+const CSP_BASELINE = "object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
+const CSP_FULL = [
+  "default-src 'self'", "script-src 'self'", "style-src 'self'", "img-src 'self' https://upload.wikimedia.org blob:",
+  "font-src 'self'", "connect-src 'self'", "manifest-src 'self'", "object-src 'none'", "base-uri 'self'",
+  "frame-ancestors 'none'", "form-action 'self'", 'report-uri /api/csp-report', 'report-to csp',
+].join('; ');
+// Nothing here uses these; deny them so an injected frame or script can't either.
+const PERMISSIONS_POLICY = 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()';
 const BOARD_RE = /^(ranked:[a-z]+|daily:\d{4}-\d{2}-\d{2}|endless)$/;
 
 function createApp(opts = {}) {
@@ -61,9 +74,22 @@ function createApp(opts = {}) {
 
   app.disable('x-powered-by');
   if (process.env.TRUST_PROXY) app.set('trust proxy', 1); // set when running behind a reverse proxy
+  // Security headers on every response (Render's edge adds none). See README, "Security headers".
+  const cspEnforced = (opts.cspEnforce !== undefined ? opts.cspEnforce : process.env.CSP_ENFORCE === '1');
   app.use((req, res, next) => {
     res.set('X-Content-Type-Options', 'nosniff');
     res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.set('X-Frame-Options', 'DENY');
+    res.set('Permissions-Policy', PERMISSIONS_POLICY);
+    res.set('Cross-Origin-Opener-Policy', 'same-origin');
+    res.set('Reporting-Endpoints', 'csp="/api/csp-report"');
+    if (cspEnforced) res.set('Content-Security-Policy', CSP_FULL);
+    else {
+      res.set('Content-Security-Policy', CSP_BASELINE);
+      res.set('Content-Security-Policy-Report-Only', CSP_FULL);
+    }
+    // Only over https (req.secure needs TRUST_PROXY behind Render's proxy).
+    if (req.secure) res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
   app.use(compression());
@@ -350,6 +376,40 @@ function createApp(opts = {}) {
       : local;
     if (!ok) return res.status(404).json({ error: 'not found' });
     res.json(readJson(REPORTS_FILE).slice().reverse());
+  });
+
+  // ---- CSP violation reports ----
+  // Browsers post what the policy blocked (or would block, while report-only).
+  // Kept with the bug reports as type 'csp', one entry per directive, blocked
+  // resource and page a day, with a count. Addresses keep no query string.
+  const cspBody = express.json({ type: ['application/csp-report', 'application/reports+json', 'application/json'], limit: '16kb', inflate: false });
+  const urlPart = u => {
+    const s = clip(u, 300);
+    if (!/^https?:/i.test(s)) return s.replace(/[?#].*$/, '');
+    try { const x = new URL(s); return x.origin + x.pathname; } catch { return ''; }
+  };
+  app.post('/api/csp-report', limit(60, 60_000), cspBody, (req, res) => {
+    const raw = req.body;
+    const list = Array.isArray(raw) ? raw.filter(r => r && r.type === 'csp-violation').map(r => r.body || {})
+      : raw && typeof raw['csp-report'] === 'object' ? [raw['csp-report']] : [];
+    if (list.length) {
+      const reports = readJson(REPORTS_FILE);
+      const now = Date.now();
+      for (const r of list.slice(0, 20)) {
+        const v = {
+          directive: clip(r.effectiveDirective || r['effective-directive'] || r['violated-directive'], 60),
+          blocked: urlPart(r.blockedURL || r['blocked-uri']),
+          page: urlPart(r.documentURL || r['document-uri']).replace(/^https?:\/\/[^/]+/, '') || '/',
+          source: urlPart(r.sourceFile || r['source-file']), line: Number(r.lineNumber || r['line-number']) || null,
+          sample: clip(r.sample || r['script-sample'], 80), disposition: clip(r.disposition, 10),
+        };
+        const same = reports.find(x => x.type === 'csp' && now - x.ts < 24 * 60 * 60_000 && x.directive === v.directive && x.blocked === v.blocked && x.page === v.page);
+        if (same) { same.count = (same.count || 1) + 1; same.lastTs = now; } else reports.push({ id: crypto.randomUUID(), type: 'csp', ...v, count: 1, userAgent: clip(req.get('user-agent'), 300), ts: now });
+      }
+      if (reports.length > MAX_REPORTS) reports.splice(0, reports.length - MAX_REPORTS);
+      writeJson(REPORTS_FILE, reports);
+    }
+    res.status(204).end();
   });
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'not found' }));

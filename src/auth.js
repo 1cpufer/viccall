@@ -50,7 +50,14 @@ const sha256 = s => crypto.createHash('sha256').update(s).digest('base64url');
 const str = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
 
 // ---------------------------------------------------------------- passwords
-const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
+// OWASP's scrypt minimum, in the form that needs only 16 MB per hash (N=2^14,
+// r=8, p=5 matches N=2^17, p=1). Each stored hash carries its own parameters,
+// and older ones are upgraded at the next successful sign-in.
+const SCRYPT = { N: 16384, r: 8, p: 5, keylen: 64 };
+const needsRehash = stored => {
+  const [kind, N, r, p] = String(stored || '').split('$');
+  return kind !== 'scrypt' || +N !== SCRYPT.N || +r !== SCRYPT.r || +p !== SCRYPT.p;
+};
 function hashPassword(password) {
   return new Promise((resolve, reject) => {
     const salt = crypto.randomBytes(16);
@@ -105,7 +112,8 @@ function parseCookies(header) {
   const out = {};
   String(header || '').split(';').forEach(part => {
     const i = part.indexOf('=');
-    if (i > 0) out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim());
+    if (i <= 0) return;
+    try { out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim()); } catch { /* malformed: ignore that cookie */ }
   });
   return out;
 }
@@ -259,6 +267,7 @@ function createAuth(opts) {
     const ok = await checkPassword(str(b.password, 200), u && u.password_hash ? u.password_hash : await dummyHash);
     if (!u || !u.password_hash || !ok) return res.status(401).json({ error: 'That email and password don’t match an account.' });
     if (u.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
+    if (needsRehash(u.password_hash)) db.run('UPDATE users SET password_hash = ? WHERE id = ?', await hashPassword(str(b.password, 200)), u.id);
     startSession(req, res, u.id);
     res.json({ user: publicUser(db.get('SELECT * FROM users WHERE id = ?', u.id)) });
   });
@@ -453,4 +462,4 @@ function createAuth(opts) {
   return { router, currentUser, requireUser, publicUser, closeAccount, onClose: fn => closeHooks.push(fn), providers, csrf, baseUrl, mailer };
 }
 
-module.exports = { createAuth, hashPassword, checkPassword, ageFrom, displayNameProblem, passwordProblem, PROVIDERS, COOKIE };
+module.exports = { createAuth, hashPassword, checkPassword, needsRehash, parseCookies, ageFrom, displayNameProblem, passwordProblem, PROVIDERS, COOKIE, SCRYPT };

@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-25: Security audit
+
+- **Urgent, deployed first (`f67841b`).**
+  - body-parser 1.20.8 to 1.20.9 (GHSA-27r3-jxmh-p828, published 23 October): a compressed request body with trailing bytes could crash the server, unauthenticated, on any POST.
+  - Compressed request bodies are refused (`inflate: false`).
+  - Errors answer in plain JSON. Express's error page showed stack traces and file paths outside production.
+- **Security headers.**
+  - An enforced CSP baseline, with the full policy report-only and its violations collected at `/api/csp-report`.
+  - HSTS on https, `X-Frame-Options`, `Permissions-Policy` and `Cross-Origin-Opener-Policy`. Details in the README.
+  - The two inline style attributes (score chips, blur boxes) and one in `index.html` now go through the DOM or the stylesheet, so the policy needs no `'unsafe-inline'`.
+- **Accounts** (Garage, still off).
+  - Passwords use scrypt N=2^14, r=8, p=5 (OWASP's minimum, in its 16 MB form); older hashes are upgraded at the next sign-in.
+  - A malformed session cookie now counts as signed out instead of failing the request.
+- **`render.yaml`** sets `NODE_ENV=production`.
+- **CI** (`.github/workflows/ci.yml`): tests and `npm audit --omit=dev --audit-level=high` on every push and pull request, with actions pinned to commits. Dependabot opens update pull requests.
+- **Tests:** 6 new, 104 in total. They cover the crash reproducer in a child process, JSON errors, the headers and the CSP report collector, a static check that pages stay free of inline code, the password upgrade, and malformed cookies.
+
 ## 2026-10-25: Garage tools: new vehicles, decision emails, copies of the game's photos
 
 All three are part of the Community Garage, which is still switched off (`GARAGE_ENABLED`). Nothing changes for players until it's on.

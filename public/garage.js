@@ -577,7 +577,9 @@
     const layer = container.querySelector('.blur-layer');
     const list = container.querySelector('.blur-list');
     function draw() {
-      layer.innerHTML = state.map((b, i) => `<div class="blur-box" style="left:${b.x * 100}%;top:${b.y * 100}%;width:${b.w * 100}%;height:${b.h * 100}%"><button type="button" data-blur-del="${i}" aria-label="Remove blur box ${i + 1}">×</button></div>`).join('');
+      layer.innerHTML = state.map((b, i) => `<div class="blur-box"><button type="button" data-blur-del="${i}" aria-label="Remove blur box ${i + 1}">×</button></div>`).join('');
+      // Positions set through the DOM: the CSP allows no inline style attributes.
+      [...layer.children].forEach((el, i) => { const b = state[i]; Object.assign(el.style, { left: `${b.x * 100}%`, top: `${b.y * 100}%`, width: `${b.w * 100}%`, height: `${b.h * 100}%` }); });
       list.textContent = state.length ? `${state.length} area${state.length > 1 ? 's' : ''} will be blurred.` : 'Nothing will be blurred.';
     }
     let start = null, temp = null;
