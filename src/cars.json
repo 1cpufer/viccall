@@ -3640,7 +3640,9 @@
     "img": "https://upload.wikimedia.org/wikipedia/commons/c/c7/BMW_3-Series_F30_PD-M1_Prior-Design_Aerodynamic-Kit_%288551783566%29.jpg",
     "hint": "PD-M1 aero kit widened the F30's stock bodywork",
     "kit": "Prior Design",
-    "kitAliases": [],
+    "kitAliases": [
+      "Prior"
+    ],
     "difficulty": 2,
     "credit": "BMW 3-Series F30 PD-M1 Prior-Design Aerodynamic-Kit (8551783566).jpg"
   },
@@ -5505,5 +5507,105 @@
     ],
     "difficulty": 2,
     "credit": "Ferrari 812 Superfast N-Largo NoviTec.jpg"
+  },
+  {
+    "id": "nissan-gt-r-2014-top-secret",
+    "make": "Nissan",
+    "model": "GT-R",
+    "year": 2014,
+    "region": "japan",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/OSAKA_AUTO_MESSE_2015_%28421%29_-_TOPSECRET_GTR_HA_SYSTEM.JPG/960px-OSAKA_AUTO_MESSE_2015_%28421%29_-_TOPSECRET_GTR_HA_SYSTEM.JPG",
+    "hint": "Smokey Nagata's Chiba workshop, famous for its top-speed runs, on its own R35 demo car",
+    "kit": "Top Secret",
+    "kitAliases": [],
+    "difficulty": 2,
+    "credit": "OSAKA AUTO MESSE 2015 (421) - TOPSECRET GTR HA SYSTEM.JPG"
+  },
+  {
+    "id": "porsche-panamera-2011-prior-design",
+    "make": "Porsche",
+    "model": "Panamera",
+    "year": 2011,
+    "yearRange": [
+      2009,
+      2016
+    ],
+    "region": "germany",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Porsche_Panamera_Prior-Design_%2816538126653%29.jpg/960px-Porsche_Panamera_Prior-Design_%2816538126653%29.jpg",
+    "hint": "Prior Design front end on a first-generation Panamera",
+    "kit": "Prior Design",
+    "kitAliases": [
+      "Prior"
+    ],
+    "modelAliases": [
+      "970"
+    ],
+    "difficulty": 2,
+    "credit": "Porsche Panamera Prior-Design (16538126653).jpg"
+  },
+  {
+    "id": "lamborghini-urus-2023-prior-design",
+    "make": "Lamborghini",
+    "model": "Urus",
+    "year": 2023,
+    "yearRange": [
+      2018,
+      2026
+    ],
+    "region": "italy",
+    "niche": false,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Lamborghini_Urus_Prior_Design_Roberto_Geissini_Edition_%2853081691084%29.jpg/960px-Lamborghini_Urus_Prior_Design_Roberto_Geissini_Edition_%2853081691084%29.jpg",
+    "hint": "Prior Design widebody, the Roberto Geissini edition",
+    "kit": "Prior Design",
+    "kitAliases": [
+      "Prior"
+    ],
+    "difficulty": 2,
+    "credit": "Lamborghini Urus Prior Design Roberto Geissini Edition (53081691084).jpg"
+  },
+  {
+    "id": "audi-rs-q8-2023-prior-design",
+    "make": "Audi",
+    "model": "RS Q8",
+    "year": 2023,
+    "yearRange": [
+      2019,
+      2026
+    ],
+    "region": "germany",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Prior_RS_Q8%2C_EMS_23%2C_Essen_%28P1160511%29.jpg/960px-Prior_RS_Q8%2C_EMS_23%2C_Essen_%28P1160511%29.jpg",
+    "hint": "Prior Design widebody on Audi's fastest SUV, shown at Essen Motor Show 2023",
+    "kit": "Prior Design",
+    "kitAliases": [
+      "Prior"
+    ],
+    "difficulty": 2,
+    "credit": "Prior RS Q8, EMS 23, Essen (P1160511).jpg"
+  },
+  {
+    "id": "lexus-ls-460-2008-top-secret",
+    "make": "Lexus",
+    "model": "LS 460",
+    "year": 2008,
+    "yearRange": [
+      2006,
+      2009
+    ],
+    "region": "japan",
+    "niche": true,
+    "supercar": false,
+    "img": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Top_Secret_LS_460_body_kit.jpg/960px-Top_Secret_LS_460_body_kit.jpg",
+    "hint": "Top Secret aero on Lexus's V8 flagship saloon, at Tokyo Auto Salon 2009",
+    "kit": "Top Secret",
+    "kitAliases": [],
+    "difficulty": 2,
+    "credit": "Top Secret LS 460 body kit.jpg"
   }
 ]

@@ -14,8 +14,8 @@ Vehicle Identification Call: a car-guessing game. You see one photo and name the
   - Keep-awake: the site doesn't sleep.
   - Leaderboards backed up to a private gist (`SCORES_GITHUB_TOKEN` is set on Render).
   - Photo proxy: confirmed working.
-  - Commons photo credits: all 307 photos have usable licences.
-- **Photos checked:** on 24 October every photo was looked at against its answer. 10 were replaced, 9 entries corrected, and the 6 held-back cars came back with correct photos, so all 307 entries are in play (see `CHANGELOG.md`).
+  - Commons photo credits: all 312 photos have usable licences.
+- **Photos checked:** on 24 October every photo was looked at against its answer. 10 were replaced, 9 entries corrected, and the 6 held-back cars came back with correct photos, so every entry is in play (see `CHANGELOG.md`). On 25 October, 5 tuner builds were added (Top Secret and Prior Design).
 - **Built but switched off:** the Community Garage, meaning accounts, photo submissions and moderation (`GARAGE_ENABLED` isn't set). See `docs/COMMUNITY_GARAGE.md`.
 - **Still to do (owner):**
   - Before opening the Garage:
@@ -144,12 +144,12 @@ Every answer gets a feedback line per field, for example:
 
 ## Car database
 
-`src/cars.json`: 307 entries, all in play, 298 distinct vehicles, 84 makes. An entry whose photo turns out to be wrong can be held back with `"excluded": "<reason>"` until it's fixed.
+`src/cars.json`: 312 entries, all in play, 300 distinct vehicles, 84 makes. An entry whose photo turns out to be wrong can be held back with `"excluded": "<reason>"` until it's fixed.
 
-- Eras: 110 from 2010 onward, 63 from 1990–2009, 134 before 1990.
-- Difficulty, from how recognisable the car is: 62 easy, 124 medium, 121 hard.
+- Eras: 114 from 2010 onward, 64 from 1990–2009, 134 before 1990.
+- Difficulty, from how recognisable the car is: 62 easy, 129 medium, 121 hard.
 - 59 supercars, 18 cars with a scored trim (`variant`: GT-R Nismo, M4 Competition, 911 GT3 RS, 205 Turbo 16…) and 49 entries with a `generation` (E46, 992, S15, A80, W464…) wherever the database holds more than one generation of a name.
-- 25 tuner builds from 13 tuners: ABT Sportsline, Brabus, Hamann, Larte Design, Liberty Walk, Mansory, Novitec, Prior Design, RWB, Rocket Bunny, TechArt, VeilSide, Vorsteiner. Every build is a real one, photographed on the car it was made for.
+- 30 tuner builds from 14 tuners: ABT Sportsline, Brabus, Hamann, Larte Design, Liberty Walk, Mansory, Novitec, Prior Design, RWB, Rocket Bunny, TechArt, Top Secret, VeilSide, Vorsteiner. Every build is a real one, photographed on the car it was made for. Tuners show their cars wearing their own name ("LB★PERFORMANCE" on a bumper, a "PRIOR DESIGN" plate, an RWB windscreen banner), so a tuner photo may show it, the way a stock car shows its maker's badge.
 - Every photo is a Wikimedia Commons file, credited and linked on the reveal (`credit` holds the file name). The server looks up each file's author and licence on Commons and shows them after the round (`src/provenance.js`, see `docs/IMAGE_SOURCES.md`). `npm test` checks every URL's Commons hash path, difficulty, credit and year range.
 
 Entry fields: `id, make, model, variant?, variantAliases?, generation?, generationAliases?, year, yearRange, region, niche, supercar, difficulty (1–3), img, credit, hint`. Optional `modelAliases` and `makeAliases`; tuner builds add `kit` and `kitAliases`.
@@ -203,7 +203,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 - No human has listened to the music or effects yet. They were checked by rendering offline and measuring levels: no clipping anywhere, and the high-frequency energy rises with intensity in both themes as layers come in. The mix may still need tuning by ear.
 - Photos were last looked at by eye on 24 October 2026. `npm test` checks file names and hash paths, not what a photo shows, so a new or changed photo needs a look. The cloud sandbox can't reach Wikimedia; a session on a computer can.
-- No free-licensed photos were found for Top Secret, Varis or newer Prior Design builds, so those tuners aren't in the game yet.
+- Varis isn't in the game: the only free-licensed photos on Commons are of a sponsored Super Taikyu race car, not one of its body kits. Top Secret has two builds; its other Commons photos either repeat the GT-R with the name painted down the side or show a kit that may not be its own.
 - Scores from before the expansion used a 50-point scale and the old mode names. They stay in the scores file but aren't shown on the new boards.
 - Leaderboards survive restarts only with `SCORES_GITHUB_TOKEN` set, or on a persistent disk. Scores posted in the 15 seconds before a crash (not a normal restart) can be lost.
 - Personal bests live in the browser only, also for signed-in players. Accounts are only used by the Community Garage.
@@ -213,6 +213,7 @@ Party events over Socket.IO: `party:create`, `party:join`, `party:resume`, `part
 
 See `CHANGELOG.md` for the full record.
 
+- **2026-10-25, tuners:** Top Secret joins with its R35 GT-R and LS 460 demo cars, and Prior Design gains a Panamera, Urus and RS Q8 (30 builds from 14 tuners).
 - **2026-10-24, photo check:** every photo looked at; 10 replaced (wrong car, a logo, interiors, a speck on a track), 9 entries corrected to match their photos, and the 6 held-back cars back in play.
 - **2026-10-24, staying power:** leaderboards backed up to GitHub, keep-awake on the free plan, a start-up photo proxy check.
 - **2026-10-20, Community Garage** (off until switched on): accounts, photo submissions with automatic checks, moderation, competitive exclusion of contributors' photos, reports and copyright handling, first-party photo credits from Commons.

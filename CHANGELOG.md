@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-25: Two more tuners in Body Kit ID
+
+Searched Wikimedia Commons from a computer (the cloud sandbox can't reach it) for the tuners missing from the game.
+
+- **Top Secret** joins with two of its demo cars: the R35 GT-R at Osaka Auto Messe 2015 and an LS 460 at Tokyo Auto Salon 2009.
+- **Prior Design** gains a first-generation Panamera, the Roberto Geissini edition Urus and an RS Q8 shown at Essen Motor Show 2023. The company now brands itself "PRIOR", so "Prior" counts as the tuner on all its builds.
+- **Varis** is still missing. The only free-licensed photos on Commons are of a Super Taikyu race car carrying its name as a sponsor, not a Varis body kit.
+- **Left out:**
+  - another Top Secret GT-R with the name painted down its side
+  - a "Top Secret" GR Supra whose riveted fenders look like another company's kit
+  - a Prior Design McLaren whose model couldn't be confirmed
+  - a Duster credited to a different tuning shop
+  - two dark, distorted Audi S5 photos
+- **Tuner branding.** Tuners show their cars wearing their own name, and about half the existing Body Kit ID photos show it (Liberty Walk bumpers, the Prior Design plate, Mansory and ABT stands, RWB windscreen banners). It's now treated like a maker's badge on a stock car, and the README says so.
+- **Licences:** all new photos pass the `src/provenance.js` check (CC0, CC BY 2.0, CC BY-SA 2.0 and 4.0).
+- 312 entries and 30 tuner builds from 14 tuners. The Daily Challenge never uses tuner builds, so this doesn't change any day's ten.
+
 ## 2026-10-24: Daily Challenge on one clock, shown in your time
 
 The daily already ran on one clock, the UTC day, on the server and in the browser. But nothing said so: at 9 PM in Chicago the home screen showed tomorrow's date, because the 25 October set had started at 7 PM local time.
